@@ -1,0 +1,11 @@
+{
+    "name": "Getting Started Example",
+    "version": "1.0",
+    "description": "Build an Extension!",
+    "manifest_version": 2,
+    "content_scripts": [{
+        "matches": ["https://www.mangaeden.com/en/en-manga/*"],
+        "js": ["mangaeden.js"]
+    }],
+    "permissions": ["activeTab"]
+}
