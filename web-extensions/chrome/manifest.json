@@ -1,7 +1,7 @@
 {
-    "name": "Getting Started Example",
-    "version": "1.0",
-    "description": "Build an Extension!",
+    "name": "BookMyComics",
+    "version": "0.1",
+    "description": "A slightly intrusive extension to keep track of your comics/manga reading progress",
     "manifest_version": 2,
     "content_scripts": [
         {
