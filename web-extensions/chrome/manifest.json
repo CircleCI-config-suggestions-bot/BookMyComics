@@ -15,6 +15,10 @@
         {
             "matches": ["*://mangahere.us/*"],
             "js": ["mangahere.js"]
+        },
+        {
+            "matches": ["https://www.mangareader.net/*"],
+            "js": ["mangareader.js"]
         }
     ],
     "permissions": ["activeTab"]
