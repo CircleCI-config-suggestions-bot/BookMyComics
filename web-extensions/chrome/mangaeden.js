@@ -19,6 +19,24 @@ function sendUpdatesForMangaEden() {
             console.log("current page: " + page);
         }
     }
+    const db = new BmcDataAPI();
+    console.log('Instanciated BmcDataAPI');
+    db.findComic(manga, (err, id) => {
+        if (err) {
+            console.log('Got err from Find');
+            return ;
+        }
+        console.log(`Got id from storage: ${id}`);
+        if (id === null) {
+            alert('Please register comic');
+        } else {
+            db.updateComic(comicId, chapter, page, (err) => {
+                if (err) {
+                    alert('BookMyComic could not save your reading progress');
+                }
+            });
+        }
+    });
 }
 
 sendUpdatesForMangaEden();
