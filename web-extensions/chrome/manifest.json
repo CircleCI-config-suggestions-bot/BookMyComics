@@ -11,6 +11,10 @@
         {
             "matches": ["*://fanfox.net/manga/*"],
             "js": ["mangafox.js"]
+        },
+        {
+            "matches": ["*://mangahere.us/*"],
+            "js": ["mangahere.js"]
         }
     ],
     "permissions": ["activeTab"]
