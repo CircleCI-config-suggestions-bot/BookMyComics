@@ -6,19 +6,19 @@
     "content_scripts": [
         {
             "matches": ["https://www.mangaeden.com/en/en-manga/*"],
-            "js": ["storage.js", "mangaeden.js"]
+            "js": ["engine/storage.js", "mangaeden.js"]
         },
         {
             "matches": ["*://fanfox.net/manga/*"],
-            "js": ["storage.js", "mangafox.js"]
+            "js": ["engine/storage.js", "mangafox.js"]
         },
         {
             "matches": ["*://mangahere.us/*"],
-            "js": ["storage.js", "mangahere.js"]
+            "js": ["engine/storage.js", "mangahere.js"]
         },
         {
             "matches": ["https://www.mangareader.net/*"],
-            "js": ["storage.js", "mangareader.js"]
+            "js": ["engine/storage.js", "mangareader.js"]
         }
     ],
     "permissions": [
