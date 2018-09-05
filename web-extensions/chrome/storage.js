@@ -85,7 +85,7 @@ Storage.prototype._cbify = function(funcObj, args, onSuccess, onError) {
  * This function provides a unified API to get from the storage layers of the
  * browser.
  *
- * @param {String[]|String] keys - Single key or array of keys to retrieve the
+ * @param {String[]|String} keys - Single key or array of keys to retrieve the
  *                                 data of
  * @param {Storage~getCb} cb
  *
@@ -136,7 +136,7 @@ Storage.prototype.set = function(dataset, cb) {
  * This function provides a unified API to remove data from the storage layers
  * of the browser.
  *
- * @param {String[]|String] keys - Single key or array of keys to be removed
+ * @param {String[]|String} keys - Single key or array of keys to be removed
  *                                 from the storage
  * @param {Storage~removeb} cb
  *
