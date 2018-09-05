@@ -12,31 +12,11 @@ function sendUpdatesForMangaEden() {
         chapter = parts[3];
         page = parts[4];
     }
-    console.log("current manga: " + manga);
-    if (chapter !== null) {
-        console.log("current chapter: " + chapter);
-        if (page !== null) {
-            console.log("current page: " + page);
-        }
-    }
-    const db = new BmcDataAPI();
-    console.log('Instanciated BmcDataAPI');
-    db.findComic(manga, (err, id) => {
-        if (err) {
-            console.log('Got err from Find');
-            return ;
-        }
-        console.log(`Got id from storage: ${id}`);
-        if (id === null) {
-            alert('Please register comic');
-        } else {
-            db.updateComic(comicId, chapter, page, (err) => {
-                if (err) {
-                    alert('BookMyComic could not save your reading progress');
-                }
-            });
-        }
-    });
+
+    // Now, let the engine do its magic: Register, track, etc.
+    const engine = new BmcEngine();
+    console.log('Instanciated BmcEngine');
+    engine.track(manga, chapter, page);
 }
 
 sendUpdatesForMangaEden();
