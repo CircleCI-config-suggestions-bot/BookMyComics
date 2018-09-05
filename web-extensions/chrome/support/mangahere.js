@@ -25,13 +25,11 @@ function sendUpdatesForMangaHere() {
     } else {
         return;
     }
-    console.log("current manga: " + manga);
-    if (chapter !== null) {
-        console.log("current chapter: " + chapter);
-        if (page !== null) {
-            console.log("current page: " + page);
-        }
-    }
+
+    // Now, let the engine do its magic: Register, track, etc.
+    const engine = new BmcEngine();
+    console.log('Instanciated BmcEngine');
+    engine.track(manga, chapter, page);
 }
 
 sendUpdatesForMangaHere();

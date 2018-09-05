@@ -12,13 +12,11 @@ function sendUpdatesForMangaFox() {
         chapter = parseInt(parts[2].replace('c', ''), 10);
         page = parts[3].replace('.html', '');
     }
-    console.log("current manga: " + manga);
-    if (chapter !== null) {
-        console.log("current chapter: " + chapter);
-        if (page !== null) {
-            console.log("current page: " + page);
-        }
-    }
+
+    // Now, let the engine do its magic: Register, track, etc.
+    const engine = new BmcEngine();
+    console.log('Instanciated BmcEngine');
+    engine.track(manga, chapter, page);
 }
 
 sendUpdatesForMangaFox();
