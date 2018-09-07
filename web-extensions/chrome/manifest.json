@@ -21,6 +21,13 @@
             "js": ["engine/storage.js", "engine/ui.js", "engine/bookmycomics.js", "support/mangareader.js"]
         }
     ],
+    "web_accessible_resources": [
+        "register-diag.html",
+        "engine/storage.js",
+        "engine/ui.js",
+        "engine/bookmycomics.js",
+        "scripts/*"
+    ],
     "permissions": [
       "activeTab",
       "storage"
