@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' filesystem: ; object-src 'self'; ">
+    <style>
+      #manga-list {
+        width: calc(100vw - 16px);
+        border-right: 1px solid #ccc;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        overflow-y: auto;
+        background-color: #fcfcfc;
+        left: 0;
+      }
+      #manga-list > div {
+        font-size: 14px;
+        padding: 5px;
+        border-bottom: 1px solid #ccc;
+        cursor: pointer;
+      }
+      #manga-list > div:hover {
+        background-color: #ccf;
+      }
+      #hide-but {
+        position: absolute;
+        top: 100px;
+        padding: 2px;
+        background-color: #fcfcfc;
+        font-size: 18px;
+        right: 0;
+        border: 1px solid #ccc;
+        border-left: none;
+        border-radius: 0 3px 3px 0;
+        cursor: pointer;
+      }
+      #hide-but:hover {
+        background-color: #ebebeb;
+      }
+    </style>
+    <script src="engine/storage.js"></script>
+    <script src="engine/ui.js"></script>
+    <script src="engine/bookmycomics.js"></script>
+  </head>
+  <body>
+    <div id="manga-list">
+    </div>
+    <div id="hide-but">&lt;</div>
+  </body>
+  <script src="scripts/load-bookmarks.js" crossorigin="anonymous"></script>
+</html>

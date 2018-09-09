@@ -3,22 +3,36 @@
   <head>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' filesystem: ; object-src 'self'; ">
     <style>
-      div {
+      .buttons {
         height: 100%;
         width: 100%;
         outline: none;
         overflow: hidden;
+        text-align: center;
+      }
+      .buttons > button {
+        padding: 2px 5px;
+        border: 1px solid #4646f5;
+        border-radius: 2px;
+        background-color: #4646f5;
+        color: #fff;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .buttons > button:hover {
+        border-color: #5757f7;
+        background-color: #5757f7;
       }
     </style>
     <script src="engine/storage.js"></script>
     <script src="engine/ui.js"></script>
     <script src="engine/bookmycomics.js"></script>
   </head>
-  <body id=InfoBarBody>
-    <div>This work is not tracked by BookMyComics. Do you want to track it ?
-      <button id='registerComic' type='button'>Register</button>
-      <button id='aliasComic' type='button'>Link to existing</button>
-      <button id='ignoreComic' type='button'>Not now</button>
+  <body>
+    <div class="buttons">
+      <button id='registerComic'>Register</button>
+      <button id='aliasComic'>Link to existing</button>
+      <button id='ignoreComic'>Not now</button>
     </div>
   </body>
   <script src="scripts/register-diag.js" crossorigin="anonymous"></script>

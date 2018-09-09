@@ -26,6 +26,7 @@
         }
     ],
     "web_accessible_resources": [
+        "sidebar.html",
         "register-diag.html",
         "engine/storage.js",
         "engine/ui.js",

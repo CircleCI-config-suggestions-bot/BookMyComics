@@ -59,6 +59,7 @@ BmcEngine.prototype.track = function(comicName, chapter, page) {
             return ;
         }
         console.log(`BookMyComic: bmcEngine.track: Got comicId from storage: ${comicId}`);
+        this._ui.makeSidePanel(comicName, chapter, page);
         if (comicId === null) {
             return this._ui.makeRegisterDialog(comicName, chapter, page);
         }
