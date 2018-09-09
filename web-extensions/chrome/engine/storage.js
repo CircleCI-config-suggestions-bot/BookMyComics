@@ -1,3 +1,10 @@
+function getBrowser() {
+    if (typeof browser === "undefined") {
+        return chrome;
+    }
+    return browser;
+}
+
 /**
  * This class is a very simple wrapper on top of the various browser's APIs for
  * storage, made to unify them into a simpler-to-user API.
@@ -7,24 +14,25 @@
  * @class Storage
  */
 function Storage() {
-        this._area = browser.storage.sync;
-        if (!this._area) {
-            this._area = browser.storage.local;
-        }
+    var bro = getBrowser();
+    this._area = bro.storage.sync;
+    if (!this._area) {
+        this._area = bro.storage.local;
+    }
 
-        this._mode = this.MODE_CALLBACK;
+    this._mode = this.MODE_CALLBACK;
 
-        /**
-         * XXX TODO FIXME
-         * This method may not be viable long-term
-         *
-         * Only Firefox provides 'getBrowserInfo()' method
-         * If we have it, we're then using FF, which provides promises instead
-         * of requiring callbacks for async calls.
-         */
-        if (browser.runtime.getBrowserInfo !== undefined) {
-            this._mode = this.MODE_PROMISE;
-        }
+    /**
+     * XXX TODO FIXME
+     * This method may not be viable long-term
+     *
+     * Only Firefox provides 'getBrowserInfo()' method
+     * If we have it, we're then using FF, which provides promises instead
+     * of requiring callbacks for async calls.
+     */
+    if (bro.runtime.getBrowserInfo !== undefined) {
+        this._mode = this.MODE_PROMISE;
+    }
     console.log(`[Wrapper] Selected mode: ${this._mode}`);
 }
 

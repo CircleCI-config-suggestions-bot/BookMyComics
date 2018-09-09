@@ -48,7 +48,8 @@ BmcUI.prototype.makeInfobar = function(resourcePath) {
 };
 
 BmcUI.prototype.makeRegisterDialog = function(comicName, chapter, page) {
-    this.makeInfobar(browser.runtime.getURL('register-diag.html')
+    var bro = getBrowser();
+    this.makeInfobar(bro.runtime.getURL('register-diag.html')
         + `?comicName=${encodeURIComponent(comicName)}&chapter=${chapter}&page=${page}`);
 };
 
