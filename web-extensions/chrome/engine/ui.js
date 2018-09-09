@@ -4,21 +4,24 @@
 function BmcUI() {
 }
 
+function isChrome() {
+    return window.chrome !== undefined;
+}
+
 BmcUI.prototype.INFOBAR_ID = 'BmcInfoBar'
 
 BmcUI.prototype.makeInfobar = function(resourcePath) {
     var height = '40px';
     var iframe = document.createElement('iframe');
     iframe.id = this.INFOBAR_ID;
-    iframe.src = chrome.extension.getURL(resourcePath);
+    iframe.src = resourcePath;
     console.log(`Inserting iframe src=${iframe.src}`);
+    iframe.style.width = '100vw';
     iframe.style.height = height;
-    iframe.style['background-color'] = '#a4a4a4';
-    iframe.style.width = '100%';
     iframe.style.position = 'fixed';
     iframe.style.top = '0';
     iframe.style.left = '0';
-    iframe.style.zIndex = '938089'; // Some high value
+    iframe.style.zIndex = '1000000'; // Some high value
     // Etc. Add your own styles if you want to
     document.documentElement.appendChild(iframe);
 
