@@ -5,6 +5,10 @@ function getBrowser() {
     return browser;
 }
 
+function checkErr(err) {
+    return err && (typeof err !== "object" || Object.keys(err).length > 0);
+}
+
 /**
  * This class is a very simple wrapper on top of the various browser's APIs for
  * storage, made to unify them into a simpler-to-user API.
@@ -71,7 +75,7 @@ Storage.prototype._cbify = function(funcObj, args, onSuccess, onError) {
         case this.MODE_CALLBACK:
         default:
             function resolveCb(err, data) {
-                if (err) {
+                if (checkErr(err)) {
                     return onError(err);
                 }
                 return onSuccess(data);
@@ -108,7 +112,7 @@ Storage.prototype.get = function(keys, cb) {
         console.log(`Get Success: ${JSON.stringify(data)}`);
         return cb(null, data);
     }
-    return this._cbify(this._area.get, keys, onSuccess, onError); 
+    return this._cbify(this._area.get, keys, onSuccess, onError);
 }
 
 /**
@@ -225,7 +229,7 @@ KeyScheme.prototype.BMC_KEY_PREFIX = 'BookMyComics.comics';
  */
 KeyScheme.prototype.getMap = function(cb) {
     return this._storage.get(this.BMC_MAP_KEY, (err, data) => {
-        if (err) {
+        if (checkErr(err)) {
             console.log('Scheme could not retrieve Comic map');
             return cb(err, null);
         }
@@ -254,13 +258,13 @@ KeyScheme.prototype.getMap = function(cb) {
  */
 KeyScheme.prototype.nextId = function(cb) {
     return this._storage.get(this.BMC_STATE_KEY, (err, state) => {
-        if (err) {
+        if (checkErr(err)) {
             return cb(err, null);
         }
         const nextId = state.lastId + 1;
         state.lastId += 1;
         this._storage.set(this.BMC_STATE_KEY, state, err => {
-            if (err) {
+            if (checkErr(err)) {
                 return cb(err, null);
             }
             return cb(null, nextId);
@@ -299,7 +303,7 @@ KeyScheme.prototype.keyFromId = function(comicId) {
  */
 KeyScheme.prototype.idFromName = function(name, cb) {
     this._storage.get(this.BMC_MAP_KEY, (err, mapping) => {
-        if (err) {
+        if (checkErr(err)) {
             return cb(err, null);
         }
         let id = null;
@@ -348,7 +352,7 @@ function BmcDataAPI() {
  */
 BmcDataAPI.prototype.findComic = function(name, cb) {
     return this._scheme.idFromName(name, (err, id) => {
-        if (err) {
+        if (checkErr(err)) {
             console.log(`Got FIND error: ${JSON.stringify(err)}`);
             return cb(err, null);
         }
@@ -378,7 +382,7 @@ BmcDataAPI.prototype.findComic = function(name, cb) {
 BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
     const comicKey = this._scheme.keyFromId(comicId);
     return this._data.get(comicKey, (err, data) => {
-        if (err) {
+        if (checkErr(err)) {
             console.log(`Could not find comicId: ${JSON.stringify(err)}`);
             return cb(err);
         }
@@ -399,7 +403,7 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
         payload.chapter = chapter;
         payload.page = page;
         return this._data.set({comicKey: payload}, err => {
-            if (err) {
+            if (checkErr(err)) {
                 console.log(`Got Update error: ${JSON.stringify(err)}`);
                 return cb(err);
             }
@@ -433,7 +437,7 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
  */
 BmcDataAPI.prototype.registerComic = function(name, chapter, page, cb) {
     return this._scheme.nextId((err, id) => {
-        if (err) {
+        if (checkErr(err)) {
             console.log(`Got error from scheme.nextId(): ${JSON.stringify(err)}`);
             return cb(err);
         }
@@ -510,7 +514,7 @@ BmcDataAPI.prototype.unregisterComic = function(comicId, cb) {
         const dataset = {};
         dataset[this._scheme.BMC_MAP_KEY] = map;
         return this._data.set(dataset, err => {
-            if (err) {
+            if (checkErr(err)) {
                 return cb(err);
             }
             // All links are now cleaned-up, we can remove the comic's
