@@ -18,12 +18,22 @@ BmcUI.prototype.setupMessages = function(func) {
         if (event.type === 'message') {
             if (typeof(event) === 'Error') {
                 console.log(`Got message error: ${JSON.stringify(err, ["message", "arguments", "type", "name"])}`);
-            } else {
-                console.log(`Got Message: ${JSON.stringify(event)}`)
+                return ;
             }
-        }
-        if (event.type === 'message' && event.origin === '*') {
-            func(event);
+	    /*
+	     * NOTE
+	     * Origin is actually shown as the extension's internal URL, so
+             * let's retrieve it using runtime.getURL(''); and compare the
+	     * origin against it.
+	     * Note that the origin does not include an ending '/' while the
+	     * URL of the extension does, hence the 'indexOf' method rather
+	     * than a simple '===' comparison.
+	     */
+            var bro = getBrowser();
+            var bmcOrigin = bro.runtime.getURL('');
+            if (bmcOrigin.indexOf(event.origin) !== -1) {
+                func(event);
+            }
         }
     });
 }
@@ -50,7 +60,13 @@ BmcUI.prototype.makeInfobar = function(resourcePath) {
     var cssTransform = 'transform' in bodyStyle ? 'transform' : 'webkitTransform';
     bodyStyle[cssTransform] = 'translateY(' + height + ')';
     this.setupMessages(function(event) {
-        if (event.data === 'RemoveInfoBar') {
+        try {
+            var data = JSON.parse(event.data);
+        } catch(e) {
+            console.log(e);
+            return;
+        }
+        if (data.type === 'action' && data.action === 'RemoveInfoBar') {
             iframe.parentNode.removeChild(iframe);
         }
     });

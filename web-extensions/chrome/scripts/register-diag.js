@@ -13,9 +13,13 @@ document.getElementById('registerComic').addEventListener('click', () => {
     });
     engine.addEventListener(engine.events.register.complete, () => {
         console.log('Messaging main window for InfoBar removal');
-        window.top.postMessage('RemoveInfoBar', '*');
+        const dataObj = {
+            type: 'action',
+            action: 'RemoveInfoBar',
+        };
+        return window.parent.postMessage(JSON.stringify(dataObj), '*');
     });
-    engine.register(comicName, chapter, page);
+    return engine.register(comicName, chapter, page);
 });
 
 document.getElementById('aliasComic').addEventListener('click', () => {
@@ -30,7 +34,11 @@ document.getElementById('aliasComic').addEventListener('click', () => {
     });
     engine.addEventListener(engine.events.alias.complete, () => {
         console.log('Messaging main window for InfoBar removal');
-        window.parent.postMessage('RemoveInfoBar', '*');
+        const dataObj = {
+            type: 'action',
+            action: 'RemoveInfoBar',
+        };
+        return window.parent.postMessage(JSON.stringify(dataObj), '*');
     });
     engine.alias(comicName, chapter, page);
 });
@@ -42,7 +50,11 @@ document.getElementById('ignoreComic').addEventListener('click', () => {
     });
     engine.addEventListener(engine.events.ignore.complete, () => {
         console.log('Messaging main window for InfoBar removal');
-        window.parent.postMessage('RemoveInfoBar', '*');
+        const dataObj = {
+            type: 'action',
+            action: 'RemoveInfoBar',
+        };
+        return window.parent.postMessage(JSON.stringify(dataObj), '*');
     });
     engine.ignore(comicName, chapter, page);
 });
