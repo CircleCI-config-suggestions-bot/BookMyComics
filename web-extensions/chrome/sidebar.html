@@ -26,15 +26,6 @@
         background-color: #fcfcfc;
         left: 0;
       }
-      #manga-list > div {
-        font-size: 14px;
-        padding: 5px;
-        border-bottom: 1px solid #ccc;
-        cursor: pointer;
-      }
-      #manga-list > div:hover {
-        background-color: #ccf;
-      }
       #hide-but {
         position: absolute;
         top: 100px;
@@ -49,6 +40,41 @@
       }
       #hide-but:hover {
         background-color: #ebebeb;
+      }
+      #manga-list > ul, #manga-list > ul > div {
+        padding: 0;
+        margin: 0;
+      }
+      #manga-list div {
+        font-size: 14px;
+        padding: 5px;
+        border-bottom: 1px solid #ccc;
+        cursor: pointer;
+      }
+      #manga-list div:hover {
+        background-color: #ccf;
+      }
+      ul, .mangaListItem {
+        list-style-type: none;
+      }
+      .rollingArrow {
+        cursor: pointer;
+        user-select: none;
+      }
+      .rollingArrow::before {
+        content: "\25B6";
+        color: black;
+        display: inline-block;
+        margin-right: 6px;
+      }
+      .rollingArrow-down::before {
+        transform: rotate(90deg);
+      }
+      .nested {
+        display: none;
+      }
+      .active {
+        display: block;
       }
     </style>
     <script src="engine/storage.js"></script>
