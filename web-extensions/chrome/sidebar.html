@@ -3,19 +3,6 @@
   <head>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' filesystem: ; object-src 'self'; ">
     <style>
-      #searchbox {
-        width: calc(100vw - 10px);
-        border-right: 1px solid #ccc;
-        top: 0;
-        background-color: #fdfdfd;
-        left: 0;
-      }
-      #searchbox > div {
-        font-size: 14px;
-        padding: 5px;
-        border-bottom: 1px solid #ccc;
-        cursor: text;
-      }
       #side-panel {
         width: calc(100vw - 16px);
         border-right: 1px solid #ccc;
@@ -25,15 +12,6 @@
         overflow-y: auto;
         background-color: #fcfcfc;
         left: 0;
-      }
-      #manga-list > div {
-        font-size: 14px;
-        padding: 5px;
-        border-bottom: 1px solid #ccc;
-        cursor: pointer;
-      }
-      #manga-list > div:hover {
-        background-color: #ccf;
       }
       #hide-but {
         position: absolute;
@@ -50,8 +28,57 @@
       #hide-but:hover {
         background-color: #ebebeb;
       }
+      #searchbox {
+        width: calc(100vw - 22px);
+        border-right: 1px solid #ccc;
+        top: 0;
+        background-color: #fdfdfd;
+        left: 0;
+      }
+      #searchbox > div {
+        font-size: 14px;
+        padding: 5px;
+        border-bottom: 1px solid #ccc;
+        cursor: text;
+      }
+      #manga-list > ul, #manga-list > ul > div {
+        padding: 0;
+        margin: 0;
+      }
+      #manga-list div {
+        font-size: 14px;
+        padding: 5px;
+        border-bottom: 1px solid #ccc;
+        cursor: pointer;
+      }
+      #manga-list div:hover {
+        background-color: #ccf;
+      }
+      ul, .mangaListItem {
+        list-style-type: none;
+      }
+      .rollingArrow {
+        cursor: pointer;
+        user-select: none;
+      }
+      .rollingArrow::before {
+        content: "\25B6";
+        color: black;
+        display: inline-block;
+        margin-right: 6px;
+      }
+      .rollingArrow-down::before {
+        transform: rotate(90deg);
+      }
+      .nested {
+        display: none;
+      }
+      .active {
+        display: block;
+      }
     </style>
     <script src="engine/storage.js"></script>
+    <script src="engine/datamodel.js"></script>
     <script src="engine/messaging.js"></script>
     <script src="engine/ui.js"></script>
     <script src="engine/bookmycomics.js"></script>

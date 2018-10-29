@@ -13,6 +13,38 @@ BmcMangaList.prototype.onEntryClick = function(comicId) {
     window.top.postMessage({comicId}, '*');
 }
 
+BmcMangaList.prototype.generateComic = function(comic) {
+    const elm = document.createElement('ul');
+    elm.classList.toggle('mangaListItem');
+
+    const comicElem = document.createElement('li');
+    elm.appendChild(comicElem);
+
+    const comicDiv = document.createElement('div');
+    comicElem.appendChild(comicDiv);
+
+    const comicLabel = document.createElement('span');
+    comicLabel.classList.toggle('rollingArrow');
+    comicLabel.innerText = comic.label;
+    comicLabel.onclick = () => {
+        comicDiv.parentElement.querySelector('.nested').classList.toggle('active');
+        comicLabel.classList.toggle('rollingArrow-down');
+    }
+    comicDiv.appendChild(comicLabel);
+
+    const comicSrcList = document.createElement('ul');
+    comicSrcList.classList.toggle('nested');
+    comicElem.appendChild(comicSrcList);
+
+    comic.iterSources(source => {
+        const srcElem = document.createElement('div');
+        srcElem.innerText = source.reader;
+        comicSrcList.appendChild(srcElem);
+    });
+
+    return elm;
+}
+
 BmcMangaList.prototype.generate = function() {
     var bookmarks = [
         {label: "naruto",           id: 0},
@@ -24,12 +56,16 @@ BmcMangaList.prototype.generate = function() {
 
     console.log("generating bookmark list");
     var mangaList = document.getElementById("manga-list");
-    for (var i = 0; i < bookmarks.length; ++i) {
-        var manga = document.createElement('div');
-        manga.innerText = bookmarks[i].label;
-        manga.onclick = () => this.onEntryClick(bookmarks[i].id);
-        mangaList.appendChild(manga);
-    }
+    bookmarks.forEach(bkmk => {
+        comic = new BmcComic(bkmk.label, bkmk.id, 3, 21);
+        comic.addSource(new BmcComicSource(bkmk.label, 'mangaeden'));
+        comic.addSource(new BmcComicSource(bkmk.label, 'mangafox'));
+        comic.addSource(new BmcComicSource(bkmk.label, 'mangahere'));
+        comic.addSource(new BmcComicSource(bkmk.label, 'mangareader'));
+        console.warn('fake comic generated for', bkmk.label);
+        mangaList.appendChild(this.generateComic(comic))
+        console.warn('fake comic added for', bkmk.label);
+    });
 }
 
 BmcMangaList.prototype.hideEntry = function(entry) {
