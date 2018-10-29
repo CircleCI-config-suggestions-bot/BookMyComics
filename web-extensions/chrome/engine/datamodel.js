@@ -152,8 +152,8 @@ KeyScheme.prototype.computeSourceKey = function(source) {
  * @param {string} reader - name of the source reader
  */
 function BmcComicSource(name, reader) {
-    this._name = name;
-    this._reader = reader;
+    this.name = name;
+    this.reader = reader;
 }
 
 /**
@@ -166,8 +166,8 @@ function BmcComicSource(name, reader) {
  */
 BmcComicSource.prototype.serialize = function() {
     return JSON.stringify({
-        name: this._name,
-        reader: this._reader,
+        name: this.name,
+        reader: this.reader,
     });
 }
 
@@ -197,7 +197,7 @@ BmcComicSource.deserialize = function(str) {
  * @returns {boolean} whether the two sources match
  */
 BmcComicSource.prototype.is = function(source) {
-    return this._name == source._name && this._reader == source._reader;
+    return this.name == source.name && this.reader == source.reader;
 }
 
 
@@ -217,10 +217,10 @@ BmcComicSource.prototype.is = function(source) {
  *                                     this comic
  */
 function BmcComic(label, id, chapter, page, sources) {
-    this._label = label;
-    this._id = id;
-    this._chapter = chapter;
-    this._page = page;
+    this.label = label;
+    this.id = id;
+    this.chapter = chapter;
+    this.page = page;
     this._sources = [];
     if (sources) {
         this._sources = source.splice(0);
@@ -237,11 +237,11 @@ function BmcComic(label, id, chapter, page, sources) {
  */
 BmcComic.prototype.serialize = function() {
     return {
-        label: this._label,
-        id: this._id,
+        label: this.label,
+        id: this.id,
         tracking: {
-            chapter: this._chapter,
-            page: this_page,
+            chapter: this.chapter,
+            page: this.page,
         },
     };
 }
@@ -273,7 +273,7 @@ BmcComic.deserialize = function(obj) {
  * @param {string} label - the new label for the comic entry
  */
 BmcComic.prototype.setLabel = function(label) {
-    this._label = label;
+    this.label = label;
 }
 
 /**
@@ -286,8 +286,8 @@ BmcComic.prototype.setLabel = function(label) {
  * @param {number|undefined} page - the last page read
  */
 BmcComic.prototype.setProgress = function(chapter, page) {
-    this._chapter = chapter;
-    this._page = page;
+    this.chapter = chapter;
+    this.page = page;
 }
 
 /**
@@ -568,7 +568,7 @@ BmcDataAPI.prototype.list = function(cb) {
         // the BmcComic objects.
         const results = keys.map(key => {
             const comic = BmcComic.deserialize(data[key]);
-            inverseMap[comic._id].forEach(source => comic.addSource(source));
+            inverseMap[comic.id].forEach(source => comic.addSource(source));
             return comic;
         });
         return cb(null, results);
