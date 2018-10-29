@@ -1,7 +1,9 @@
 /**
  *
  */
-function BmcUI() {
+
+function BmcUI(messagingHandler) {
+    this._messaging = messagingHandler;
 }
 
 function isChrome() {
@@ -10,33 +12,6 @@ function isChrome() {
 
 BmcUI.prototype.INFOBAR_ID = 'BmcInfoBar';
 BmcUI.prototype.SIDEPANEL_ID = 'BmcSidePanel';
-
-BmcUI.prototype.setupMessages = function(func) {
-    // Setup the cross-window (iframe actually) messaging to get notified when
-    // the iframe will have spent its usefulness.
-    window.addEventListener('message', event => {
-        if (event.type === 'message') {
-            if (typeof(event) === 'Error') {
-                console.log(`Got message error: ${JSON.stringify(err, ["message", "arguments", "type", "name"])}`);
-                return ;
-            }
-	    /*
-	     * NOTE
-	     * Origin is actually shown as the extension's internal URL, so
-             * let's retrieve it using runtime.getURL(''); and compare the
-	     * origin against it.
-	     * Note that the origin does not include an ending '/' while the
-	     * URL of the extension does, hence the 'indexOf' method rather
-	     * than a simple '===' comparison.
-	     */
-            var bro = getBrowser();
-            var bmcOrigin = bro.runtime.getURL('');
-            if (bmcOrigin.indexOf(event.origin) !== -1) {
-                func(event);
-            }
-        }
-    });
-}
 
 BmcUI.prototype.makeInfobar = function(resourcePath) {
     var height = '40px';
@@ -49,7 +24,7 @@ BmcUI.prototype.makeInfobar = function(resourcePath) {
     iframe.style.position = 'fixed';
     iframe.style.top = '0';
     iframe.style.left = '0';
-    iframe.style.zIndex = '1000000'; // Some high value
+    iframe.style.zIndex = '1000001'; // Some high value
     iframe.style.border = 'none';
     // Etc. Add your own styles if you want to
     document.documentElement.appendChild(iframe);
@@ -59,20 +34,18 @@ BmcUI.prototype.makeInfobar = function(resourcePath) {
     var bodyStyle = document.body.style;
     var cssTransform = 'transform' in bodyStyle ? 'transform' : 'webkitTransform';
     bodyStyle[cssTransform] = 'translateY(' + height + ')';
-    this.setupMessages(function(event) {
-        try {
-            var data = JSON.parse(event.data);
-        } catch(e) {
-            console.log(e);
-            return;
-        }
-        if (data.type === 'action' && data.action === 'RemoveInfoBar') {
-            iframe.parentNode.removeChild(iframe);
-        }
-    });
+    //
+    // Message sending is useless to handle for the Infobar,
+    // since the infobar communicates directly to the sidebar (same-domain
+    // cross-iframe javascript control); and the sidebar is the one controlling
+    // the actual logic of the addon.
+    //
+    // Thus, the side-bar showing controlled by the infobar will automatically
+    // hide the infobar when necessary, through sidebar <-> Host-window
+    // messaging.
 };
 
-BmcUI.prototype.buildSidePanel = function(resourcePath) {
+BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     var height = '100vh';
     var iframe = document.createElement('iframe');
     iframe.id = this.SIDEPANEL_ID;
@@ -83,40 +56,52 @@ BmcUI.prototype.buildSidePanel = function(resourcePath) {
     iframe.style.position = 'fixed';
     iframe.style.top = '0';
     iframe.style.left = '0';
-    iframe.style.zIndex = '1000001'; // Some high value
+    iframe.style.zIndex = '1000000'; // Some high value
     iframe.style.border = 'none';
     // Etc. Add your own styles if you want to
     document.documentElement.appendChild(iframe);
-    this.setupMessages(function(event) {
-        try {
-            var data = JSON.parse(event.data);
-        } catch(e) {
-            console.log(e);
-            return;
-        }
-        console.log('message received: ' + data['comicName']);
-    });
+    this._messaging.addWindowHandler(
+        this.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'HideSidePanel',
+        evData => {
+            console.log('Hiding Side-Panel: Re-setting up tracker');
+            // Do not check if infobar is still around.
+            // -> It's NOT supposed to be.
+            setupTracker();
+        });
+    this._messaging.addWindowHandler(
+        this.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'ShowSidePanel',
+        evData => {
+            console.log('Showing Side-Panel: Hiding tracker');
+            this.removeRegisterDialog();
+        });
 };
 
 BmcUI.prototype.makeRegisterDialog = function(comicName, chapter, page) {
     var bro = getBrowser();
-    this.makeInfobar(bro.runtime.getURL('register-diag.html')
-        + `?comicName=${encodeURIComponent(comicName)}&chapter=${chapter}&page=${page}`);
+    this.makeInfobar(bro.runtime.getURL('register-diag.html'));
 };
 
 BmcUI.prototype.removeRegisterDialog = function() {
     const infobar = document.getElementById(this.INFOBAR_ID);
-    infobar.parentNode.removeChild(infobar);
+    if (infobar) {
+        infobar.parentNode.removeChild(infobar);
+    }
+    this._messaging.removeWindowHandlers(this.INFOBAR_ID);
 };
 
-BmcUI.prototype.makeSidePanel = function() {
+BmcUI.prototype.makeSidePanel = function(setupTracker, comicName, chapter, page) {
     var bro = getBrowser();
-    this.buildSidePanel(bro.runtime.getURL('sidebar.html'));
+    const reader = window.location.hostname;
+    this.buildSidePanel(setupTracker, bro.runtime.getURL('sidebar.html')
+        + `?reader=${reader}&comicName=${encodeURIComponent(comicName)}&chapter=${chapter}&page=${page}`);
 };
 
 BmcUI.prototype.removeSidePanel = function() {
     const sidepanel = document.getElementById(this.SIDEPANEL_ID);
     sidepanel.parentNode.removeChild(sidepanel);
+    this._messaging.removeWindowHandlers(this.SIDEPANEL_ID);
 };
 
 BmcUI.prototype.makeTrackingNotification = function(err) {
