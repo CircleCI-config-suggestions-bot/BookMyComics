@@ -130,12 +130,18 @@ Storage.prototype.get = function(keys, cb) {
  *
  */
 Storage.prototype.set = function(dataset, cb) {
-    console.log('Wrapper.set');
+    console.log(`Wrapper.set "${JSON.stringify(dataset)}"`);
     function onError(err) {
-        return cb(err);
+        console.log("Wrapper.set failed");
+        if (cb) {
+            return cb(err);
+        }
     }
     function onSuccess() {
-        return cb(null);
+        console.log("Wrapper.set success");
+        if (cb) {
+            return cb(null);
+        }
     }
     return this._cbify(this._area.set, dataset, onSuccess, onError); 
 }
