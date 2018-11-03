@@ -2,8 +2,9 @@
  *
  */
 
-function BmcUI(messagingHandler) {
+function BmcUI(messagingHandler, db) {
     this._messaging = messagingHandler;
+    this._db = db;
 }
 
 function isChrome() {
@@ -65,6 +66,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         evData => evData.type === 'action' && evData.action === 'HideSidePanel',
         evData => {
             console.log('Hiding Side-Panel: Re-setting up tracker');
+            this._db._data.set({'sidebar-displayed': 'false'});
             // Do not check if infobar is still around.
             // -> It's NOT supposed to be.
             setupTracker();
@@ -74,8 +76,14 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         evData => evData.type === 'action' && evData.action === 'ShowSidePanel',
         evData => {
             console.log('Showing Side-Panel: Hiding tracker');
+            this._db._data.set({'sidebar-displayed': 'true'});
             this.removeRegisterDialog();
         });
+    this._db._data.get('sidebar-displayed', (err, value) => {
+        if (value === 'true') {
+            showHideSidePanel()
+        }
+    });
 };
 
 BmcUI.prototype.makeRegisterDialog = function(comicName, chapter, page) {

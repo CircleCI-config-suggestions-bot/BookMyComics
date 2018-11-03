@@ -32,7 +32,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
     }
     comicDiv.appendChild(comicLabel);
 
-    const comicSrcList = document.createElement('ul');
+    const comicSrcList = document.createElement('div');
     comicSrcList.classList.toggle('nested');
     comicElem.appendChild(comicSrcList);
 

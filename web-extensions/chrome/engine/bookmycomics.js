@@ -10,7 +10,7 @@ function BmcEngine(readerName, comicName, chapter, page) {
     console.log('Instanciated BmcDataAPI');
     this._messaging = new BmcMessagingHandler();
     console.log('Instanciated BmcMEssagingHandler');
-    this._ui = new BmcUI(this._messaging);
+    this._ui = new BmcUI(this._messaging, this._db);
     console.log('Instanciated BmcUI');
 
     // Re-use DOM-style events by using a null-text node underneath

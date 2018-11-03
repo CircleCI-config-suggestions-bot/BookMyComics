@@ -247,6 +247,21 @@ BmcComic.prototype.serialize = function() {
 }
 
 /**
+ * This method loops over sources.
+ *
+ * @param {object} callback - The callback to be called on each source.
+ *
+ */
+BmcComic.prototype.iterSources = function(callback) {
+    if (!callback) {
+        return;
+    }
+    for (var i = 0; i < this._sources.length; ++i) {
+        callback(this._sources[i]);
+    }
+}
+
+/**
  * This method deserializes an object from the data storage into acomplete,
  * usable JS object with utility methods.
  *
