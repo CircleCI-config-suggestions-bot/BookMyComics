@@ -13,9 +13,14 @@ document.getElementById('register').addEventListener('click', () => {
     let sideFrame = null;
     for (var i = 0; i < window.parent.length; ++i) {
         var frame = window.parent.frames[i];
-        if (frame.showHideSidePanel) {
-            sideFrame = frame;
-            break ;
+        try {
+            if (frame.showHideSidePanel) {
+                console.warn(`Frame i=${i} has showHideSidePanel function`);
+                sideFrame = frame;
+                break ;
+            }
+        } catch(e) {
+            continue ;
         }
     }
     // Change the SidePanel mode to "register" then display it
