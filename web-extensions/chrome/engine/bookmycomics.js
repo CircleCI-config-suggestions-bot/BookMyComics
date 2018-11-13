@@ -150,19 +150,38 @@ BmcEngine.prototype.track = function() {
 /*
  * This function registers a comic into the saved data. It shall be used by the
  * user-interacting UI spawned on an online reader's page.
+ *
+ * @param {String} label - the Comic's user-defined label
+ *
+ * @return {undefined}
  */
-BmcEngine.prototype.register = function() {
-    console.log(`BookMyComic: bmcEngine.register: manga=${this._comic.name} chapter=${this._comic.chapter} page=${this._comic.page}`);
-    this.dispatchEvent(new CustomEvent(this.events.register.complete));
+BmcEngine.prototype.register = function(label) {
+    console.log(`BookMyComic: bmcEngine.register: label=${label} reader=${this._comic.reader} manga=${this._comic.name} chapter=${this._comic.chapter} page=${this._comic.page}`);
+    return this._db.registerComic(label, this._comic.reader, this._comic.name, this._comic.chapter, this._comic.page, err => {
+        console.warn(`Register completed with ERR=${err}`);
+        if (err) {
+            return this.dispatchEvent(new CustomEvent(this.events.register.error, {detail: err}));
+        }
+        return this.dispatchEvent(new CustomEvent(this.events.register.complete));
+    });
 };
 
 /*
  * This function registers a new name for an existing comic into the saved data.
  * Then, it also updates the progress of reading for this comic.
+ *
+ * @param {Number} comicId - Unique comic ID
+ *
+ * @return {undefined}
  */
-BmcEngine.prototype.alias = function() {
-    console.log(`BookMyComic: bmcEngine.alias: manga=${this._comic.name} chapter=${this._comic.chapter} page=${this._comic.page}`);
-    this.dispatchEvent(new CustomEvent(this.events.alias.complete));
+BmcEngine.prototype.alias = function(comicId) {
+    console.log(`BookMyComic: bmcEngine.alias: id=${comicId} reader=${this._comic.reader} manga=${this._comic.name}`);
+    return this._db.aliasComic(comicId, this._comic.reader, this._comic.name, err => {
+        if (err) {
+            return this.dispatchEvent(new CustomEvent(this.events.alias.error, {detail: err}));
+        }
+        return this.dispatchEvent(new CustomEvent(this.events.alias.complete));
+    });
 };
 
 /*
