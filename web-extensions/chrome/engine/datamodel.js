@@ -472,7 +472,7 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicName,
 
             const comicKey = this._scheme.keyFromId(id);
             const dataset = {};
-            dataset[comicKey] = BmcComic.serialize();
+            dataset[comicKey] = comic.serialize();
 
             const source = new BmcComicSource(comicName, readerName);
             const sourceKey = this._scheme.computeSourceKey(source);
