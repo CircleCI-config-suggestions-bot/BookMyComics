@@ -41,6 +41,21 @@
         border-bottom: 1px solid #ccc;
         cursor: text;
       }
+      #register-but {
+        position: absolute;
+        top: 0;
+        padding: 1px;
+        background-color: #00aa00;
+        font-size: 16px;
+        right: 0;
+        border: 1px solid #ccc;
+        border-left: none;
+        border-radius: 0 3px 3px 0;
+        cursor: pointer;
+      }
+      #register-but:hover {
+        background-color: #00ff00;
+      }
       #manga-list > ul, #manga-list > ul > div {
         padding: 0;
         margin: 0;
@@ -100,7 +115,8 @@
       <input type="text" placeholder="Search..." id="searchbox"></input>
       <div id="manga-list"></div>
     </div>
-    <div id="hide-but">&lt;</div>
+    <div id="register-but">+</div>
+    <div id="hide-but" class="notif-transform" >&lt;</div>
   </body>
   <script src="scripts/load-bookmarks.js" crossorigin="anonymous"></script>
 </html>

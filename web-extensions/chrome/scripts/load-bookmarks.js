@@ -141,6 +141,21 @@ function addEvents(mangaList) {
         var str = sbox.value;
         mangaList.filter(str);
     };
+
+    // On Register-but click, Trigger a new comic registration
+    var but = document.getElementById('register-but');
+    but.onclick = function() {
+        const label = sbox.value;
+        // Sanitize the data first
+        if (sbox.value.length <= 0) {
+            alert("BookMyComics does not support empty labels to identify a comic.<br>"
+                  + "Please define a label in the Side Panel's text area first.");
+        }
+
+        // Now do the actual registration
+        // FIXME TODO FIXME
+    };
+
 }
 
 var mangaList = new BmcMangaList();
@@ -148,28 +163,33 @@ mangaList.generate();
 addEvents(mangaList);
 
 
-function showHideSidePanel() {
+function showHideSidePanel(mode) {
     var evData = {
         type: "action",
         action: null,
     };
-    var btn = document.getElementById('hide-but');
+    var togBtn = document.getElementById('hide-but');
+    var regBtn = document.getElementById('register-but');
     var panel = document.getElementById("side-panel");
     if (panel.style.display === "none") {
+        mangaList.setMode(mode || mangaList.MODE_BROWSE);
         evData.action = "ShowSidePanel",
         panel.style.display = '';
         panel.style.width = 'calc(100vw - 16px)';
-        btn.innerText = '<';
-        btn.style.left = '';
-        btn.style.right = '0';
+        if (mode === mangaList.MODE_REGISTER) {
+            regBtn.style.display = '';
+        }
+        togBtn.innerText = '<';
+        togBtn.style.left = '';
+        togBtn.style.right = '0';
     } else {
-        mangaList.setMode(mangaList.MODE_BROWSE);
         evData.action = "HideSidePanel",
         panel.style.display = 'none';
         panel.style.width = '0';
-        btn.innerText = '>';
-        btn.style.left = '0';
-        btn.style.right = 'initial';
+        regBtn.style.display = 'none';
+        togBtn.innerText = '>';
+        togBtn.style.left = '0';
+        togBtn.style.right = 'initial';
     }
     // Notify top window of the SidePanel action
     window.top.postMessage(evData, '*');
