@@ -373,7 +373,7 @@ function BmcDataAPI() {
  *
  */
 BmcDataAPI.prototype.findComic = function(readerName, comicName, cb) {
-    let source = new BmcComicSource(readerName, comicName);
+    let source = new BmcComicSource(comicName, readerName);
     return this._scheme.idFromSource(source, (err, id) => {
         if (err) {
             console.log(`Got FIND error: ${JSON.stringify(err)}`);
@@ -474,7 +474,7 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicName,
             const dataset = {};
             dataset[comicKey] = BmcComic.serialize();
 
-            const source = new BmcComicSource(readerName, comicName);
+            const source = new BmcComicSource(comicName, readerName);
             const sourceKey = this._scheme.computeSourceKey(source);
             map[sourceKey] = id;
             dataset[this._scheme.BMC_MAP_KEY] = map;
@@ -504,7 +504,7 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicName,
  */
 BmcDataAPI.prototype.aliasComic = function(comicId, readerName, comicName, cb) {
     return this._scheme.getMap((err, map) => {
-        const source = new BmcComicSource(readerName, comicName);
+        const source = new BmcComicSource(comicName, readerName);
         const sourceKey = this._scheme.computeSourceKey(source);
         map[sourceKey] = comicId;
         const dataset = {};
