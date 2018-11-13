@@ -73,9 +73,13 @@ KeyScheme.prototype.nextId = function(cb) {
         if (err) {
             return cb(err, null);
         }
+        // Default value since the first time it'll be `undefined`
+        state = state || { lastId: -1 };
         const nextId = state.lastId + 1;
         state.lastId += 1;
-        this._storage.set(this.BMC_STATE_KEY, state, err => {
+        const dataset = {};
+        dataset[this.BMC_STATE_KEY] = state;
+        this._storage.set(dataset, err => {
             if (err) {
                 return cb(err, null);
             }
@@ -94,7 +98,7 @@ KeyScheme.prototype.nextId = function(cb) {
  *
  */
 KeyScheme.prototype.keyFromId = function(comicId) {
-    return `${BMC_KEY_PREFIX}.${comicId}`;
+    return `${this.BMC_KEY_PREFIX}.${comicId}`;
 };
 
 /**
