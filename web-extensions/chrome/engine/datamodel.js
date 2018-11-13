@@ -249,17 +249,24 @@ BmcComic.prototype.serialize = function() {
 }
 
 /**
+ * @callback BmcComic~iterCb
+ *
+ * @param {BmcComicSource}
+ *
+ * @return {undefined}
+ */
+/**
  * This method loops over sources.
  *
- * @param {object} callback - The callback to be called on each source.
+ * @param {BmcComic~iterCb} iterFunc - The callback to be called on each source.
  *
  */
-BmcComic.prototype.iterSources = function(callback) {
-    if (!callback) {
+BmcComic.prototype.iterSources = function(iterFunc) {
+    if (!iterFunc) {
         return;
     }
     for (var i = 0; i < this._sources.length; ++i) {
-        callback(this._sources[i]);
+        iterFunc(this._sources[i]);
     }
 }
 
