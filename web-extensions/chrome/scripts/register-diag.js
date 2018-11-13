@@ -24,6 +24,7 @@ document.getElementById('register').addEventListener('click', () => {
         }
     }
     // Change the SidePanel mode to "register" then display it
+    sideFrame.mangaList.setMode(sideFrame.mangaList.MODE_REGISTER);
     sideFrame.showHideSidePanel();
 });
 
