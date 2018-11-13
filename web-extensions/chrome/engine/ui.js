@@ -115,9 +115,13 @@ BmcUI.prototype.removeSidePanel = function() {
 };
 
 BmcUI.prototype.makeTrackingNotification = function(err) {
-    if (err) {
-        alert('BookMyComic: BmcUI.makeTrackingNotification: Could not save comic progress: ' + err.message);
-        return ;
-    }
-    alert('BookMyComic: BmcUI.makeTrackingNotification: progress saved');
+    var evData = {
+        type: "action",
+        action: "notification",
+        operation: "track",
+        error: err,
+    };
+    const sidepanel = document.getElementById(this.SIDEPANEL_ID);
+    console.log(`BmcUi: Sending message to SidePanel for notification display`);
+    sidepanel.contentWindow.postMessage(evData, '*');
 };

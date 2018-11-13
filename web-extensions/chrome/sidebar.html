@@ -28,6 +28,11 @@
       #hide-but:hover {
         background-color: #ebebeb;
       }
+      .notif-transform {
+          transition-property: 'background-color';
+          transition-delay: 0s;
+          transition-duration: 2s;
+      }
       #searchbox {
         width: calc(100vw - 22px);
         border-right: 1px solid #ccc;
@@ -116,7 +121,7 @@
       <div id="manga-list"></div>
     </div>
     <div id="register-but">+</div>
-    <div id="hide-but" class="notif-transform" >&lt;</div>
+    <div id="hide-but">&lt;</div>
   </body>
   <script src="scripts/load-bookmarks.js" crossorigin="anonymous"></script>
 </html>

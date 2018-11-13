@@ -25,12 +25,14 @@ BmcMangaList.prototype.onAliasClick = function(ev) {
         bmcEngine.removeEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
         this.setMode(this.MODE_BROWSE);
         showHideSidePanel();
+        notifyResult('Alias Comic', new Error('Could not alias current page to comicId ' + comicId + ': ' + err.message));
     };
     const handleAliasSuccess = () => {
         bmcEngine.removeEventListener(bmcEngine.events.alias.error, handleAliasError);
         bmcEngine.removeEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
         this.setMode(this.MODE_BROWSE);
         showHideSidePanel();
+        notifyResult('Alias Comic', null);
     };
     bmcEngine.addEventListener(bmcEngine.events.alias.error, handleAliasError);
     bmcEngine.addEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
@@ -206,12 +208,14 @@ function addEvents(mangaList) {
             bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
             mangaList.setMode(mangaList.MODE_BROWSE);
             showHideSidePanel();
+            notifyResult('Register Comic', new Error('Could not alias current page to comicId ' + comicId));
         };
         const handleRegisterSuccess = () => {
             bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
             bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
             mangaList.setMode(mangaList.MODE_BROWSE);
             showHideSidePanel();
+            notifyResult('Register Comic');
         };
         bmcEngine.addEventListener(bmcEngine.events.register.error, handleRegisterError);
         bmcEngine.addEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
@@ -220,12 +224,74 @@ function addEvents(mangaList) {
         bmcEngine.register(label);
     };
 
+    bmcEngine._messaging.addWindowHandler(
+        bmcEngine.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'notification',
+        evData => {
+            console.log(`BmcSidePanel: received message to display status notification op=${evData.operation} err=${evData.error}`);
+            notifyResult(evData.operation, evData.error);
+        });
 }
 
 var mangaList = new BmcMangaList();
 mangaList.generate();
 addEvents(mangaList);
 
+
+/*
+ * This function ensures the transition CSS class is absent, changes the
+ * background color (static, instantaneous).
+ * Then, it applies the transform class, and finally changes the color back to
+ * the original color. This creates a smooth transform from the provided color
+ * parameter to the original color.
+ */
+function triggerTransition(elem, color) {
+    // Ensure we get the final computed one (from CSS sheet), as using `.style`
+    // only accesses inline values.
+    const origColor = getComputedStyle(elem).backgroundColor;
+
+    // -> Ensure it's not present when setting the color
+    elem.classList.remove('notif-transform');
+
+    // Now set the color to transition from
+    elem.style.backgroundColor = color;
+
+    /*
+     * /!\ NOTE IMPORTANT /!\
+     * Accessing a DOM property seems to force a redraw, preventing browser
+     * optimization on style settings (by batching updates) which might
+     * actually hide the transition.
+     * /!\ NOTE IMPORTANT /!\
+     */
+    void elem.offsetHeight;
+
+    // Add the transition effect _before_ changing the color
+    elem.classList.add('notif-transform');
+
+    // And finally set the color to get back to (original color)
+    // => This triggers the actual transition effect
+    elem.style.backgroundColor = origColor;
+
+    // Remove all mentions of transitions after 2 secs
+    setTimeout(() => {
+        removeTransitions();
+    }, 2000);
+}
+
+function removeTransitions() {
+    console.warn('Removing transition');
+    const togBtn = document.getElementById('hide-but');
+    togBtn.classList.remove('notif-transform');
+}
+
+function notifyResult(operation, error) {
+    let transitionColor = error ? '#ff0000' : '#00ff00';
+    const togBtn = document.getElementById('hide-but');
+    triggerTransition(togBtn, transitionColor);
+    if (error) {
+        console.error(`BmcSidePanel: ${operation} failed: ${error.message}`);
+    }
+}
 
 function showHideSidePanel(mode) {
     var evData = {
@@ -235,6 +301,11 @@ function showHideSidePanel(mode) {
     var togBtn = document.getElementById('hide-but');
     var regBtn = document.getElementById('register-but');
     var panel = document.getElementById("side-panel");
+
+    // Ensure no transition will be ongoing after the state change.
+    // removeTransitions();
+
+    // Now, do the actual toggling
     if (panel.style.display === "none") {
         mangaList.setMode(mode || mangaList.MODE_BROWSE);
         evData.action = "ShowSidePanel",
