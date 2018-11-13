@@ -3,7 +3,10 @@ const readerName = decodeURI(uriParams[0].split('=')[1]);
 const comicName = decodeURI(uriParams[1].split('=')[1]);
 const chapter = uriParams[2].split('=')[1];
 const page = uriParams[3].split('=')[1];
-console.log(`BmcSideBar: reader=${readerName}, comic=${comicName}, chapter=${chapter}, page=${page}`);
+console.log(`BmcSideBar: comic ${comicName}, chapter=${chapter}, page=${page}`);
+
+console.log('Loading Engine');
+const bmcEngine = new BmcEngine(readerName, comicName, chapter, page);
 
 function BmcMangaList() {
     this._node = document.getElementById('manga-list');
@@ -13,14 +16,44 @@ function BmcMangaList() {
 BmcMangaList.prototype.MODE_REGISTER = 'register';
 BmcMangaList.prototype.MODE_BROWSE = 'browse';
 
-BmcMangaList.prototype.onEntryClick = function(comicId) {
-    console.log('clickedOnManga!, mode=' + this._mode);
+BmcMangaList.prototype.onAliasClick = function(ev) {
+    const comicLabel = ev.target;
+    console.log(`BmcSideBar: BmcMangaList: onAlias: Label=${ev.target.innerText} id=${ev.target.id} reader=${readerName} name=${comicName}`);
+    const handleAliasError = err => {
+        bmcEngine.removeEventListener(bmcEngine.events.alias.error, handleAliasError);
+        bmcEngine.removeEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
+        this.setMode(this.MODE_BROWSE);
+        showHideSidePanel();
+    };
+    const handleAliasSuccess = () => {
+        bmcEngine.removeEventListener(bmcEngine.events.alias.error, handleAliasError);
+        bmcEngine.removeEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
+        this.setMode(this.MODE_BROWSE);
+        showHideSidePanel();
+    };
+    bmcEngine.addEventListener(bmcEngine.events.alias.error, handleAliasError);
+    bmcEngine.addEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
+    // Don't need to provide the reader/name/chapter/pages, as they're
+    // already set in the engine since the instanciation.
+    bmcEngine.alias(comicLabel.bmcData.id);
+}
+
+BmcMangaList.prototype.onBrowseClick = function(ev) {
+    const comicLabel = ev.target;
+    const comicDiv = comicLabel.parentElement;
+    const comicElem = comicDiv.parentElement;
+    comicElem.querySelector('.nested').classList.toggle('active');
+    comicLabel.classList.toggle('rollingArrow-down');
+}
+
+BmcMangaList.prototype.onEntryClick = function(ev) {
+    console.log('clickedOnManga!, mode=' + this._mode + ', event: ' + ev);
     switch (this._mode) {
     case BmcMangaList.prototype.MODE_REGISTER:
-        this.onAliasClick(comicId);
+        this.onAliasClick(ev);
         break ;
     case BmcMangaList.prototype.MODE_BROWSE:
-        // Find a source for the manga and change the URL to that.
+        this.onBrowseClick(ev);
         break ;
     default:
         break ;
@@ -40,10 +73,10 @@ BmcMangaList.prototype.generateComic = function(comic) {
     const comicLabel = document.createElement('span');
     comicLabel.classList.toggle('rollingArrow');
     comicLabel.innerText = comic.label;
-    comicLabel.onclick = () => {
-        comicDiv.parentElement.querySelector('.nested').classList.toggle('active');
-        comicLabel.classList.toggle('rollingArrow-down');
-    }
+    comicLabel.bmcData = {
+        id: comic.id,
+    };
+    comicLabel.onclick = this.onEntryClick.bind(this);
     comicDiv.appendChild(comicLabel);
 
     const comicSrcList = document.createElement('div');
@@ -60,25 +93,38 @@ BmcMangaList.prototype.generateComic = function(comic) {
 }
 
 BmcMangaList.prototype.generate = function() {
-    var bookmarks = [
-        {label: "naruto",           id: 0},
-        {label: "bleach",           id: 1},
-        {label: "one piece",        id: 2},
-        {label: "goblin slayer",    id: 3},
-        {label: "hunter x hunter",  id: 4},
-    ];
+    // var bookmarks = [
+    //     {label: "naruto",           id: 0},
+    //     {label: "bleach",           id: 1},
+    //     {label: "one piece",        id: 2},
+    //     {label: "goblin slayer",    id: 3},
+    //     {label: "hunter x hunter",  id: 4},
+    // ];
 
     console.log("generating bookmark list");
     var mangaList = document.getElementById("manga-list");
-    bookmarks.forEach(bkmk => {
-        comic = new BmcComic(bkmk.label, bkmk.id, 3, 21);
-        comic.addSource(new BmcComicSource(bkmk.label, 'mangaeden'));
-        comic.addSource(new BmcComicSource(bkmk.label, 'mangafox'));
-        comic.addSource(new BmcComicSource(bkmk.label, 'mangahere'));
-        comic.addSource(new BmcComicSource(bkmk.label, 'mangareader'));
-        console.warn('fake comic generated for', bkmk.label);
-        mangaList.appendChild(this.generateComic(comic))
-        console.warn('fake comic added for', bkmk.label);
+
+    // First, remove any child node, to ensure it's clean before we start
+    // generating.
+    //
+    // NOTE: This method seems to be the most efficient as shown by
+    // https://jsperf.com/innerhtml-vs-removechild/15
+    while (mangaList.firstChild) {
+        mangaList.removeChild(mangaList.firstChild);
+    }
+
+    // Now that the parent is a clean slate, let's generate
+    // bookmarks.forEach(bkmk => {
+    //     comic = new BmcComic(bkmk.label, bkmk.id, 3, 21);
+    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangaeden'));
+    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangafox'));
+    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangahere'));
+    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangareader'));
+    //     console.warn('fake comic generated for', bkmk.label);
+    bmcEngine._db.list((err, comics) => {
+       comics.forEach(comic =>
+            mangaList.appendChild(this.generateComic(comic))
+       );
     });
 }
 
@@ -87,10 +133,11 @@ BmcMangaList.prototype.setMode = function(mode) {
     case BmcMangaList.prototype.MODE_REGISTER:
     case BmcMangaList.prototype.MODE_BROWSE:
         this._mode = mode;
+        this.generate();
         break ;
     default:
         console.warn(`BmcSidePanel: BmcMangaList: Unknown MODE "${mode}"`);
-        break ;
+        return ;
     }
 }
 
@@ -153,7 +200,23 @@ function addEvents(mangaList) {
         }
 
         // Now do the actual registration
-        // FIXME TODO FIXME
+        const handleRegisterError = err => {
+            bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
+            bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
+            mangaList.setMode(mangaList.MODE_BROWSE);
+            showHideSidePanel();
+        };
+        const handleRegisterSuccess = () => {
+            bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
+            bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
+            mangaList.setMode(mangaList.MODE_BROWSE);
+            showHideSidePanel();
+        };
+        bmcEngine.addEventListener(bmcEngine.events.register.error, handleRegisterError);
+        bmcEngine.addEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
+        // Don't need to provide the reader/name/chapter/pages, as they're
+        // already set in the engine since the instanciation.
+        bmcEngine.register(label);
     };
 
 }
