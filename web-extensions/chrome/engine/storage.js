@@ -1,5 +1,5 @@
 function getBrowser() {
-    if (typeof browser === "undefined") {
+    if (chrome !== undefined) {
         return chrome;
     }
     return browser;
@@ -30,7 +30,7 @@ function Storage() {
      * If we have it, we're then using FF, which provides promises instead
      * of requiring callbacks for async calls.
      */
-    if (bro.runtime.getBrowserInfo !== undefined) {
+    if (browser !== undefined) {
         this._mode = this.MODE_PROMISE;
     }
     console.log(`[Wrapper] Selected mode: ${this._mode}`);
@@ -69,10 +69,12 @@ Storage.checkErr = function(err) {
  *
  */
 Storage.prototype._cbify = function(funcObj, args, onSuccess, onError) {
+    let allArgs = [];
+    allArgs.push(args);
     switch(this._mode) {
         case this.MODE_PROMISE:
-            const promise = funcObj.apply(this, args);
-            return promise.then(onSuccess, onError);
+            const promise = funcObj(args);
+            return promise.catch(onError).then(onSuccess);
         case this.MODE_CALLBACK:
         default:
             function resolveCb(err, data) {
@@ -81,10 +83,8 @@ Storage.prototype._cbify = function(funcObj, args, onSuccess, onError) {
                 }
                 return onSuccess(data);
             }
-            const allArgs = [];
-            allArgs.push(args);
             allArgs.push(resolveCb);
-            return funcObj.apply(this, allArgs);
+            return funcObj(args, resolveCb);
     }
 };
 
@@ -104,13 +104,10 @@ Storage.prototype._cbify = function(funcObj, args, onSuccess, onError) {
  *
  */
 Storage.prototype.get = function(keys, cb) {
-    console.log('Wrapper.get');
     function onError(err) {
-        console.log(`Get Error: ${JSON.stringify(err)}`);
         return cb(err);
     }
     function onSuccess(data) {
-        console.log(`Get Success: ${JSON.stringify(data)}`);
         return cb(null, data);
     }
     return this._cbify(this._area.get, keys, onSuccess, onError);
@@ -130,15 +127,12 @@ Storage.prototype.get = function(keys, cb) {
  *
  */
 Storage.prototype.set = function(dataset, cb) {
-    console.log(`Wrapper.set "${JSON.stringify(dataset)}"`);
     function onError(err) {
-        console.log("Wrapper.set failed");
         if (cb) {
             return cb(err);
         }
     }
     function onSuccess() {
-        console.log("Wrapper.set success");
         if (cb) {
             return cb(null);
         }
@@ -161,7 +155,6 @@ Storage.prototype.set = function(dataset, cb) {
  *
  */
 Storage.prototype.remove = function(keys, cb) {
-    console.log('Wrapper.remove');
     function onError(err) {
         return cb(err);
     }
@@ -184,7 +177,6 @@ Storage.prototype.remove = function(keys, cb) {
  *
  */
 Storage.prototype.clear = function(cb) {
-    console.log('Wrapper.clear');
     function onError(err) {
         return cb(err);
     }
