@@ -40,16 +40,14 @@ KeyScheme.prototype.BMC_KEY_PREFIX = 'BookMyComics.comics';
  *
  */
 KeyScheme.prototype.getMap = function(cb) {
-    return this._storage.get(this.BMC_MAP_KEY, (err, data) => {
+    const keyToGet = {};
+    keyToGet[this.BMC_MAP_KEY] = {};
+    return this._storage.get(keyToGet, (err, data) => {
         if (err) {
             console.log('Scheme could not retrieve Comic map');
             return cb(err, null);
         }
-        let map = {};
-        if (data) {
-            map = data;
-        }
-        return cb(null, map);
+        return cb(null, data[this.BMC_MAP_KEY]);
     });
 };
 
@@ -69,21 +67,20 @@ KeyScheme.prototype.getMap = function(cb) {
  *
  */
 KeyScheme.prototype.nextId = function(cb) {
-    return this._storage.get(this.BMC_STATE_KEY, (err, state) => {
+    const keyToGet = {};
+    keyToGet[this.BMC_STATE_KEY] = { lastId: -1 };
+    return this._storage.get(keyToGet, (err, state) => {
         if (err) {
             return cb(err, null);
         }
-        // Default value since the first time it'll be `undefined`
-        state = state || { lastId: -1 };
-        const nextId = state.lastId + 1;
-        state.lastId += 1;
+        const newState = { lastId: state[this.BMC_STATE_KEY].lastId + 1};
         const dataset = {};
-        dataset[this.BMC_STATE_KEY] = state;
+        dataset[this.BMC_STATE_KEY] = newState;
         this._storage.set(dataset, err => {
             if (err) {
                 return cb(err, null);
             }
-            return cb(null, nextId);
+            return cb(null, newState.lastId);
         });
     });
 };
@@ -118,13 +115,16 @@ KeyScheme.prototype.keyFromId = function(comicId) {
  *
  */
 KeyScheme.prototype.idFromSource = function(source, cb) {
-    this._storage.get(this.BMC_MAP_KEY, (err, mapping) => {
+    const keyToGet = {};
+    keyToGet[this.BMC_MAP_KEY] = {};
+    this._storage.get(keyToGet, (err, data) => {
         if (err) {
             return cb(err, null);
         }
+        const mapping = data[this.BMC_MAP_KEY];
         const skey = this.computeSourceKey(source);
         let id = null;
-        if (mapping && mapping[skey] !== undefined) {
+        if (mapping[skey] !== undefined) {
             id = mapping[skey];
         }
         return cb(null, id);
@@ -419,7 +419,7 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
         if (!data) {
             return cb(new Error('Could not find comic data'));
         }
-        const payload = Object.assign({}, data);
+        const payload = Object.assign({}, data[comicKey]);
         /*
          * XXX TODO FIXME
          * improve logic here, as this allows skipping many pages/chapters at
@@ -432,7 +432,9 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
         }
         payload.chapter = chapter;
         payload.page = page;
-        return this._data.set({comicKey: payload}, err => {
+        const dataset = {};
+        dataset[comicKey] = payload;
+        return this._data.set(dataset, err => {
             if (err) {
                 console.log(`Got Update error: ${JSON.stringify(err)}`);
                 return cb(err);
@@ -577,7 +579,8 @@ BmcDataAPI.prototype.list = function(cb) {
             return cb(err, null);
         }
         // Build an inverse mapping; comicId -> sources list
-        const map = data[this._scheme.BMC_MAP_KEY];
+        // Default to empty-object if no map found (never created yet)
+        const map = data[this._scheme.BMC_MAP_KEY] || {};
         const inverseMap = Object.keys(map).reduce((acc, key) => {
             const comicId = map[key];
             if (acc[comicId] === undefined) {
