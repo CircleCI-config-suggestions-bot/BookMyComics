@@ -169,10 +169,8 @@ function BmcComicSource(name, reader) {
  * @return {object}
  */
 BmcComicSource.prototype.serialize = function() {
-    return JSON.stringify({
-        name: this.name,
-        reader: this.reader,
-    });
+    // Ensure ordre by using a template string.
+    return JSON.stringify(this, ['reader', 'name']);
 }
 
 /**
