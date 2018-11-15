@@ -63,9 +63,15 @@ function BmcMessageHandler(tag, selector, handler) {
  *
  * @class
  *
+ * @params {string|undefined} topOrigin - if any, the origin of the topWindow,
+ *            to allow accepting messages from it additionally to internal
+ *            web-extension messages. This allows exchanging between host
+ *            window and web-extension iframes.
+ *
  */
-function BmcMessagingHandler() {
+function BmcMessagingHandler(topOrigin) {
     this._setup = false;
+    this._topOrigin = topOrigin;
 }
 
 /**
@@ -91,7 +97,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
             /*
              * NOTE
              * Origin is actually shown as the extension's internal URL, so
-                 * let's retrieve it using runtime.getURL(''); and compare the
+             * let's retrieve it using runtime.getURL(''); and compare the
              * origin against it.
              * Note that the origin does not include an ending '/' while the
              * URL of the extension does, hence the 'indexOf' method rather
@@ -99,7 +105,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
              */
             var bro = getBrowser();
             var bmcOrigin = bro.runtime.getURL('');
-            if (bmcOrigin.indexOf(event.origin) !== -1) {
+            if (bmcOrigin.indexOf(event.origin) !== -1 || event.origin === this._topOrigin) {
                 var eventData = event.data;
                 if (typeof(eventData) !== 'object') {
                      console.warn('BmcMessagingHandler: EventData is of unexpected type');

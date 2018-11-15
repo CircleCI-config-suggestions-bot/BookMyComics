@@ -1,12 +1,13 @@
 const uriParams = document.location.search.split('?')[1].split('&');
-const readerName = decodeURIComponent(uriParams[0].split('=')[1]);
-const comicName = decodeURIComponent(uriParams[1].split('=')[1]);
-const chapter = uriParams[2].split('=')[1];
-const page = uriParams[3].split('=')[1];
-console.log(`BmcSideBar: comic ${comicName}, chapter=${chapter}, page=${page}`);
+const hostOrigin = decodeURIComponent(uriParams[0].split('=')[1]);
+const readerName = decodeURIComponent(uriParams[1].split('=')[1]);
+const comicName = decodeURIComponent(uriParams[2].split('=')[1]);
+const chapter = uriParams[3].split('=')[1];
+const page = uriParams[4].split('=')[1];
+console.log(`BmcSideBar: origin ${hostOrigin} : comic ${comicName}, chapter=${chapter}, page=${page}`);
 
 console.log('Loading Engine');
-const bmcEngine = new BmcEngine(readerName, comicName, chapter, page);
+const bmcEngine = new BmcEngine(hostOrigin, readerName, comicName, chapter, page);
 
 function BmcMangaList() {
     this._node = document.getElementById('manga-list');

@@ -5,10 +5,11 @@
  *
  * @class BmcEngine
  */
-function BmcEngine(readerName, comicName, chapter, page) {
+function BmcEngine(hostOrigin, readerName, comicName, chapter, page) {
+    this._hostOrigin = hostOrigin;
     this._db = new BmcDataAPI();
     console.log('Instanciated BmcDataAPI');
-    this._messaging = new BmcMessagingHandler();
+    this._messaging = new BmcMessagingHandler(this._hostOrigin);
     console.log('Instanciated BmcMEssagingHandler');
     this._ui = new BmcUI(this._messaging, this._db);
     console.log('Instanciated BmcUI');
@@ -111,7 +112,7 @@ BmcEngine.prototype._memoizeComic = function () {
 BmcEngine.prototype.setup = function() {
     return this._ui.makeSidePanel(
         () => this.track(),
-        this._comic.name, this._comic.chapter, this._comic.page);
+        this._hostOrigin, this._comic.name, this._comic.chapter, this._comic.page);
 }
 
 /*

@@ -99,12 +99,13 @@ BmcUI.prototype.removeRegisterDialog = function() {
     this._messaging.removeWindowHandlers(this.INFOBAR_ID);
 };
 
-BmcUI.prototype.makeSidePanel = function(setupTracker, comicName, chapter, page) {
+BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin, comicName, chapter, page) {
     var bro = getBrowser();
+    const origin = encodeURIComponent(hostOrigin);
     const rName = encodeURIComponent(window.location.hostname);
     const cName = encodeURIComponent(comicName);
     this.buildSidePanel(setupTracker, bro.runtime.getURL('sidebar.html')
-        + `?reader=${rName}&comicName=${cName}&chapter=${chapter}&page=${page}`);
+        + `?hostOrigin=${origin}&reader=${rName}&comicName=${cName}&chapter=${chapter}&page=${page}`);
 };
 
 BmcUI.prototype.removeSidePanel = function() {

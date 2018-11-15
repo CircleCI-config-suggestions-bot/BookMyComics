@@ -19,7 +19,8 @@ if (window.top === window) {
      * this work-around of the undefined `work` object, to only provide
      * undefined values instead of the parameters.
      */
-    const engine = new BmcEngine(window.location.hostname,
+    const engine = new BmcEngine(window.location.origin,
+                                 window.location.hostname,
                                  (work || {}).manga,
                                  (work || {}).chapter,
                                  (work || {}).page);
