@@ -423,15 +423,22 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
         /*
          * XXX TODO FIXME
          * improve logic here, as this allows skipping many pages/chapters at
-         * once.
+         * once. We may actually want to accept that, though.
+         * Similarly, we may want to allow backwards-tracking too.. ?
          */
-        if (payload.chapter > chapter
-            || (payload.chapter == chapter
-                && (payload.page && page && payload.page >= page))) {
+        if (payload.tracking.chapter > chapter
+            || (payload.tracking.chapter == chapter
+                && (payload.tracking.page && page
+                    && payload.tracking.page > page))) {
             return cb(new Error('Cannot go backwards in comic'));
         }
-        payload.chapter = chapter;
-        payload.page = page;
+        // Re-tracking the last tracked page; Reload ? OR clicked on last read ?
+        // anyways -> Early return, while ensuring we're not growing the stack
+        if (payload.tracking.chapter === chapter && payload.tracking.page === page) {
+            return setTimeout(() => cb(null), 0);
+        }
+        payload.tracking.chapter = chapter;
+        payload.tracking.page = page;
         const dataset = {};
         dataset[comicKey] = payload;
         return this._data.set(dataset, err => {
