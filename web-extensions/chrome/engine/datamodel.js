@@ -594,6 +594,7 @@ BmcDataAPI.prototype.list = function(cb) {
                 acc[comicId] = [];
             }
             acc[comicId].push(BmcComicSource.deserialize(key));
+            return acc;
         }, {});
         const keys = Object.keys(data).filter(
             key => key.indexOf(this._scheme.BMC_KEY_PREFIX) !== -1
