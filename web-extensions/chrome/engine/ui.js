@@ -12,7 +12,7 @@ function isChrome() {
 }
 
 BmcUI.prototype.INFOBAR_ID = 'BmcInfoBar';
-BmcUI.prototype.SIDEPANEL_ID = 'BmcSidePanel';
+BmcUI.prototype.SIDEPANEL_ID = FrameFinder.definitions.SIDEPANEL.id;
 
 BmcUI.prototype.makeInfobar = function(resourcePath) {
     var height = '40px';
@@ -109,7 +109,10 @@ BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin, comicName, ch
 };
 
 BmcUI.prototype.removeSidePanel = function() {
-    const sidepanel = document.getElementById(this.SIDEPANEL_ID);
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
     sidepanel.parentNode.removeChild(sidepanel);
     this._messaging.removeWindowHandlers(this.SIDEPANEL_ID);
 };
@@ -121,7 +124,10 @@ BmcUI.prototype.makeTrackingNotification = function(err) {
         operation: "track",
         error: err,
     };
-    const sidepanel = document.getElementById(this.SIDEPANEL_ID);
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
     console.log(`BmcUi: Sending message to SidePanel for notification display`);
-    sidepanel.contentWindow.postMessage(evData, '*');
+    sidepanel.postMessage(evData, '*');
 };

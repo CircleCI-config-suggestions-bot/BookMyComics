@@ -9,21 +9,8 @@ document.getElementById('register').addEventListener('click', () => {
     // there is no need to communicate with the parent window from the infobar.
     //
     console.log('Operating SidePanel mode switch.');
-    // Find the right frame window first
-    let sideFrame = null;
-    for (var i = 0; i < window.parent.length; ++i) {
-        var frame = window.parent.frames[i];
-        try {
-            if (frame.showHideSidePanel) {
-                console.warn(`Frame i=${i} has showHideSidePanel function`);
-                sideFrame = frame;
-                break ;
-            }
-        } catch(e) {
-            continue ;
-        }
-    }
     // Change the SidePanel mode to "register" then display it
+    const sideFrame = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     sideFrame.showHideSidePanel(sideFrame.mangaList.MODE_REGISTER);
 });
 
