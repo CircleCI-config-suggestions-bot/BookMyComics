@@ -603,7 +603,11 @@ BmcDataAPI.prototype.list = function(cb) {
         // the BmcComic objects.
         const results = keys.map(key => {
             const comic = BmcComic.deserialize(data[key]);
-            inverseMap[comic.id].forEach(source => comic.addSource(source));
+            if (inverseMap[comic.id]) {
+                inverseMap[comic.id].forEach(source => {
+                    comic.addSource(source);
+                });
+            }
             return comic;
         });
         return cb(null, results);
