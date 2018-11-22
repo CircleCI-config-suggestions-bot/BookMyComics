@@ -331,7 +331,6 @@ function showHideSidePanel(mode) {
         panel.style.width = '0';
         togBtn.innerText = '>';
         shiftButtonLeft(togBtn);
-        showRegisterButton();
         regBtn.style.display = 'none';
     }
     // Notify top window of the SidePanel action

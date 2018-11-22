@@ -68,7 +68,6 @@
     ],
     "web_accessible_resources": [
         "sidebar.html",
-        "register-diag.html",
         "engine/utils.js",
         "engine/storage.js",
         "engine/datamodel.js",
