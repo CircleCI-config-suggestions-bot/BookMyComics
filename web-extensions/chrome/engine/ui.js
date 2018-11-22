@@ -86,6 +86,19 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     });
 };
 
+BmcUI.prototype.toggleSidePanel = function() {
+    const evData = {
+        type: 'action',
+        action: 'toggle',
+        module: 'sidebar',
+    };
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
+    sidepanel.postMessage(evData, '*');
+}
+
 BmcUI.prototype.makeRegisterDialog = function(comicName, chapter, page) {
     var bro = getBrowser();
     this.makeInfobar(bro.runtime.getURL('register-diag.html'));

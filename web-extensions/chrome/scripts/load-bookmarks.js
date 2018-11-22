@@ -6,8 +6,9 @@ const chapter = uriParams[3].split('=')[1];
 const page = uriParams[4].split('=')[1];
 console.log(`BmcSideBar: origin ${hostOrigin} : comic ${comicName}, chapter=${chapter}, page=${page}`);
 
-console.log('Loading Engine');
-const bmcEngine = new BmcEngine(hostOrigin, readerName, comicName, chapter, page);
+console.log('Loading required Bmc utilities');
+const bmcMessaging = new BmcMessagingHandler(hostOrigin);
+const bmcDb = new BmcDataAPI();
 
 function BmcMangaList() {
     this._node = document.getElementById('manga-list');
@@ -19,26 +20,13 @@ BmcMangaList.prototype.MODE_BROWSE = 'browse';
 
 BmcMangaList.prototype.onAliasClick = function(ev) {
     const comicLabel = ev.target;
-    console.log(`BmcSideBar: BmcMangaList: onAlias: Label=${ev.target.innerText} id=${ev.target.id} reader=${readerName} name=${comicName}`);
-    const handleAliasError = err => {
-        bmcEngine.removeEventListener(bmcEngine.events.alias.error, handleAliasError);
-        bmcEngine.removeEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
-        this.setMode(this.MODE_BROWSE);
-        showHideSidePanel();
-        notifyResult('Alias Comic', new Error('Could not alias current page to comicId ' + comicId + ': ' + err.message));
+    console.log(`BmcSideBar: BmcMangaList: onAlias: Label=${ev.target.innerText} id=${ev.target.id}`);
+    const evData = {
+        type: "action",
+        action: "alias",
+        id: comicLabel.bmcData.id,
     };
-    const handleAliasSuccess = () => {
-        bmcEngine.removeEventListener(bmcEngine.events.alias.error, handleAliasError);
-        bmcEngine.removeEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
-        this.setMode(this.MODE_BROWSE);
-        showHideSidePanel();
-        notifyResult('Alias Comic', null);
-    };
-    bmcEngine.addEventListener(bmcEngine.events.alias.error, handleAliasError);
-    bmcEngine.addEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
-    // Don't need to provide the reader/name/chapter/pages, as they're
-    // already set in the engine since the instanciation.
-    bmcEngine.alias(comicLabel.bmcData.id);
+    window.top.postMessage(evData, '*');
 }
 
 BmcMangaList.prototype.onBrowseClick = function(ev) {
@@ -109,7 +97,7 @@ BmcMangaList.prototype.generate = function() {
     }
 
     // Now that the parent is a clean slate, let's generate
-    bmcEngine._db.list((err, comics) => {
+    bmcDb.list((err, comics) => {
        comics.forEach(comic =>
             mangaList.appendChild(this.generateComic(comic))
        );
@@ -215,34 +203,34 @@ function addEvents(mangaList) {
             }
 
             // Now do the actual registration
-            const handleRegisterError = err => {
-                bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
-                bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
-                mangaList.setMode(mangaList.MODE_BROWSE);
-                showHideSidePanel();
-                notifyResult('Register Comic', new Error('Could not alias current page to comicId ' + comicId));
+            const evData = {
+                type: "action",
+                action: "register",
+                label,
             };
-            const handleRegisterSuccess = () => {
-                bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
-                bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
-                mangaList.setMode(mangaList.MODE_BROWSE);
-                showHideSidePanel();
-                notifyResult('Register Comic');
-            };
-            bmcEngine.addEventListener(bmcEngine.events.register.error, handleRegisterError);
-            bmcEngine.addEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
-            // Don't need to provide the reader/name/chapter/pages, as they're
-            // already set in the engine since the instanciation.
-            bmcEngine.register(label);
+            window.top.postMessage(evData, '*');
         };
     }
 
-    bmcEngine._messaging.addWindowHandler(
+    bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'notification',
         evData => {
             console.log(`BmcSidePanel: received message to display status notification op=${evData.operation} err=${evData.error}`);
             notifyResult(evData.operation, evData.error);
+        });
+    bmcMessaging.addWindowHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'setup' && evData.operation === 'register',
+        evData => {
+            console.log('BmcSidePanel: Handling request to show Register button');
+            showRegisterButton();
+        });
+    bmcMessaging.addWindowHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'toggle' && evData.module === 'sidebar',
+        evData => {
+            showHideSidePanel();
         });
 }
 
