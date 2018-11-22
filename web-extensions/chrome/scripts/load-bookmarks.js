@@ -96,14 +96,6 @@ BmcMangaList.prototype.generateComic = function(comic) {
 }
 
 BmcMangaList.prototype.generate = function() {
-    // var bookmarks = [
-    //     {label: "naruto",           id: 0},
-    //     {label: "bleach",           id: 1},
-    //     {label: "one piece",        id: 2},
-    //     {label: "goblin slayer",    id: 3},
-    //     {label: "hunter x hunter",  id: 4},
-    // ];
-
     console.log("generating bookmark list");
     var mangaList = document.getElementById("manga-list");
 
@@ -117,13 +109,6 @@ BmcMangaList.prototype.generate = function() {
     }
 
     // Now that the parent is a clean slate, let's generate
-    // bookmarks.forEach(bkmk => {
-    //     comic = new BmcComic(bkmk.label, bkmk.id, 3, 21);
-    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangaeden'));
-    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangafox'));
-    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangahere'));
-    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangareader'));
-    //     console.warn('fake comic generated for', bkmk.label);
     bmcEngine._db.list((err, comics) => {
        comics.forEach(comic =>
             mangaList.appendChild(this.generateComic(comic))
