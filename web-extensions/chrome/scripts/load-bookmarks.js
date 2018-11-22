@@ -172,6 +172,13 @@ BmcMangaList.prototype.filter = function(filterStr) {
     };
 }
 
+function showRegisterButton() {
+    const panel = document.getElementById('side-panel');
+    const regBtn = document.getElementById('register-but');
+    if (panel && regBtn && panel.style.display === 'none') {
+        regBtn.style.display = '';
+    }
+}
 
 function addEvents(mangaList) {
     // Clicking on the  `>`/`<` button will show/hide the panel
@@ -188,37 +195,47 @@ function addEvents(mangaList) {
         mangaList.filter(str);
     };
 
-    // On Register-but click, Trigger a new comic registration
-    var btn = document.getElementById('side-adder');
-    but.onclick = function() {
-        const label = sbox.value;
-        // Sanitize the data first
-        if (sbox.value.length <= 0) {
-            alert("BookMyComics does not support empty labels to identify a comic.<br>"
-                  + "Please define a label in the Side Panel's text area first.");
-        }
+    // On Register-but click, show the SidePanel in "REGISTER" mode
+    const regBtn = document.getElementById('register-but');
+    if (regBtn) {
+        regBtn.onclick = function() {
+            showHideSidePanel(mangaList.MODE_REGISTER);
+        };
+    }
 
-        // Now do the actual registration
-        const handleRegisterError = err => {
-            bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
-            bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
-            mangaList.setMode(mangaList.MODE_BROWSE);
-            showHideSidePanel();
-            notifyResult('Register Comic', new Error('Could not alias current page to comicId ' + comicId));
+    // On button-add click, Trigger a new comic registration
+    var addBut = document.getElementById('side-adder');
+    if (addBut) {
+        addBut.onclick = function() {
+            const label = sbox.value;
+            // Sanitize the data first
+            if (sbox.value.length <= 0) {
+                alert("BookMyComics does not support empty labels to identify a comic.<br>"
+                      + "Please define a label in the Side Panel's text area first.");
+            }
+
+            // Now do the actual registration
+            const handleRegisterError = err => {
+                bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
+                bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
+                mangaList.setMode(mangaList.MODE_BROWSE);
+                showHideSidePanel();
+                notifyResult('Register Comic', new Error('Could not alias current page to comicId ' + comicId));
+            };
+            const handleRegisterSuccess = () => {
+                bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
+                bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
+                mangaList.setMode(mangaList.MODE_BROWSE);
+                showHideSidePanel();
+                notifyResult('Register Comic');
+            };
+            bmcEngine.addEventListener(bmcEngine.events.register.error, handleRegisterError);
+            bmcEngine.addEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
+            // Don't need to provide the reader/name/chapter/pages, as they're
+            // already set in the engine since the instanciation.
+            bmcEngine.register(label);
         };
-        const handleRegisterSuccess = () => {
-            bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
-            bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
-            mangaList.setMode(mangaList.MODE_BROWSE);
-            showHideSidePanel();
-            notifyResult('Register Comic');
-        };
-        bmcEngine.addEventListener(bmcEngine.events.register.error, handleRegisterError);
-        bmcEngine.addEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
-        // Don't need to provide the reader/name/chapter/pages, as they're
-        // already set in the engine since the instanciation.
-        bmcEngine.register(label);
-    };
+    }
 
     bmcEngine._messaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
@@ -289,6 +306,20 @@ function notifyResult(operation, error) {
     }
 }
 
+function shiftButtonRight(btn) {
+    if (btn) {
+        btn.style.left = '';
+        btn.style.right = '0';
+    }
+}
+
+function shiftButtonLeft(btn) {
+    if (btn) {
+        btn.style.left = '0';
+        btn.style.right = 'initial';
+    }
+}
+
 function showHideSidePanel(mode) {
     var evData = {
         type: "action",
@@ -307,20 +338,17 @@ function showHideSidePanel(mode) {
         evData.action = "ShowSidePanel",
         panel.style.display = '';
         panel.style.width = 'calc(100vw - 16px)';
-        if (mode === mangaList.MODE_REGISTER) {
-            regBtn.style.display = '';
-        }
         togBtn.innerText = '<';
-        togBtn.style.left = '';
-        togBtn.style.right = '0';
+        shiftButtonRight(togBtn);
+        regBtn.style.display = 'none';
     } else {
         evData.action = "HideSidePanel",
         panel.style.display = 'none';
         panel.style.width = '0';
-        regBtn.style.display = 'none';
         togBtn.innerText = '>';
-        togBtn.style.left = '0';
-        togBtn.style.right = 'initial';
+        shiftButtonLeft(togBtn);
+        showRegisterButton();
+        regBtn.style.display = 'none';
     }
     // Notify top window of the SidePanel action
     window.top.postMessage(evData, '*');
