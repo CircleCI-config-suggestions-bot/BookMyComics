@@ -117,9 +117,15 @@ BmcMangaList.prototype.generate = function() {
 }
 
 BmcMangaList.prototype.setMode = function(mode) {
+    var btn = document.getElementById('side-adder');
     switch (mode) {
     case BmcMangaList.prototype.MODE_REGISTER:
+        btn.style.display = '';
+        this._mode = mode;
+        this.generate();
+        break ;
     case BmcMangaList.prototype.MODE_BROWSE:
+        btn.style.display = 'none';
         this._mode = mode;
         this.generate();
         break ;
@@ -183,7 +189,7 @@ function addEvents(mangaList) {
     };
 
     // On Register-but click, Trigger a new comic registration
-    var but = document.getElementById('register-but');
+    var btn = document.getElementById('side-adder');
     but.onclick = function() {
         const label = sbox.value;
         // Sanitize the data first
