@@ -102,6 +102,25 @@ BmcEngine.prototype._memoizeComic = function () {
     });
 }
 
+BmcEngine.prototype._forceMemoizeComic = function () {
+    // If memoization is ongoing, wait for the end of it before forcing a new
+    // memoization.
+    if (this._comic.memoizing) {
+        console.log(`BmcEngine: Resetting ID memoization after end of ongoing memoization`);
+        this.addEventListener(this.events.load, () => this._forceMemoizeComic(), {once: true});
+        return this._memoizeComic();
+    }
+
+    console.log(`BmcEngine: Resetting ID memoization`);
+    // Now that we're sure no memoization is ongoing, reset the memoized ID,
+    // and restart memoization
+    this._comic.id = undefined;
+    if (this._comic.name) {
+        this.addEventListener(this.events.load, () => { console.log('Memoization reset complete'); }, {once: true});
+        this._memoizeComic();
+    }
+}
+
 /*
  * This function is the main window's entry point to setup the add-on's
  * necessary utilities (UI, background process, etc.)
@@ -163,6 +182,7 @@ BmcEngine.prototype.register = function(label) {
         if (err) {
             return this.dispatchEvent(new CustomEvent(this.events.register.error, {detail: err}));
         }
+        this._forceMemoizeComic();
         return this.dispatchEvent(new CustomEvent(this.events.register.complete));
     });
 };
@@ -181,6 +201,7 @@ BmcEngine.prototype.alias = function(comicId) {
         if (err) {
             return this.dispatchEvent(new CustomEvent(this.events.alias.error, {detail: err}));
         }
+        this._forceMemoizeComic();
         return this.dispatchEvent(new CustomEvent(this.events.alias.complete));
     });
 };
