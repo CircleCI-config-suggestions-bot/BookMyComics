@@ -3,6 +3,11 @@
     "version": "0.1",
     "description": "A slightly intrusive extension to keep track of your comics/manga reading progress",
     "manifest_version": 2,
+    "applications": {
+        "gecko": {
+            "id": "support@bookmycomics.org"
+        }
+    },
     "content_scripts": [
         {
             "matches": ["https://www.mangaeden.com/en/en-manga/*"],

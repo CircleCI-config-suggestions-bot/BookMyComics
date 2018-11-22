@@ -28,6 +28,11 @@
       #hide-but:hover {
         background-color: #ebebeb;
       }
+      .notif-transform {
+          transition-property: 'background-color';
+          transition-delay: 0s;
+          transition-duration: 2s;
+      }
       #searchbox {
         width: calc(100vw - 22px);
         border-right: 1px solid #ccc;
@@ -40,6 +45,21 @@
         padding: 5px;
         border-bottom: 1px solid #ccc;
         cursor: text;
+      }
+      #register-but {
+        position: absolute;
+        top: 0;
+        padding: 1px;
+        background-color: #00aa00;
+        font-size: 16px;
+        right: 0;
+        border: 1px solid #ccc;
+        border-left: none;
+        border-radius: 0 3px 3px 0;
+        cursor: pointer;
+      }
+      #register-but:hover {
+        background-color: #00ff00;
       }
       #manga-list > ul, #manga-list > ul > div {
         padding: 0;
@@ -100,6 +120,7 @@
       <input type="text" placeholder="Search..." id="searchbox"></input>
       <div id="manga-list"></div>
     </div>
+    <div id="register-but">+</div>
     <div id="hide-but">&lt;</div>
   </body>
   <script src="scripts/load-bookmarks.js" crossorigin="anonymous"></script>

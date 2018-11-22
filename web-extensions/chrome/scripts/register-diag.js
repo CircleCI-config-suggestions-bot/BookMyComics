@@ -24,7 +24,7 @@ document.getElementById('register').addEventListener('click', () => {
         }
     }
     // Change the SidePanel mode to "register" then display it
-    sideFrame.showHideSidePanel();
+    sideFrame.showHideSidePanel(sideFrame.mangaList.MODE_REGISTER);
 });
 
 console.log('Register InfoBar setup done.');

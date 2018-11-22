@@ -99,11 +99,13 @@ BmcUI.prototype.removeRegisterDialog = function() {
     this._messaging.removeWindowHandlers(this.INFOBAR_ID);
 };
 
-BmcUI.prototype.makeSidePanel = function(setupTracker, comicName, chapter, page) {
+BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin, comicName, chapter, page) {
     var bro = getBrowser();
-    const reader = window.location.hostname;
+    const origin = encodeURIComponent(hostOrigin);
+    const rName = encodeURIComponent(window.location.hostname);
+    const cName = encodeURIComponent(comicName);
     this.buildSidePanel(setupTracker, bro.runtime.getURL('sidebar.html')
-        + `?reader=${reader}&comicName=${encodeURIComponent(comicName)}&chapter=${chapter}&page=${page}`);
+        + `?hostOrigin=${origin}&reader=${rName}&comicName=${cName}&chapter=${chapter}&page=${page}`);
 };
 
 BmcUI.prototype.removeSidePanel = function() {
@@ -113,9 +115,13 @@ BmcUI.prototype.removeSidePanel = function() {
 };
 
 BmcUI.prototype.makeTrackingNotification = function(err) {
-    if (err) {
-        alert('BookMyComic: BmcUI.makeTrackingNotification: Could not save comic progress: ' + err.message);
-        return ;
-    }
-    alert('BookMyComic: BmcUI.makeTrackingNotification: progress saved');
+    var evData = {
+        type: "action",
+        action: "notification",
+        operation: "track",
+        error: err,
+    };
+    const sidepanel = document.getElementById(this.SIDEPANEL_ID);
+    console.log(`BmcUi: Sending message to SidePanel for notification display`);
+    sidepanel.contentWindow.postMessage(evData, '*');
 };

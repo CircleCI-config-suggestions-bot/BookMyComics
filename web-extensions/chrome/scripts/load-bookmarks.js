@@ -1,16 +1,66 @@
 const uriParams = document.location.search.split('?')[1].split('&');
-const comicName = decodeURI(uriParams[0].split('=')[1]);
-const chapter = uriParams[1].split('=')[1];
-const page = uriParams[2].split('=')[1];
-console.log(`BmcSideBar: comic ${comicName}, chapter=${chapter}, page=${page}`);
+const hostOrigin = decodeURIComponent(uriParams[0].split('=')[1]);
+const readerName = decodeURIComponent(uriParams[1].split('=')[1]);
+const comicName = decodeURIComponent(uriParams[2].split('=')[1]);
+const chapter = uriParams[3].split('=')[1];
+const page = uriParams[4].split('=')[1];
+console.log(`BmcSideBar: origin ${hostOrigin} : comic ${comicName}, chapter=${chapter}, page=${page}`);
+
+console.log('Loading Engine');
+const bmcEngine = new BmcEngine(hostOrigin, readerName, comicName, chapter, page);
 
 function BmcMangaList() {
     this._node = document.getElementById('manga-list');
+    this._mode = BmcMangaList.MODE_BROWSE;
 }
 
-BmcMangaList.prototype.onEntryClick = function(comicId) {
-    console.log('clickedOnManga!');
-    window.top.postMessage({comicId}, '*');
+BmcMangaList.prototype.MODE_REGISTER = 'register';
+BmcMangaList.prototype.MODE_BROWSE = 'browse';
+
+BmcMangaList.prototype.onAliasClick = function(ev) {
+    const comicLabel = ev.target;
+    console.log(`BmcSideBar: BmcMangaList: onAlias: Label=${ev.target.innerText} id=${ev.target.id} reader=${readerName} name=${comicName}`);
+    const handleAliasError = err => {
+        bmcEngine.removeEventListener(bmcEngine.events.alias.error, handleAliasError);
+        bmcEngine.removeEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
+        this.setMode(this.MODE_BROWSE);
+        showHideSidePanel();
+        notifyResult('Alias Comic', new Error('Could not alias current page to comicId ' + comicId + ': ' + err.message));
+    };
+    const handleAliasSuccess = () => {
+        bmcEngine.removeEventListener(bmcEngine.events.alias.error, handleAliasError);
+        bmcEngine.removeEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
+        this.setMode(this.MODE_BROWSE);
+        showHideSidePanel();
+        notifyResult('Alias Comic', null);
+    };
+    bmcEngine.addEventListener(bmcEngine.events.alias.error, handleAliasError);
+    bmcEngine.addEventListener(bmcEngine.events.alias.complete, handleAliasSuccess);
+    // Don't need to provide the reader/name/chapter/pages, as they're
+    // already set in the engine since the instanciation.
+    bmcEngine.alias(comicLabel.bmcData.id);
+}
+
+BmcMangaList.prototype.onBrowseClick = function(ev) {
+    const comicLabel = ev.target;
+    const comicDiv = comicLabel.parentElement;
+    const comicElem = comicDiv.parentElement;
+    comicElem.querySelector('.nested').classList.toggle('active');
+    comicLabel.classList.toggle('rollingArrow-down');
+}
+
+BmcMangaList.prototype.onEntryClick = function(ev) {
+    console.log('clickedOnManga!, mode=' + this._mode + ', event: ' + ev);
+    switch (this._mode) {
+    case BmcMangaList.prototype.MODE_REGISTER:
+        this.onAliasClick(ev);
+        break ;
+    case BmcMangaList.prototype.MODE_BROWSE:
+        this.onBrowseClick(ev);
+        break ;
+    default:
+        break ;
+    }
 }
 
 BmcMangaList.prototype.generateComic = function(comic) {
@@ -26,10 +76,10 @@ BmcMangaList.prototype.generateComic = function(comic) {
     const comicLabel = document.createElement('span');
     comicLabel.classList.toggle('rollingArrow');
     comicLabel.innerText = comic.label;
-    comicLabel.onclick = () => {
-        comicDiv.parentElement.querySelector('.nested').classList.toggle('active');
-        comicLabel.classList.toggle('rollingArrow-down');
-    }
+    comicLabel.bmcData = {
+        id: comic.id,
+    };
+    comicLabel.onclick = this.onEntryClick.bind(this);
     comicDiv.appendChild(comicLabel);
 
     const comicSrcList = document.createElement('div');
@@ -46,26 +96,52 @@ BmcMangaList.prototype.generateComic = function(comic) {
 }
 
 BmcMangaList.prototype.generate = function() {
-    var bookmarks = [
-        {label: "naruto",           id: 0},
-        {label: "bleach",           id: 1},
-        {label: "one piece",        id: 2},
-        {label: "goblin slayer",    id: 3},
-        {label: "hunter x hunter",  id: 4},
-    ];
+    // var bookmarks = [
+    //     {label: "naruto",           id: 0},
+    //     {label: "bleach",           id: 1},
+    //     {label: "one piece",        id: 2},
+    //     {label: "goblin slayer",    id: 3},
+    //     {label: "hunter x hunter",  id: 4},
+    // ];
 
     console.log("generating bookmark list");
     var mangaList = document.getElementById("manga-list");
-    bookmarks.forEach(bkmk => {
-        comic = new BmcComic(bkmk.label, bkmk.id, 3, 21);
-        comic.addSource(new BmcComicSource(bkmk.label, 'mangaeden'));
-        comic.addSource(new BmcComicSource(bkmk.label, 'mangafox'));
-        comic.addSource(new BmcComicSource(bkmk.label, 'mangahere'));
-        comic.addSource(new BmcComicSource(bkmk.label, 'mangareader'));
-        console.warn('fake comic generated for', bkmk.label);
-        mangaList.appendChild(this.generateComic(comic))
-        console.warn('fake comic added for', bkmk.label);
+
+    // First, remove any child node, to ensure it's clean before we start
+    // generating.
+    //
+    // NOTE: This method seems to be the most efficient as shown by
+    // https://jsperf.com/innerhtml-vs-removechild/15
+    while (mangaList.firstChild) {
+        mangaList.removeChild(mangaList.firstChild);
+    }
+
+    // Now that the parent is a clean slate, let's generate
+    // bookmarks.forEach(bkmk => {
+    //     comic = new BmcComic(bkmk.label, bkmk.id, 3, 21);
+    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangaeden'));
+    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangafox'));
+    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangahere'));
+    //     comic.addSource(new BmcComicSource(bkmk.label, 'mangareader'));
+    //     console.warn('fake comic generated for', bkmk.label);
+    bmcEngine._db.list((err, comics) => {
+       comics.forEach(comic =>
+            mangaList.appendChild(this.generateComic(comic))
+       );
     });
+}
+
+BmcMangaList.prototype.setMode = function(mode) {
+    switch (mode) {
+    case BmcMangaList.prototype.MODE_REGISTER:
+    case BmcMangaList.prototype.MODE_BROWSE:
+        this._mode = mode;
+        this.generate();
+        break ;
+    default:
+        console.warn(`BmcSidePanel: BmcMangaList: Unknown MODE "${mode}"`);
+        return ;
+    }
 }
 
 BmcMangaList.prototype.hideEntry = function(entry) {
@@ -101,32 +177,6 @@ BmcMangaList.prototype.filter = function(filterStr) {
 }
 
 
-function showHideSidePanel() {
-    var evData = {
-        type: "action",
-        action: null,
-    };
-    var btn = document.getElementById('hide-but');
-    var panel = document.getElementById("side-panel");
-    if (panel.style.display === "none") {
-        evData.action = "ShowSidePanel",
-        panel.style.display = '';
-        panel.style.width = 'calc(100vw - 16px)';
-        btn.innerText = '<';
-        btn.style.left = '';
-        btn.style.right = '0';
-    } else {
-        evData.action = "HideSidePanel",
-        panel.style.display = 'none';
-        panel.style.width = '0';
-        btn.innerText = '>';
-        btn.style.left = '0';
-        btn.style.right = 'initial';
-    }
-    // Notify top window of the SidePanel action
-    window.top.postMessage(evData, '*');
-}
-
 function addEvents(mangaList) {
     // Clicking on the  `>`/`<` button will show/hide the panel
     var but = document.getElementById('hide-but');
@@ -141,11 +191,144 @@ function addEvents(mangaList) {
         var str = sbox.value;
         mangaList.filter(str);
     };
+
+    // On Register-but click, Trigger a new comic registration
+    var but = document.getElementById('register-but');
+    but.onclick = function() {
+        const label = sbox.value;
+        // Sanitize the data first
+        if (sbox.value.length <= 0) {
+            alert("BookMyComics does not support empty labels to identify a comic.<br>"
+                  + "Please define a label in the Side Panel's text area first.");
+        }
+
+        // Now do the actual registration
+        const handleRegisterError = err => {
+            bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
+            bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
+            mangaList.setMode(mangaList.MODE_BROWSE);
+            showHideSidePanel();
+            notifyResult('Register Comic', new Error('Could not alias current page to comicId ' + comicId));
+        };
+        const handleRegisterSuccess = () => {
+            bmcEngine.removeEventListener(bmcEngine.events.register.error, handleRegisterError);
+            bmcEngine.removeEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
+            mangaList.setMode(mangaList.MODE_BROWSE);
+            showHideSidePanel();
+            notifyResult('Register Comic');
+        };
+        bmcEngine.addEventListener(bmcEngine.events.register.error, handleRegisterError);
+        bmcEngine.addEventListener(bmcEngine.events.register.complete, handleRegisterSuccess);
+        // Don't need to provide the reader/name/chapter/pages, as they're
+        // already set in the engine since the instanciation.
+        bmcEngine.register(label);
+    };
+
+    bmcEngine._messaging.addWindowHandler(
+        bmcEngine.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'notification',
+        evData => {
+            console.log(`BmcSidePanel: received message to display status notification op=${evData.operation} err=${evData.error}`);
+            notifyResult(evData.operation, evData.error);
+        });
 }
 
 var mangaList = new BmcMangaList();
 mangaList.generate();
 addEvents(mangaList);
+
+
+/*
+ * This function ensures the transition CSS class is absent, changes the
+ * background color (static, instantaneous).
+ * Then, it applies the transform class, and finally changes the color back to
+ * the original color. This creates a smooth transform from the provided color
+ * parameter to the original color.
+ */
+function triggerTransition(elem, color) {
+    // Ensure we get the final computed one (from CSS sheet), as using `.style`
+    // only accesses inline values.
+    const origColor = getComputedStyle(elem).backgroundColor;
+
+    // -> Ensure it's not present when setting the color
+    elem.classList.remove('notif-transform');
+
+    // Now set the color to transition from
+    elem.style.backgroundColor = color;
+
+    /*
+     * /!\ NOTE IMPORTANT /!\
+     * Accessing a DOM property seems to force a redraw, preventing browser
+     * optimization on style settings (by batching updates) which might
+     * actually hide the transition.
+     * /!\ NOTE IMPORTANT /!\
+     */
+    void elem.offsetHeight;
+
+    // Add the transition effect _before_ changing the color
+    elem.classList.add('notif-transform');
+
+    // And finally set the color to get back to (original color)
+    // => This triggers the actual transition effect
+    elem.style.backgroundColor = origColor;
+
+    // Remove all mentions of transitions after 2 secs
+    setTimeout(() => {
+        removeTransitions();
+    }, 2000);
+}
+
+function removeTransitions() {
+    console.warn('Removing transition');
+    const togBtn = document.getElementById('hide-but');
+    togBtn.classList.remove('notif-transform');
+}
+
+function notifyResult(operation, error) {
+    let transitionColor = error ? '#ff0000' : '#00ff00';
+    const togBtn = document.getElementById('hide-but');
+    triggerTransition(togBtn, transitionColor);
+    if (error) {
+        console.error(`BmcSidePanel: ${operation} failed: ${error.message}`);
+    }
+}
+
+function showHideSidePanel(mode) {
+    var evData = {
+        type: "action",
+        action: null,
+    };
+    var togBtn = document.getElementById('hide-but');
+    var regBtn = document.getElementById('register-but');
+    var panel = document.getElementById("side-panel");
+
+    // Ensure no transition will be ongoing after the state change.
+    // removeTransitions();
+
+    // Now, do the actual toggling
+    if (panel.style.display === "none") {
+        mangaList.setMode(mode || mangaList.MODE_BROWSE);
+        evData.action = "ShowSidePanel",
+        panel.style.display = '';
+        panel.style.width = 'calc(100vw - 16px)';
+        if (mode === mangaList.MODE_REGISTER) {
+            regBtn.style.display = '';
+        }
+        togBtn.innerText = '<';
+        togBtn.style.left = '';
+        togBtn.style.right = '0';
+    } else {
+        evData.action = "HideSidePanel",
+        panel.style.display = 'none';
+        panel.style.width = '0';
+        regBtn.style.display = 'none';
+        togBtn.innerText = '>';
+        togBtn.style.left = '0';
+        togBtn.style.right = 'initial';
+    }
+    // Notify top window of the SidePanel action
+    window.top.postMessage(evData, '*');
+}
 
 // Hide panel by default
 showHideSidePanel();

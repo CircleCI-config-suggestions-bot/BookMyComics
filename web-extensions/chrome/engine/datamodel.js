@@ -40,16 +40,14 @@ KeyScheme.prototype.BMC_KEY_PREFIX = 'BookMyComics.comics';
  *
  */
 KeyScheme.prototype.getMap = function(cb) {
-    return this._storage.get(this.BMC_MAP_KEY, (err, data) => {
+    const keyToGet = {};
+    keyToGet[this.BMC_MAP_KEY] = {};
+    return this._storage.get(keyToGet, (err, data) => {
         if (err) {
             console.log('Scheme could not retrieve Comic map');
             return cb(err, null);
         }
-        let map = {};
-        if (data) {
-            map = data;
-        }
-        return cb(null, map);
+        return cb(null, data[this.BMC_MAP_KEY]);
     });
 };
 
@@ -69,17 +67,20 @@ KeyScheme.prototype.getMap = function(cb) {
  *
  */
 KeyScheme.prototype.nextId = function(cb) {
-    return this._storage.get(this.BMC_STATE_KEY, (err, state) => {
+    const keyToGet = {};
+    keyToGet[this.BMC_STATE_KEY] = { lastId: -1 };
+    return this._storage.get(keyToGet, (err, state) => {
         if (err) {
             return cb(err, null);
         }
-        const nextId = state.lastId + 1;
-        state.lastId += 1;
-        this._storage.set(this.BMC_STATE_KEY, state, err => {
+        const newState = { lastId: state[this.BMC_STATE_KEY].lastId + 1};
+        const dataset = {};
+        dataset[this.BMC_STATE_KEY] = newState;
+        this._storage.set(dataset, err => {
             if (err) {
                 return cb(err, null);
             }
-            return cb(null, nextId);
+            return cb(null, newState.lastId);
         });
     });
 };
@@ -94,7 +95,7 @@ KeyScheme.prototype.nextId = function(cb) {
  *
  */
 KeyScheme.prototype.keyFromId = function(comicId) {
-    return `${BMC_KEY_PREFIX}.${comicId}`;
+    return `${this.BMC_KEY_PREFIX}.${comicId}`;
 };
 
 /**
@@ -114,13 +115,16 @@ KeyScheme.prototype.keyFromId = function(comicId) {
  *
  */
 KeyScheme.prototype.idFromSource = function(source, cb) {
-    this._storage.get(this.BMC_MAP_KEY, (err, mapping) => {
+    const keyToGet = {};
+    keyToGet[this.BMC_MAP_KEY] = {};
+    this._storage.get(keyToGet, (err, data) => {
         if (err) {
             return cb(err, null);
         }
+        const mapping = data[this.BMC_MAP_KEY];
         const skey = this.computeSourceKey(source);
         let id = null;
-        if (mapping && mapping[skey] !== undefined) {
+        if (mapping[skey] !== undefined) {
             id = mapping[skey];
         }
         return cb(null, id);
@@ -165,10 +169,8 @@ function BmcComicSource(name, reader) {
  * @return {object}
  */
 BmcComicSource.prototype.serialize = function() {
-    return JSON.stringify({
-        name: this.name,
-        reader: this.reader,
-    });
+    // Ensure ordre by using a template string.
+    return JSON.stringify(this, ['reader', 'name']);
 }
 
 /**
@@ -247,17 +249,24 @@ BmcComic.prototype.serialize = function() {
 }
 
 /**
+ * @callback BmcComic~iterCb
+ *
+ * @param {BmcComicSource}
+ *
+ * @return {undefined}
+ */
+/**
  * This method loops over sources.
  *
- * @param {object} callback - The callback to be called on each source.
+ * @param {BmcComic~iterCb} iterFunc - The callback to be called on each source.
  *
  */
-BmcComic.prototype.iterSources = function(callback) {
-    if (!callback) {
+BmcComic.prototype.iterSources = function(iterFunc) {
+    if (!iterFunc) {
         return;
     }
     for (var i = 0; i < this._sources.length; ++i) {
-        callback(this._sources[i]);
+        iterFunc(this._sources[i]);
     }
 }
 
@@ -371,7 +380,7 @@ function BmcDataAPI() {
  *
  */
 BmcDataAPI.prototype.findComic = function(readerName, comicName, cb) {
-    let source = new BmcComicSource(readerName, comicName);
+    let source = new BmcComicSource(comicName, readerName);
     return this._scheme.idFromSource(source, (err, id) => {
         if (err) {
             console.log(`Got FIND error: ${JSON.stringify(err)}`);
@@ -410,20 +419,29 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
         if (!data) {
             return cb(new Error('Could not find comic data'));
         }
-        const payload = Object.assign({}, data);
+        const payload = Object.assign({}, data[comicKey]);
         /*
          * XXX TODO FIXME
          * improve logic here, as this allows skipping many pages/chapters at
-         * once.
+         * once. We may actually want to accept that, though.
+         * Similarly, we may want to allow backwards-tracking too.. ?
          */
-        if (payload.chapter > chapter
-            || (payload.chapter == chapter
-                && (payload.page && page && payload.page >= page))) {
+        if (payload.tracking.chapter > chapter
+            || (payload.tracking.chapter == chapter
+                && (payload.tracking.page && page
+                    && payload.tracking.page > page))) {
             return cb(new Error('Cannot go backwards in comic'));
         }
-        payload.chapter = chapter;
-        payload.page = page;
-        return this._data.set({comicKey: payload}, err => {
+        // Re-tracking the last tracked page; Reload ? OR clicked on last read ?
+        // anyways -> Early return, while ensuring we're not growing the stack
+        if (payload.tracking.chapter === chapter && payload.tracking.page === page) {
+            return setTimeout(() => cb(null), 0);
+        }
+        payload.tracking.chapter = chapter;
+        payload.tracking.page = page;
+        const dataset = {};
+        dataset[comicKey] = payload;
+        return this._data.set(dataset, err => {
             if (err) {
                 console.log(`Got Update error: ${JSON.stringify(err)}`);
                 return cb(err);
@@ -470,9 +488,9 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicName,
 
             const comicKey = this._scheme.keyFromId(id);
             const dataset = {};
-            dataset[comicKey] = BmcComic.serialize();
+            dataset[comicKey] = comic.serialize();
 
-            const source = new BmcComicSource(readerName, comicName);
+            const source = new BmcComicSource(comicName, readerName);
             const sourceKey = this._scheme.computeSourceKey(source);
             map[sourceKey] = id;
             dataset[this._scheme.BMC_MAP_KEY] = map;
@@ -502,7 +520,7 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicName,
  */
 BmcDataAPI.prototype.aliasComic = function(comicId, readerName, comicName, cb) {
     return this._scheme.getMap((err, map) => {
-        const source = new BmcComicSource(readerName, comicName);
+        const source = new BmcComicSource(comicName, readerName);
         const sourceKey = this._scheme.computeSourceKey(source);
         map[sourceKey] = comicId;
         const dataset = {};
@@ -568,13 +586,15 @@ BmcDataAPI.prototype.list = function(cb) {
             return cb(err, null);
         }
         // Build an inverse mapping; comicId -> sources list
-        const map = data[this._scheme.BMC_MAP_KEY];
+        // Default to empty-object if no map found (never created yet)
+        const map = data[this._scheme.BMC_MAP_KEY] || {};
         const inverseMap = Object.keys(map).reduce((acc, key) => {
             const comicId = map[key];
             if (acc[comicId] === undefined) {
                 acc[comicId] = [];
             }
             acc[comicId].push(BmcComicSource.deserialize(key));
+            return acc;
         }, {});
         const keys = Object.keys(data).filter(
             key => key.indexOf(this._scheme.BMC_KEY_PREFIX) !== -1
