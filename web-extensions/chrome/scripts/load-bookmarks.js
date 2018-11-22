@@ -230,7 +230,7 @@ function addEvents(mangaList) {
     };
 
     bmcEngine._messaging.addWindowHandler(
-        bmcEngine.SIDEPANEL_ID,
+        BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'notification',
         evData => {
             console.log(`BmcSidePanel: received message to display status notification op=${evData.operation} err=${evData.error}`);
