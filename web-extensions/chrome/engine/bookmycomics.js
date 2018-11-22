@@ -151,7 +151,7 @@ BmcEngine.prototype._forceMemoizeComic = function () {
 BmcEngine.prototype.setup = function() {
     return this._ui.makeSidePanel(
         () => this.track(),
-        this._hostOrigin, this._comic.name, this._comic.chapter, this._comic.page);
+        this._hostOrigin);
 }
 
 /*

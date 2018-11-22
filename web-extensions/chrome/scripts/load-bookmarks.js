@@ -1,10 +1,6 @@
 const uriParams = document.location.search.split('?')[1].split('&');
 const hostOrigin = decodeURIComponent(uriParams[0].split('=')[1]);
-const readerName = decodeURIComponent(uriParams[1].split('=')[1]);
-const comicName = decodeURIComponent(uriParams[2].split('=')[1]);
-const chapter = uriParams[3].split('=')[1];
-const page = uriParams[4].split('=')[1];
-console.log(`BmcSideBar: origin ${hostOrigin} : comic ${comicName}, chapter=${chapter}, page=${page}`);
+console.log(`BmcSideBar: origin ${hostOrigin}`);
 
 console.log('Loading required Bmc utilities');
 const bmcMessaging = new BmcMessagingHandler(hostOrigin);
