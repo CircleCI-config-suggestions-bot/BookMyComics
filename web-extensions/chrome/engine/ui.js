@@ -81,7 +81,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         });
     this._db._data.get('sidebar-displayed', (err, value) => {
         if (value === 'true') {
-            showHideSidePanel()
+            this.toggleSidePanel();
         }
     });
 };
