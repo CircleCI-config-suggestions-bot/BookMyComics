@@ -1,6 +1,8 @@
-function readerURLParse() {
-    var path = window.location.pathname;
-    var parts = path.split("/").filter(function(s) { return s.length !== 0});
+function MangaReaderNetPlugin() {
+}
+
+MangaReaderNetPlugin.prototype.parseURL = function(url) {
+    var parts = url.split("/").filter(function(s) { return s.length !== 0});
     var not_mangas = ["popular", "search", "alphabetical", "latest", "random"];
 
     if (parts.length < 1) {

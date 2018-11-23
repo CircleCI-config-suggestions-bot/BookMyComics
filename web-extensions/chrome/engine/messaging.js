@@ -130,6 +130,22 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
             }
         }
     });
+
+    // Now, setup communication between background script & inserted frames
+    getBrowser().runtime.onMessage.addListener((event, sender, sendResponse) => {
+        console.log(`Received RUNTIME message: ${JSON.stringify(event)}`);
+        if (typeof(event) !== 'object') {
+             console.warn('BmcMessagingHandler: event is of unexpected type');
+             return ;
+        }
+        BmcWindowHandlers.forEach(handler => {
+            if (handler.select(event)) {
+                handler.handle(event, sender, sendResponse);
+            }
+        });
+        // Force the closing of the sendResponse Channel
+        return false;
+    });
     this._setup = true;
 }
 

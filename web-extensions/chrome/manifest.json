@@ -8,17 +8,30 @@
             "id": "support@bookmycomics.org"
         }
     },
+    "background": {
+        "scripts": [
+            "utils.js",
+            "engine/utils.js",
+            "engine/messaging.js",
+            "support/mangaeden.js",
+            "support/mangafox.js",
+            "support/mangahere.js",
+            "support/mangareader.js",
+            "sources.js",
+            "background-engine.js"
+        ]
+    },
     "content_scripts": [
         {
             "matches": ["https://www.mangaeden.com/en/en-manga/*"],
             "js": [
+                "utils.js",
                 "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
                 "engine/messaging.js",
                 "engine/ui.js",
                 "engine/bookmycomics.js",
-                "support/mangaeden.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -26,13 +39,13 @@
         {
             "matches": ["*://fanfox.net/manga/*"],
             "js": [
+                "utils.js",
                 "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
                 "engine/messaging.js",
                 "engine/ui.js",
                 "engine/bookmycomics.js",
-                "support/mangafox.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -40,13 +53,13 @@
         {
             "matches": ["*://mangahere.us/*"],
             "js": [
+                "utils.js",
                 "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
                 "engine/messaging.js",
                 "engine/ui.js",
                 "engine/bookmycomics.js",
-                "support/mangahere.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -54,13 +67,13 @@
         {
             "matches": ["https://www.mangareader.net/*"],
             "js": [
+                "utils.js",
                 "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
                 "engine/messaging.js",
                 "engine/ui.js",
                 "engine/bookmycomics.js",
-                "support/mangareader.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -68,13 +81,15 @@
     ],
     "web_accessible_resources": [
         "sidebar.html",
+        "utils.js",
         "engine/utils.js",
         "engine/storage.js",
         "engine/datamodel.js",
         "engine/messaging.js",
         "engine/ui.js",
         "engine/bookmycomics.js",
-        "scripts/*"
+        "scripts/*",
+        "support/*"
     ],
     "permissions": [
       "activeTab",

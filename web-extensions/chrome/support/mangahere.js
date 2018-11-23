@@ -1,6 +1,8 @@
-function readerURLParse() {
-    var path = window.location.pathname;
-    var parts = path.split("/").filter(function(s) { return s.length !== 0});
+function MangaHereUsPlugin() {
+}
+
+MangaHereUsPlugin.prototype.parseURL = function(url) {
+    var parts = url.split("/").filter(function(s) { return s.length !== 0});
 
     var manga = null;
     var chapter = null;
