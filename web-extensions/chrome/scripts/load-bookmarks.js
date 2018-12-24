@@ -243,9 +243,19 @@ addEvents(mangaList);
  * parameter to the original color.
  */
 function triggerTransition(elem, color) {
-    // Ensure we get the final computed one (from CSS sheet), as using `.style`
-    // only accesses inline values.
-    const origColor = getComputedStyle(elem).backgroundColor;
+    // If a transition was already triggered, we expect .style.backgroundColor
+    // to be set, while getting the computed style ensure we get a value (even
+    // in the first call of this function for that element).
+    //
+    // If not already triggered, we get the final computed backgroundColor
+    // (from CSS sheet).
+    //
+    // Note that if we only rely on the computed style, we might get a color
+    // from an ongoing transition, messing up the expected values if the
+    // transitions are somehow triggered multiple times (which can happen if we
+    // reconfigure/reload parts of the objects from BookMyComics).
+    //
+    const origColor = elem.style.backgroundColor || getComputedStyle(elem).backgroundColor;
 
     // -> Ensure it's not present when setting the color
     elem.classList.remove('notif-transform');
