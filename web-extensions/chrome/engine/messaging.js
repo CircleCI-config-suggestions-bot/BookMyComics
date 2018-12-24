@@ -72,6 +72,19 @@ function BmcMessageHandler(tag, selector, handler) {
 function BmcMessagingHandler(topOrigin) {
     this._setup = false;
     this._topOrigin = topOrigin;
+    this._selfOrigin = getBrowser().runtime.getURL('');
+}
+
+/*
+ * This method makes use of internal object data in order to determine whether
+ * a provided origin is accepted as the source of a message or not.
+ */
+BmcMessagingHandler.prototype._checkOrigin = function(origin) {
+    let found = false;
+    if (this._selfOrigin.indexOf(origin) !== -1) {
+        return true;
+    }
+    return this._topOrigin === origin;
 }
 
 /**
@@ -103,9 +116,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
              * URL of the extension does, hence the 'indexOf' method rather
              * than a simple '===' comparison.
              */
-            var bro = getBrowser();
-            var bmcOrigin = bro.runtime.getURL('');
-            if (bmcOrigin.indexOf(event.origin) !== -1 || event.origin === this._topOrigin) {
+            if (this._checkOrigin(event.origin)) {
                 var eventData = event.data;
                 if (typeof(eventData) !== 'object') {
                      console.warn('BmcMessagingHandler: EventData is of unexpected type');
