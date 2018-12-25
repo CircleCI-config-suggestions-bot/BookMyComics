@@ -25,3 +25,14 @@ FanFoxNetPlugin.prototype.parseURL = function(url) {
 
     return { common: { name, chapter, page }};
 }
+
+FanFoxNetPlugin.prototype.computeURL = function(comicInfo) {
+    // At the time of development, FanFox SSL certificate seems legit and
+    // working out of the box, so we might as well enforce HTTPS as a default.
+    // Might be configurable later on.
+    let url = `https://fanfox.net/manga/${comicInfo.common.name}`;
+    if (comicInfo.common.chapter) {
+        url += `/${comicInfo.common.chapter}/${comicInfo.common.page}.html`;
+    }
+    return url;
+}

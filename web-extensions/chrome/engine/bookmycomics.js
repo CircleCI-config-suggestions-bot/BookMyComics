@@ -52,6 +52,13 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                 notifyResult('Alias Comic', retErr);
             });
         });
+    // Handle "URLOpen"
+    this._messaging.addWindowHandler(
+        ENGINE_ID,
+        evData => evData.type === 'action' && evData.action === 'urlopen',
+        evData => {
+            window.location.replace(evData.url);
+        });
 
     // A bit of stateful data, so that we can avoid re-checking the storage
     // everytime (and thus speed-up a bit the logic that spawn the UI bits)

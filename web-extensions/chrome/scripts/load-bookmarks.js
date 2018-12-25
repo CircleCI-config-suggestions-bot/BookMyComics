@@ -33,6 +33,39 @@ BmcMangaList.prototype.onBrowseClick = function(ev) {
     comicLabel.classList.toggle('rollingArrow-down');
 }
 
+BmcMangaList.prototype.onSourceClick = function(comic, source) {
+    const ev = {
+        type: 'computation',
+        module: 'sources',
+        computation: 'URL:Generate:Request',
+        resource: {
+            origin: window.location.origin,
+            reader: source.reader,
+            comic: Object.assign({
+                common: {
+                    name: source.name,
+                    chapter: comic.chapter,
+                    page: comic.page,
+                },
+            }, source.info),
+        },
+    };
+    let bro = getBrowser();
+    bro.runtime.sendMessage(ev, (response, err) => {
+        if (err) {
+            console.warn(`BookMyComics: load-bookmark.js: sendmessage failed: err=${err}`);
+            return undefined;
+        }
+        let localEv = {
+            type: 'action',
+            action: 'urlopen',
+            url: response.resource.url,
+        };
+        // Let the content script at the page's root handle the URL opening
+        window.top.postMessage(localEv, '*');
+    });
+}
+
 BmcMangaList.prototype.onEntryClick = function(ev) {
     console.log('clickedOnManga!, mode=' + this._mode + ', event: ' + ev);
     switch (this._mode) {
@@ -74,6 +107,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
         const srcElem = document.createElement('div');
         srcElem.innerText = source.reader;
         comicSrcList.appendChild(srcElem);
+        srcElem.onclick = this.onSourceClick.bind(this, comic, source);
     });
 
     return elm;

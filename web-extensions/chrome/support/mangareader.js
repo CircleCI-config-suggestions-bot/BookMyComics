@@ -27,3 +27,14 @@ MangaReaderNetPlugin.prototype.parseURL = function(url) {
 
     return { common: { name, chapter, page }};
 }
+
+MangaReaderNetPlugin.prototype.computeURL = function(comicInfo) {
+    // At the time of development, MangaReader SSL certificate seems legit and
+    // working out of the box, so we might as well enforce HTTPS as a default.
+    // Might be configurable later on.
+    let url = `https://www.mangareader.net/${comicInfo.common.name}`;
+    if (comicInfo.common.chapter) {
+        url += `/${comicInfo.common.chapter}/${comicInfo.common.page}`;
+    }
+    return url;
+}

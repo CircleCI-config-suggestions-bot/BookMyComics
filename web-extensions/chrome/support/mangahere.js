@@ -30,3 +30,18 @@ MangaHereUsPlugin.prototype.parseURL = function(url) {
 
     return { common: { name, chapter, page }};
 }
+
+MangaHereUsPlugin.prototype.computeURL = function(comicInfo) {
+    // At the time of development, MangaHere.us SSL certificate is not detected
+    // as legit by standard browser, and a manual exception record is required.
+    // As such, we use HTTP and not HTTPS as the default.
+    // Might be configurable later on.
+    let url = `http://mangahere.us/${comicInfo.common.name}`;
+    if (comicInfo.common.chapter) {
+        url += `-chapter-${comicInfo.common.chapter}`;
+    }
+    if (comicInfo.common.page) {
+        url += `?page=${comicInfo.common.page}`;
+    }
+    return url;
+}
