@@ -16,7 +16,7 @@ BmcMangaList.prototype.MODE_BROWSE = 'browse';
 
 BmcMangaList.prototype.onAliasClick = function(ev) {
     const comicLabel = ev.target;
-    console.log(`BmcSideBar: BmcMangaList: onAlias: Label=${ev.target.innerText} id=${ev.target.id}`);
+    console.log(`BmcSideBar: BmcMangaList: onAlias: Label=${ev.target.innerText} id=${ev.target.bmcData.id}`);
     const evData = {
         type: "action",
         action: "alias",
