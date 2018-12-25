@@ -7,7 +7,7 @@ const ENGINE_ID = 'BookMyComics::Engine';
  *
  * @class BmcEngine
  */
-function BmcEngine(hostOrigin, readerName, comicName, chapter, page) {
+function BmcEngine(hostOrigin, readerName, comicInfo) {
     this._hostOrigin = hostOrigin;
     this._db = new BmcDataAPI();
     console.log('Instanciated BmcDataAPI');
@@ -55,11 +55,13 @@ function BmcEngine(hostOrigin, readerName, comicName, chapter, page) {
 
     // A bit of stateful data, so that we can avoid re-checking the storage
     // everytime (and thus speed-up a bit the logic that spawn the UI bits)
+    let sanitizedInfo = comicInfo || { common: {} };
     this._comic = {
         reader: readerName,
-        name: comicName,
-        chapter,
-        page,
+        info: sanitizedInfo,
+        name: sanitizedInfo.common.name,
+        chapter: sanitizedInfo.common.chapter,
+        page: sanitizedInfo.common.page,
         id: undefined,
         memoizing: false,
     };
@@ -198,7 +200,7 @@ BmcEngine.prototype.track = function() {
  */
 BmcEngine.prototype.register = function(label, cb) {
     console.log(`BookMyComic: bmcEngine.register: label=${label} reader=${this._comic.reader} manga=${this._comic.name} chapter=${this._comic.chapter} page=${this._comic.page}`);
-    return this._db.registerComic(label, this._comic.reader, this._comic.name, this._comic.chapter, this._comic.page, err => {
+    return this._db.registerComic(label, this._comic.reader, this._comic.info, err => {
         console.warn(`Register completed with ERR=${err}`);
         if (!err) {
             this._forceMemoizeComic();
@@ -217,7 +219,7 @@ BmcEngine.prototype.register = function(label, cb) {
  */
 BmcEngine.prototype.alias = function(comicId, cb) {
     console.log(`BookMyComic: bmcEngine.alias: id=${comicId} reader=${this._comic.reader} manga=${this._comic.name}`);
-    return this._db.aliasComic(comicId, this._comic.reader, this._comic.name, err => {
+    return this._db.aliasComic(comicId, this._comic.reader, this._comic.info, err => {
         if (!err) {
             this._forceMemoizeComic();
         }

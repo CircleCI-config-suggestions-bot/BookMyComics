@@ -40,9 +40,7 @@ if (window.top === window) {
          */
         const engine = new BmcEngine(window.location.origin,
                                      window.location.hostname,
-                                     (response.resource.comic || {}).manga,
-                                     (response.resource.comic || {}).chapter,
-                                     (response.resource.comic || {}).page);
+                                     response.resource.comic);
         console.log('Instanciated BmcEngine');
         engine.setup();
     });

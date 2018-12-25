@@ -4,17 +4,17 @@ function MangaHereUsPlugin() {
 MangaHereUsPlugin.prototype.parseURL = function(url) {
     var parts = url.split("/").filter(function(s) { return s.length !== 0});
 
-    var manga = null;
+    var name = null;
     var chapter = null;
     var page = null;
     if (parts.length === 2 && parts[0] === 'manga') {
-        manga = parts[1];
+        name = parts[1];
     } else if (parts.length === 1) {
         var urlParts = parts[0].split("-chapter-");
         if (urlParts.length < 2) {
             return null;
         } else if (urlParts.length > 1) {
-            manga = urlParts[0];
+            name = urlParts[0];
             chapter = urlParts[1];
             page = 1;
         }
@@ -28,5 +28,5 @@ MangaHereUsPlugin.prototype.parseURL = function(url) {
         return null;
     }
 
-    return { manga, chapter, page };
+    return { common: { name, chapter, page }};
 }

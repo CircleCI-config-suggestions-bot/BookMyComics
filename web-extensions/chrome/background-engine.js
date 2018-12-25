@@ -40,10 +40,10 @@ bmcMessaging.addWindowHandler(
             module: 'sources',
             computation: 'URL:Generate:Response',
             resource: {
+                reader: evData.resource.reader,
+                comic: evData.resource.comic,
                 url: bmcSources.computeURL(evData.resource.reader,
-                                           evData.resource.comic,
-                                           evData.resource.chapter,
-                                           evData.resource.page),
+                                           evData.resource.comic),
             }
         };
         return sendResponse(answerEv);

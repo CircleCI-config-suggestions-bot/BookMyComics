@@ -13,7 +13,7 @@ MangaReaderNetPlugin.prototype.parseURL = function(url) {
             return null;
         }
     }
-    var manga = parts[0];
+    var name = parts[0];
     var chapter = null;
     var page = null;
     if (parts.length > 1) {
@@ -25,5 +25,5 @@ MangaReaderNetPlugin.prototype.parseURL = function(url) {
         }
     }
 
-    return { manga, chapter, page };
+    return { common: { name, chapter, page }};
 }

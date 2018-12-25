@@ -7,7 +7,9 @@ MangaEdenComPlugin.prototype.parseURL = function(url) {
     if (parts.length < 3) {
         return null;
     }
-    var manga = parts[2];
+    var lang = parts[0];
+    var readingLang = parts[1];
+    var name = parts[2];
     var chapter = null;
     var page = null;
     if (parts.length > 4) {
@@ -15,5 +17,5 @@ MangaEdenComPlugin.prototype.parseURL = function(url) {
         page = parts[4];
     }
 
-    return { manga, chapter, page };
+    return { common: { name, chapter, page }, lang, readingLang };
 }
