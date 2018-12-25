@@ -168,7 +168,12 @@ BmcMangaList.prototype.match = function(value, match) {
 BmcMangaList.prototype.filter = function(filterStr) {
     for (var i = 0; i < this._node.childNodes.length; ++i) {
         entry = this._node.childNodes[i];
-        if (this.match(entry.innerText, filterStr)) {
+        // Need to dig through layers to reach the label's text
+        entryLabel = (entry             // ul
+                      .childNodes[0]    // li
+                      .childNodes[0]    // div
+                      .childNodes[0]);  // span == label
+        if (this.match(entryLabel.innerText, filterStr)) {
             this.showEntry(entry);
         } else {
             this.hideEntry(entry);
