@@ -22,7 +22,8 @@ function BmcEngine(hostOrigin, readerName, comicName, chapter, page) {
     this.removeEventListener = this._eventCore.removeEventListener.bind(this._eventCore);
     this.dispatchEvent = this._eventCore.dispatchEvent.bind(this._eventCore);
 
-    // Setup listeners for messages that should be directly handled by the core
+    // Setup listeners for messages, which should be directly handled by the core.
+    //
     // Handle "Register"
     this._messaging.addWindowHandler(
         ENGINE_ID,
