@@ -6,26 +6,44 @@
  * which resource seemed to somehow match the supported website's domain.
  */
 if (window.top === window) {
-    const work = readerURLParse();
-
     /*
-     * Now, let the engine do its magic: Register, track, etc.
+     * NOTE:
+     * We do not setup the engine first, in a concern of simplicity of the code
+     * (this avoids the requirement of a reconfigurable object).
      *
-     * NOTE: We're defaulting "work" here in case it could be undefined.
-     * This would mean that we're not on a manga page, but browsing the
-     * reader's website.
-     *
-     * This should still allow the webextension to spawn its sidebar, hence
-     * this work-around of the undefined `work` object, to only provide
-     * undefined values instead of the parameters.
+     * First, request the actual URL's manga information from the background page
+     * (who has the permissionss to load all supported origin scripts).
      */
-    const engine = new BmcEngine(window.location.origin,
-                                 window.location.hostname,
-                                 (work || {}).manga,
-                                 (work || {}).chapter,
-                                 (work || {}).page);
-    console.log('Instanciated BmcEngine');
-    engine.setup();
+    const ev = {
+        type: 'computation',
+        module: 'sources',
+        computation: 'URL:Parse:Request',
+        resource: {
+            origin: window.location.origin,
+            path: window.location.pathname,
+        },
+    };
+    console.log('BookMyComics: entrypoint.js: Requesting URL parsing from background script');
+    // Now send the message to the background page
+    getBrowser().runtime.sendMessage(ev, (response, err) => {
+        if (err) {
+            console.warn(`BookMyComics: entrypoint.js: sendmessage failed: err=${err}`);
+            return undefined;
+        }
+        console.log(`BookMyComics: entrypoint.js: sendmessage completed: data=${JSON.stringify(response)}`);
+        /*
+         * And finally, we can instanciate the engine and let it spawn the UI:
+         *
+         * NOTE: We're defaulting "response.resource.comic" here in case it
+         * could be undefined. This would mean that we're not on a manga
+         * page, but browsing the reader's website.
+         */
+        const engine = new BmcEngine(window.location.origin,
+                                     window.location.hostname,
+                                     response.resource.comic);
+        console.log('Instanciated BmcEngine');
+        engine.setup();
+    });
 } else {
     console.warn(`Attempting to reload for iframe: ${window.location}`);
 }

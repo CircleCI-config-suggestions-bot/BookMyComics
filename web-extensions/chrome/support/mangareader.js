@@ -1,6 +1,8 @@
-function readerURLParse() {
-    var path = window.location.pathname;
-    var parts = path.split("/").filter(function(s) { return s.length !== 0});
+function MangaReaderNetPlugin() {
+}
+
+MangaReaderNetPlugin.prototype.parseURL = function(url) {
+    var parts = url.split("/").filter(function(s) { return s.length !== 0});
     var not_mangas = ["popular", "search", "alphabetical", "latest", "random"];
 
     if (parts.length < 1) {
@@ -11,7 +13,7 @@ function readerURLParse() {
             return null;
         }
     }
-    var manga = parts[0];
+    var name = parts[0];
     var chapter = null;
     var page = null;
     if (parts.length > 1) {
@@ -23,5 +25,16 @@ function readerURLParse() {
         }
     }
 
-    return { manga, chapter, page };
+    return { common: { name, chapter, page }};
+}
+
+MangaReaderNetPlugin.prototype.computeURL = function(comicInfo) {
+    // At the time of development, MangaReader SSL certificate seems legit and
+    // working out of the box, so we might as well enforce HTTPS as a default.
+    // Might be configurable later on.
+    let url = `https://www.mangareader.net/${comicInfo.common.name}`;
+    if (comicInfo.common.chapter) {
+        url += `/${comicInfo.common.chapter}/${comicInfo.common.page}`;
+    }
+    return url;
 }

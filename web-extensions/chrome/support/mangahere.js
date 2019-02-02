@@ -1,18 +1,20 @@
-function readerURLParse() {
-    var path = window.location.pathname;
-    var parts = path.split("/").filter(function(s) { return s.length !== 0});
+function MangaHereUsPlugin() {
+}
 
-    var manga = null;
+MangaHereUsPlugin.prototype.parseURL = function(url) {
+    var parts = url.split("/").filter(function(s) { return s.length !== 0});
+
+    var name = null;
     var chapter = null;
     var page = null;
     if (parts.length === 2 && parts[0] === 'manga') {
-        manga = parts[1];
+        name = parts[1];
     } else if (parts.length === 1) {
         var urlParts = parts[0].split("-chapter-");
         if (urlParts.length < 2) {
             return null;
         } else if (urlParts.length > 1) {
-            manga = urlParts[0];
+            name = urlParts[0];
             chapter = urlParts[1];
             page = 1;
         }
@@ -26,5 +28,20 @@ function readerURLParse() {
         return null;
     }
 
-    return { manga, chapter, page };
+    return { common: { name, chapter, page }};
+}
+
+MangaHereUsPlugin.prototype.computeURL = function(comicInfo) {
+    // At the time of development, MangaHere.us SSL certificate is not detected
+    // as legit by standard browser, and a manual exception record is required.
+    // As such, we use HTTP and not HTTPS as the default.
+    // Might be configurable later on.
+    let url = `http://mangahere.us/${comicInfo.common.name}`;
+    if (comicInfo.common.chapter) {
+        url += `-chapter-${comicInfo.common.chapter}`;
+    }
+    if (comicInfo.common.page) {
+        url += `?page=${comicInfo.common.page}`;
+    }
+    return url;
 }

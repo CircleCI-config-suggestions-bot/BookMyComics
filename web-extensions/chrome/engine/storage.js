@@ -1,10 +1,3 @@
-function getBrowser() {
-    if (chrome !== undefined) {
-        return chrome;
-    }
-    return browser;
-}
-
 /**
  * This class is a very simple wrapper on top of the various browser's APIs for
  * storage, made to unify them into a simpler-to-user API.
@@ -29,9 +22,19 @@ function Storage() {
      * Only Firefox provides 'getBrowserInfo()' method
      * If we have it, we're then using FF, which provides promises instead
      * of requiring callbacks for async calls.
+     *
+     * NOTE It seems that chrome throws a ReferenceError when accessing the
+     * undefined variable, while Firefox allows it. let's try/catch around it
+     * for safety.
      */
-    if (browser !== undefined) {
-        this._mode = this.MODE_PROMISE;
+    try {
+        if (browser !== undefined) {
+            this._mode = this.MODE_PROMISE;
+        }
+    } catch (e) {
+        if (e.name === 'ReferenceError') {
+            // Keep Callback mode
+        }
     }
     console.log(`[Wrapper] Selected mode: ${this._mode}`);
 }
@@ -77,7 +80,7 @@ Storage.prototype._cbify = function(funcObj, args, onSuccess, onError) {
             return promise.catch(onError).then(onSuccess);
         case this.MODE_CALLBACK:
         default:
-            function resolveCb(err, data) {
+            function resolveCb(data, err) {
                 if (Storage.checkErr(err)) {
                     return onError(err);
                 }

@@ -16,7 +16,7 @@ BmcMangaList.prototype.MODE_BROWSE = 'browse';
 
 BmcMangaList.prototype.onAliasClick = function(ev) {
     const comicLabel = ev.target;
-    console.log(`BmcSideBar: BmcMangaList: onAlias: Label=${ev.target.innerText} id=${ev.target.id}`);
+    console.log(`BmcSideBar: BmcMangaList: onAlias: Label=${ev.target.innerText} id=${ev.target.bmcData.id}`);
     const evData = {
         type: "action",
         action: "alias",
@@ -31,6 +31,39 @@ BmcMangaList.prototype.onBrowseClick = function(ev) {
     const comicElem = comicDiv.parentElement;
     comicElem.querySelector('.nested').classList.toggle('active');
     comicLabel.classList.toggle('rollingArrow-down');
+}
+
+BmcMangaList.prototype.onSourceClick = function(comic, source) {
+    const ev = {
+        type: 'computation',
+        module: 'sources',
+        computation: 'URL:Generate:Request',
+        resource: {
+            origin: window.location.origin,
+            reader: source.reader,
+            comic: Object.assign({
+                common: {
+                    name: source.name,
+                    chapter: comic.chapter,
+                    page: comic.page,
+                },
+            }, source.info),
+        },
+    };
+    let bro = getBrowser();
+    bro.runtime.sendMessage(ev, (response, err) => {
+        if (err) {
+            console.warn(`BookMyComics: load-bookmark.js: sendmessage failed: err=${err}`);
+            return undefined;
+        }
+        let localEv = {
+            type: 'action',
+            action: 'urlopen',
+            url: response.resource.url,
+        };
+        // Let the content script at the page's root handle the URL opening
+        window.top.postMessage(localEv, '*');
+    });
 }
 
 BmcMangaList.prototype.onEntryClick = function(ev) {
@@ -74,6 +107,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
         const srcElem = document.createElement('div');
         srcElem.innerText = source.reader;
         comicSrcList.appendChild(srcElem);
+        srcElem.onclick = this.onSourceClick.bind(this, comic, source);
     });
 
     return elm;
@@ -243,9 +277,19 @@ addEvents(mangaList);
  * parameter to the original color.
  */
 function triggerTransition(elem, color) {
-    // Ensure we get the final computed one (from CSS sheet), as using `.style`
-    // only accesses inline values.
-    const origColor = getComputedStyle(elem).backgroundColor;
+    // If a transition was already triggered, we expect .style.backgroundColor
+    // to be set, while getting the computed style ensure we get a value (even
+    // in the first call of this function for that element).
+    //
+    // If not already triggered, we get the final computed backgroundColor
+    // (from CSS sheet).
+    //
+    // Note that if we only rely on the computed style, we might get a color
+    // from an ongoing transition, messing up the expected values if the
+    // transitions are somehow triggered multiple times (which can happen if we
+    // reconfigure/reload parts of the objects from BookMyComics).
+    //
+    const origColor = elem.style.backgroundColor || getComputedStyle(elem).backgroundColor;
 
     // -> Ensure it's not present when setting the color
     elem.classList.remove('notif-transform');
