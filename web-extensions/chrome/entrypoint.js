@@ -23,14 +23,14 @@ if (window.top === window) {
             path: window.location.pathname,
         },
     };
-    console.log('BookMyComics: entrypoint.js: Requesting URL parsing from background script');
+    LOGS.log('E0032');
     // Now send the message to the background page
     getBrowser().runtime.sendMessage(ev, (response, err) => {
         if (err) {
-            console.warn(`BookMyComics: entrypoint.js: sendmessage failed: err=${err}`);
+            LOGS.warn('E0033', {'err': err});
             return undefined;
         }
-        console.log(`BookMyComics: entrypoint.js: sendmessage completed: data=${JSON.stringify(response)}`);
+        LOGS.log('E0034', {'data': JSON.stringify(response)});
         /*
          * And finally, we can instanciate the engine and let it spawn the UI:
          *
@@ -41,9 +41,9 @@ if (window.top === window) {
         const engine = new BmcEngine(window.location.origin,
                                      window.location.hostname,
                                      response.resource.comic);
-        console.log('Instanciated BmcEngine');
+        LOGS.log('E0035');
         engine.setup();
     });
 } else {
-    console.warn(`Attempting to reload for iframe: ${window.location}`);
+    LOGS.warn('E0036', {'location': window.location});
 }

@@ -44,7 +44,7 @@ KeyScheme.prototype.getMap = function(cb) {
     keyToGet[this.BMC_MAP_KEY] = {};
     return this._storage.get(keyToGet, (err, data) => {
         if (err) {
-            console.log('Scheme could not retrieve Comic map');
+            LOGS.log('E0016');
             return cb(err, null);
         }
         return cb(null, data[this.BMC_MAP_KEY]);
@@ -337,8 +337,7 @@ BmcComic.prototype.setProgress = function(chapter, page) {
 BmcComic.prototype.addSource = function(source) {
     const found = this._sources.find(owned => owned.is(source));
     if (found) {
-        console.warn('Cannot add already existing source: '
-                     + JSON.stringify(source.serialize()));
+        LOGS.warn('E0014', {'data': JSON.stringify(source.serialize())});
         return false;
     }
     this._sources.push(source);
@@ -388,10 +387,10 @@ BmcDataAPI.prototype.findComic = function(readerName, comicName, cb) {
     let source = new BmcComicSource(comicName, readerName);
     return this._scheme.idFromSource(source, (err, id) => {
         if (err) {
-            console.log(`Got FIND error: ${JSON.stringify(err)}`);
+            LOGS.log('E0015', {'data': JSON.stringify(err)});
             return cb(err, null);
         }
-        console.log(`Found data: ${JSON.stringify(id)}`);
+        LOGS.log('E0016', {'data': JSON.stringify(id)});
         return cb(null, id === undefined ? null : id);
     });
 };
@@ -418,11 +417,11 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
     const comicKey = this._scheme.keyFromId(comicId);
     return this._data.get(comicKey, (err, data) => {
         if (err) {
-            console.log(`Could not find comicId: ${JSON.stringify(err)}`);
+            LOGS.log('E0017', {'data': JSON.stringify(err)});
             return cb(err);
         }
         if (!data) {
-            return cb(new Error('Could not find comic data'));
+            return cb(new Error(LOCALIZATION.getString('S21')));
         }
         const payload = Object.assign({}, data[comicKey]);
         /*
@@ -435,7 +434,7 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
             || (payload.tracking.chapter == chapter
                 && (payload.tracking.page && page
                     && payload.tracking.page > page))) {
-            return cb(new Error('Cannot go backwards in comic'));
+            return cb(new Error(LOCALIZATION.getString('S22')));
         }
         // Re-tracking the last tracked page; Reload ? OR clicked on last read ?
         // anyways -> Early return, while ensuring we're not growing the stack
@@ -448,10 +447,10 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
         dataset[comicKey] = payload;
         return this._data.set(dataset, err => {
             if (err) {
-                console.log(`Got Update error: ${JSON.stringify(err)}`);
+                LOGS.log('E0018', {'data': JSON.stringify(err)});
                 return cb(err);
             }
-            console.log(`Updated comicId ${comicId} successfully`);
+            LOGS.log('E0019', {'comicId': comicId});
             return cb(null);
         });
     });
@@ -492,8 +491,7 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
 BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) {
     return this._scheme.nextId((err, id) => {
         if (err) {
-            console.log('Got error from scheme.nextId(): '
-                        + `${JSON.stringify(err)}`);
+            LOGS.log('E0020', {'data': JSON.stringify(err)});
             return cb(err);
         }
         return this._scheme.getMap((err, map) => {
@@ -638,5 +636,4 @@ BmcDataAPI.prototype.list = function(cb) {
         });
         return cb(null, results);
     });
-}
-
+};

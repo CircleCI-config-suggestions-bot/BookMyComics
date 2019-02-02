@@ -36,7 +36,7 @@ function Storage() {
             // Keep Callback mode
         }
     }
-    console.log(`[Wrapper] Selected mode: ${this._mode}`);
+    LOGS.log('E0025', {'mode': this._mode});
 }
 
 Storage.prototype.MODE_CALLBACK = 0;
@@ -44,7 +44,7 @@ Storage.prototype.MODE_PROMISE = 1;
 
 Storage.checkErr = function(err) {
     return err && (typeof err !== "object" || Object.keys(err).length > 0);
-}
+};
 
 
 /**
@@ -114,7 +114,7 @@ Storage.prototype.get = function(keys, cb) {
         return cb(null, data);
     }
     return this._cbify(this._area.get, keys, onSuccess, onError);
-}
+};
 
 /**
  * @callback Storage~setCb
@@ -140,8 +140,8 @@ Storage.prototype.set = function(dataset, cb) {
             return cb(null);
         }
     }
-    return this._cbify(this._area.set, dataset, onSuccess, onError); 
-}
+    return this._cbify(this._area.set, dataset, onSuccess, onError);
+};
 
 /**
  * @callback Storage~removeCb
@@ -164,8 +164,8 @@ Storage.prototype.remove = function(keys, cb) {
     function onSuccess() {
         return cb(null);
     }
-    return this._cbify(this._area.remove, keys, onSuccess, onError); 
-}
+    return this._cbify(this._area.remove, keys, onSuccess, onError);
+};
 
 /**
  * @callback Storage~cleanCb
@@ -186,5 +186,5 @@ Storage.prototype.clear = function(cb) {
     function onSuccess() {
         return cb(null);
     }
-    return this._cbify(this._area.clear, onSuccess, onError); 
-}
+    return this._cbify(this._area.clear, onSuccess, onError);
+};
