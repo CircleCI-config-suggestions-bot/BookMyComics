@@ -34,11 +34,14 @@
           transition-duration: 2s;
       }
       #searchbox {
-        width: calc(100vw - 22px);
+        width: calc(100vw - 24px);
         border-right: 1px solid #ccc;
         top: 0;
         background-color: #fdfdfd;
         left: 0;
+        border: 1px solid #cecece;
+        right: 0;
+        padding: 3px;
       }
       #searchbox > div {
         font-size: 14px;
@@ -46,13 +49,17 @@
         border-bottom: 1px solid #ccc;
         cursor: text;
       }
+      #searchbox:focus, #searchbox:hover {
+        border-color: #078dd8;
+        box-shadow: 0 0 8px #078dd8;
+      }
       #register-but {
         position: absolute;
         top: 0;
         padding: 1px;
         background-color: #00aa00;
         font-size: 16px;
-        right: 0;
+        left: 0;
         border: 1px solid #ccc;
         border-left: none;
         border-radius: 0 3px 3px 0;
@@ -108,7 +115,20 @@
       .nested.active > div:hover {
         background-color: #ccf;
       }
+      .button-add {
+        width: 100%;
+        color: #fff;
+        text-align: center;
+        padding: 4px;
+        background-color: #71d72a;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .button-add:hover {
+        background-color: #7fec34;
+      }
     </style>
+    <script src="engine/utils.js"></script>
     <script src="engine/storage.js"></script>
     <script src="engine/datamodel.js"></script>
     <script src="engine/messaging.js"></script>
@@ -117,6 +137,7 @@
   </head>
   <body>
     <div id="side-panel">
+      <div id="side-adder" class="button-add">+</div>
       <input type="text" placeholder="Search..." id="searchbox"></input>
       <div id="manga-list"></div>
     </div>

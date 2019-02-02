@@ -11,40 +11,7 @@ function isChrome() {
     return window.chrome !== undefined;
 }
 
-BmcUI.prototype.INFOBAR_ID = 'BmcInfoBar';
-BmcUI.prototype.SIDEPANEL_ID = 'BmcSidePanel';
-
-BmcUI.prototype.makeInfobar = function(resourcePath) {
-    var height = '40px';
-    var iframe = document.createElement('iframe');
-    iframe.id = this.INFOBAR_ID;
-    iframe.src = resourcePath;
-    console.log(`Inserting iframe src=${iframe.src}`);
-    iframe.style.width = '100vw';
-    iframe.style.height = height;
-    iframe.style.position = 'fixed';
-    iframe.style.top = '0';
-    iframe.style.left = '0';
-    iframe.style.zIndex = '1000001'; // Some high value
-    iframe.style.border = 'none';
-    // Etc. Add your own styles if you want to
-    document.documentElement.appendChild(iframe);
-
-    // Ensure that he added toolbar will "shift" the page's content downwards
-    // to avoid the overlay effect, and instead actually insert it at the top
-    var bodyStyle = document.body.style;
-    var cssTransform = 'transform' in bodyStyle ? 'transform' : 'webkitTransform';
-    bodyStyle[cssTransform] = 'translateY(' + height + ')';
-    //
-    // Message sending is useless to handle for the Infobar,
-    // since the infobar communicates directly to the sidebar (same-domain
-    // cross-iframe javascript control); and the sidebar is the one controlling
-    // the actual logic of the addon.
-    //
-    // Thus, the side-bar showing controlled by the infobar will automatically
-    // hide the infobar when necessary, through sidebar <-> Host-window
-    // messaging.
-};
+BmcUI.prototype.SIDEPANEL_ID = FrameFinder.definitions.SIDEPANEL.id;
 
 BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     var height = '100vh';
@@ -81,35 +48,53 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         });
     this._db._data.get('sidebar-displayed', (err, value) => {
         if (value === 'true') {
-            showHideSidePanel()
+            this.toggleSidePanel();
         }
     });
 };
 
+BmcUI.prototype.toggleSidePanel = function() {
+    const evData = {
+        type: 'action',
+        action: 'toggle',
+        module: 'sidebar',
+    };
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
+    sidepanel.postMessage(evData, '*');
+}
+
 BmcUI.prototype.makeRegisterDialog = function(comicName, chapter, page) {
-    var bro = getBrowser();
-    this.makeInfobar(bro.runtime.getURL('register-diag.html'));
+    // Build the message to send, to force showing the register button
+    var evData = {
+        type: "action",
+        action: "setup",
+        operation: "register",
+    };
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
+    sidepanel.postMessage(evData, '*');
 };
 
 BmcUI.prototype.removeRegisterDialog = function() {
-    const infobar = document.getElementById(this.INFOBAR_ID);
-    if (infobar) {
-        infobar.parentNode.removeChild(infobar);
-    }
-    this._messaging.removeWindowHandlers(this.INFOBAR_ID);
 };
 
-BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin, comicName, chapter, page) {
+BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin) {
     var bro = getBrowser();
     const origin = encodeURIComponent(hostOrigin);
-    const rName = encodeURIComponent(window.location.hostname);
-    const cName = encodeURIComponent(comicName);
     this.buildSidePanel(setupTracker, bro.runtime.getURL('sidebar.html')
-        + `?hostOrigin=${origin}&reader=${rName}&comicName=${cName}&chapter=${chapter}&page=${page}`);
+        + `?hostOrigin=${origin}`);
 };
 
 BmcUI.prototype.removeSidePanel = function() {
-    const sidepanel = document.getElementById(this.SIDEPANEL_ID);
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
     sidepanel.parentNode.removeChild(sidepanel);
     this._messaging.removeWindowHandlers(this.SIDEPANEL_ID);
 };
@@ -121,7 +106,10 @@ BmcUI.prototype.makeTrackingNotification = function(err) {
         operation: "track",
         error: err,
     };
-    const sidepanel = document.getElementById(this.SIDEPANEL_ID);
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
     console.log(`BmcUi: Sending message to SidePanel for notification display`);
-    sidepanel.contentWindow.postMessage(evData, '*');
+    sidepanel.postMessage(evData, '*');
 };

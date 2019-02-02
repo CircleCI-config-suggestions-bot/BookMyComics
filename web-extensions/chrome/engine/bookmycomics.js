@@ -1,3 +1,5 @@
+const ENGINE_ID = 'BookMyComics::Engine';
+
 /**
  * This class provides the internal logic for the extension.
  * Depending on the method, it can optionally spawn an UI element, or generate
@@ -19,6 +21,36 @@ function BmcEngine(hostOrigin, readerName, comicName, chapter, page) {
     this.addEventListener = this._eventCore.addEventListener.bind(this._eventCore);
     this.removeEventListener = this._eventCore.removeEventListener.bind(this._eventCore);
     this.dispatchEvent = this._eventCore.dispatchEvent.bind(this._eventCore);
+
+    // Setup listeners for messages that should be directly handled by the core
+    // Handle "Register"
+    this._messaging.addWindowHandler(
+        ENGINE_ID,
+        evData => evData.type === 'action' && evData.action === 'register',
+        evData => {
+            this.register(evData.label, err => {
+                let retErr = null;
+                if (err) {
+                    retErr = new Error('Could not register Comic ' + evData.label + ': ' + err.message);
+                }
+                this._ui.toggleSidePanel();
+                notifyResult('Register Comic', retErr);
+            });
+        });
+    // Handle "Alias"
+    this._messaging.addWindowHandler(
+        ENGINE_ID,
+        evData => evData.type === 'action' && evData.action === 'alias',
+        evData => {
+            this.alias(evData.id, err => {
+                let retErr = null;
+                if (err) {
+                    retErr = new Error('Could not alias current page to comicId ' + evData.id + ': ' + err.message);
+                }
+                this._ui.toggleSidePanel();
+                notifyResult('Alias Comic', retErr);
+            });
+        });
 
     // A bit of stateful data, so that we can avoid re-checking the storage
     // everytime (and thus speed-up a bit the logic that spawn the UI bits)
@@ -44,18 +76,6 @@ function BmcEngine(hostOrigin, readerName, comicName, chapter, page) {
  */
 BmcEngine.prototype.events = {
     load: 'engine.load',
-    register: {
-        error: 'register.error',
-        complete: 'register.done',
-    },
-    alias: {
-        error: 'alias.error',
-        complete: 'alias.done',
-    },
-    ignore: {
-        error: 'ignore.error',
-        complete: 'ignore.done',
-    },
 };
 
 /**
@@ -102,6 +122,25 @@ BmcEngine.prototype._memoizeComic = function () {
     });
 }
 
+BmcEngine.prototype._forceMemoizeComic = function () {
+    // If memoization is ongoing, wait for the end of it before forcing a new
+    // memoization.
+    if (this._comic.memoizing) {
+        console.log(`BmcEngine: Resetting ID memoization after end of ongoing memoization`);
+        this.addEventListener(this.events.load, () => this._forceMemoizeComic(), {once: true});
+        return this._memoizeComic();
+    }
+
+    console.log(`BmcEngine: Resetting ID memoization`);
+    // Now that we're sure no memoization is ongoing, reset the memoized ID,
+    // and restart memoization
+    this._comic.id = undefined;
+    if (this._comic.name) {
+        this.addEventListener(this.events.load, () => { console.log('Memoization reset complete'); }, {once: true});
+        this._memoizeComic();
+    }
+}
+
 /*
  * This function is the main window's entry point to setup the add-on's
  * necessary utilities (UI, background process, etc.)
@@ -112,7 +151,7 @@ BmcEngine.prototype._memoizeComic = function () {
 BmcEngine.prototype.setup = function() {
     return this._ui.makeSidePanel(
         () => this.track(),
-        this._hostOrigin, this._comic.name, this._comic.chapter, this._comic.page);
+        this._hostOrigin);
 }
 
 /*
@@ -156,14 +195,14 @@ BmcEngine.prototype.track = function() {
  *
  * @return {undefined}
  */
-BmcEngine.prototype.register = function(label) {
+BmcEngine.prototype.register = function(label, cb) {
     console.log(`BookMyComic: bmcEngine.register: label=${label} reader=${this._comic.reader} manga=${this._comic.name} chapter=${this._comic.chapter} page=${this._comic.page}`);
     return this._db.registerComic(label, this._comic.reader, this._comic.name, this._comic.chapter, this._comic.page, err => {
         console.warn(`Register completed with ERR=${err}`);
-        if (err) {
-            return this.dispatchEvent(new CustomEvent(this.events.register.error, {detail: err}));
+        if (!err) {
+            this._forceMemoizeComic();
         }
-        return this.dispatchEvent(new CustomEvent(this.events.register.complete));
+        return cb(err);
     });
 };
 
@@ -175,23 +214,12 @@ BmcEngine.prototype.register = function(label) {
  *
  * @return {undefined}
  */
-BmcEngine.prototype.alias = function(comicId) {
+BmcEngine.prototype.alias = function(comicId, cb) {
     console.log(`BookMyComic: bmcEngine.alias: id=${comicId} reader=${this._comic.reader} manga=${this._comic.name}`);
     return this._db.aliasComic(comicId, this._comic.reader, this._comic.name, err => {
-        if (err) {
-            return this.dispatchEvent(new CustomEvent(this.events.alias.error, {detail: err}));
+        if (!err) {
+            this._forceMemoizeComic();
         }
-        return this.dispatchEvent(new CustomEvent(this.events.alias.complete));
+        return cb(err);
     });
-};
-
-/*
- * This function registers a comic into the "Ignore List" in the saved data.
- * TODO: Ideally, it should be registered along with some data allowing the
- * extension to offer registering the manga again, according to the user
- * settings.
- */
-BmcEngine.prototype.ignore = function() {
-    console.log(`BookMyComic: bmcEngine.ignore: manga=${this._comic.name} chapter=${this._comic.chapter} page=${this._comic.page}`);
-    this.dispatchEvent(new CustomEvent(this.events.ignore.complete));
 };

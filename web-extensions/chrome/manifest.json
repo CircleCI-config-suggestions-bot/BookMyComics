@@ -12,6 +12,7 @@
         {
             "matches": ["https://www.mangaeden.com/en/en-manga/*"],
             "js": [
+                "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
                 "engine/messaging.js",
@@ -25,6 +26,7 @@
         {
             "matches": ["*://fanfox.net/manga/*"],
             "js": [
+                "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
                 "engine/messaging.js",
@@ -38,6 +40,7 @@
         {
             "matches": ["*://mangahere.us/*"],
             "js": [
+                "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
                 "engine/messaging.js",
@@ -51,6 +54,7 @@
         {
             "matches": ["https://www.mangareader.net/*"],
             "js": [
+                "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
                 "engine/messaging.js",
@@ -64,7 +68,7 @@
     ],
     "web_accessible_resources": [
         "sidebar.html",
-        "register-diag.html",
+        "engine/utils.js",
         "engine/storage.js",
         "engine/datamodel.js",
         "engine/messaging.js",
