@@ -112,12 +112,12 @@ BmcUI.prototype.removeSidePanel = function() {
     this._messaging.removeWindowHandlers(this.SIDEPANEL_ID);
 };
 
-BmcUI.prototype.makeTrackingNotification = function(err) {
+BmcUI.prototype.makeNotification = function(operation, err) {
     var evData = {
         type: "action",
         action: "notification",
-        operation: "track",
-        error: err,
+        operation,
+        error: (err||{}).message,
     };
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {

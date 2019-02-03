@@ -407,7 +407,7 @@ function notifyResult(operation, error) {
     const togBtn = document.getElementById('hide-but');
     triggerTransition(togBtn, transitionColor);
     if (error) {
-        LOGS.error('E0016', {'operation': operation, 'error': error.message});
+        LOGS.error('E0016', {operation, 'error': error.message});
     }
 }
 

@@ -36,7 +36,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                                                                 'err': err.message}));
                 }
                 this._ui.toggleSidePanel();
-                notifyResult('Register Comic', retErr);
+                this._ui.makeNotification('Register Comic', retErr);
             });
         });
     // Handle "Alias"
@@ -51,7 +51,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                                                                 'err': err.message}));
                 }
                 this._ui.toggleSidePanel();
-                notifyResult('Alias Comic', retErr);
+                this._ui.makeNotification('Alias Comic', retErr);
             });
         });
     // Handle "Delete"
@@ -73,7 +73,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     }
                     this._ui.refreshSidePanel();
                     const kind = evData.source ? "Comic Source" : "Comic"
-                    notifyResult(`Delete ${kind}`, retErr);
+                    this._ui.makeNotification(`Delete ${kind}`, retErr);
                 });
         });
     // Handle "URLOpen"
@@ -217,7 +217,7 @@ BmcEngine.prototype.track = function() {
             return;
         }
         this._db.updateComic(this._comic.id, this._comic.chapter, this._comic.page,
-                             err => this._ui.makeTrackingNotification(err));
+                             err => this._ui.makeNotification('Track Comic', err));
     }, {once: true});
 
     // Now fire the load or cache hit, that shall trigger the previously
