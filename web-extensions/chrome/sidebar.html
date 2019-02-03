@@ -3,6 +3,39 @@
   <head>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' filesystem: ; object-src 'self'; ">
     <style>
+      @font-face {
+        font-family: 'FontAwesome';
+        src: url('./resources/fontawesome-webfont.woff2');
+        font-weight: normal;
+        font-style: normal;
+      }
+      .fa {
+        display: inline-block;
+        font: normal normal normal 14px/1 FontAwesome;
+        font-size: 14px;
+        font-size: inherit;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .fa-trash {
+        position: absolute;
+        right: 2px;
+        top: calc(50% - 7px);
+        display: none;
+      }
+      .fa-trash::before {
+        content: "\f1f8";
+      }
+      .label-container {
+        position: relative;
+      }
+      .label {
+        width: 100%;
+      }
+      .label:hover + .fa-trash {
+        display: initial;
+      }
       #side-panel {
         width: calc(100vw - 16px);
         border-right: 1px solid #ccc;

@@ -200,6 +200,13 @@ function Localization(lang = DEFAULT_LANG) {
         'S56': {
             'en': "BmcSidePanel: {operation} failed: {error}",
         },
+        'S57': {
+            'en': 'Attempting to delete source {reader}:{name} '
+                  + 'from comic {comic} ({id})',
+        },
+        'S58': {
+            'en': 'Attempting to delete comic {comic} ({id})',
+        },
     };
 }
 

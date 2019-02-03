@@ -67,6 +67,23 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
     });
 }
 
+BmcMangaList.prototype.onSourceDelete = function(ev) {
+    const icon = ev.target;
+    const srcElem = icon.parentElement;
+    const srcLink = srcElem.firstChild;
+    const srcList = srcElem.parentElement;
+    const comicElem = srcList.parentElement;
+    const comicDiv = comicElem.firstChild;
+    const comicLabel = comicDiv.firstChild;
+
+    LOGS.debug('S57', {
+        reader: srcLink.bmcData.reader,
+        name: srcLink.bmcData.name,
+        comic: comicLabel.innerText,
+        id: comicLabel.bmcData.id,
+    });
+}
+
 BmcMangaList.prototype.onEntryClick = function(ev) {
     LOGS.log('S48', {'mode': this._mode, 'event': ev});
     switch (this._mode) {
@@ -81,6 +98,14 @@ BmcMangaList.prototype.onEntryClick = function(ev) {
     }
 }
 
+BmcMangaList.prototype.onEntryDelete = function(ev) {
+    const icon = ev.target;
+    const comicDiv = icon.parentElement;
+    const comicLabel = comicDiv.firstChild;
+
+    LOGS.debug('S58', { comic: comicLabel.innerText, id: comicLabel.bmcData.id });
+}
+
 BmcMangaList.prototype.generateComic = function(comic) {
     const elm = document.createElement('ul');
     elm.classList.toggle('mangaListItem');
@@ -88,11 +113,13 @@ BmcMangaList.prototype.generateComic = function(comic) {
     const comicElem = document.createElement('li');
     elm.appendChild(comicElem);
 
+    // Define the content on comic Label's line
     const comicDiv = document.createElement('div');
+    comicDiv.classList.add('label-container');
     comicElem.appendChild(comicDiv);
 
-    const comicLabel = document.createElement('span');
-    comicLabel.classList.toggle('rollingArrow');
+    const comicLabel = document.createElement('div');
+    comicLabel.classList.add('label', 'rollingArrow');
     comicLabel.innerText = comic.label;
     comicLabel.bmcData = {
         id: comic.id,
@@ -100,15 +127,38 @@ BmcMangaList.prototype.generateComic = function(comic) {
     comicLabel.onclick = this.onEntryClick.bind(this);
     comicDiv.appendChild(comicLabel);
 
+    const deleteIcon = document.createElement('span');
+    deleteIcon.classList.add('fa', 'fa-trash');
+    deleteIcon.setAttribute('aria-hidden', 'true');
+    deleteIcon.onclick = this.onEntryDelete.bind(this);
+    comicDiv.appendChild(deleteIcon);
+
+    // Define the list of sources beneath the comic's Label
     const comicSrcList = document.createElement('div');
     comicSrcList.classList.toggle('nested');
     comicElem.appendChild(comicSrcList);
 
     comic.iterSources(source => {
         const srcElem = document.createElement('div');
-        srcElem.innerText = source.reader;
+        srcElem.classList.add('label-container');
+
+        const srcLink = document.createElement('div');
+        srcLink.classList.add('label');
+        srcLink.innerText = source.reader;
+        srcLink.bmcData = {
+            reader: source.reader,
+            name: source.name,
+        };
+        srcLink.onclick = this.onSourceClick.bind(this, comic, source);
+        srcElem.appendChild(srcLink);
+
+        const deleteSrcIcon = document.createElement('span');
+        deleteSrcIcon.classList.add('fa', 'fa-trash');
+        deleteSrcIcon.setAttribute('aria-hidden', 'true');
+        deleteSrcIcon.onclick = this.onSourceDelete.bind(this);
+        srcElem.appendChild(deleteSrcIcon);
+
         comicSrcList.appendChild(srcElem);
-        srcElem.onclick = this.onSourceClick.bind(this, comic, source);
     });
 
     return elm;
