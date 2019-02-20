@@ -597,6 +597,76 @@ BmcDataAPI.prototype.unregisterComic = function(comicId, cb) {
     });
 };
 
+
+/**
+ * @callback BmcDataAPI~unaliasCb
+ * @param {Error} err - Error object returned by the failing layer
+ */
+
+/**
+ * This function allows unaliasing a Source from a Comic, in an inclusive
+ * manner. If the unaliased Source is the last Source for the Comic, then the
+ * Comic itself is removed using the fail-safe unregisterComic method.
+ * If not, the Source is simply removed from the list of available Sources.
+ *
+ * This prevents an intermediate failure from creating an inconsistent dataset
+ * (ie: make a resolvable id point towards removed data).
+ *
+ * @param {Number} comicId - Unique ID of the registered Comic
+ * @param {String} reader - Name of the source's reader
+ * @param {String} name - Name of the comic within the reader
+ * @param {BmcDataAPI~unaliasCb} cb
+ *
+ * @return {undefined}
+ */
+BmcDataAPI.prototype.unaliasComic = function(comicId, reader, name, cb) {
+    return this._scheme.getMap((err, map) => {
+        // First, count the number of Sources for one Comic
+        // On the way, check if the source to be removed is still part of the
+        // dataset (it might have been removed through another tab, rendering
+        // the current sideBar content out-of-sync)
+        let sourceFound = false;
+        const sourceCount = Object.keys(map).reduce((ctr, key) => {
+            if (map[key].id === comicId) {
+                // omit "info" parameter as we won't use the object being the
+                // deserialization of the key.
+                const source = BmcComicSource.deserialize(key);
+                if (source.reader === reader && source.name === name) {
+                    sourceFound = true;
+                }
+                return ctr + 1;
+            }
+            return ctr;
+        }, 0);
+
+        // If the source to be removed was not part of the dataset, notify an
+        // error, and don't do anything more.
+        if (!sourceFound) {
+            return cb(new Error(LOGS.getString('E0018', {
+                reader,
+                name,
+                id: comicId,
+            })));
+        }
+
+        // Check if we need to delete the whole comic instead
+        if (sourceCount === 1) {
+            return this.unregisterComic(comicId, cb);
+        }
+
+        // Simply remove the source.
+        const source = new BmcComicSource(name, reader, {});
+        const sourceKey = this._scheme.computeSourceKey(source);
+        delete map[sourceKey];
+        const dataset = {};
+        dataset[this._scheme.BMC_MAP_KEY] = map;
+        return this._data.set(dataset, err => {
+            return cb(err);
+        });
+    });
+};
+
+
 /**
  * This method returns the complete list of tracked comics
  *

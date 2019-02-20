@@ -82,6 +82,18 @@ BmcMangaList.prototype.onSourceDelete = function(ev) {
         comic: comicLabel.innerText,
         id: comicLabel.bmcData.id,
     });
+    const evData = {
+        type: "action",
+        action: "delete",
+        comic: {
+            id: comicLabel.bmcData.id,
+        },
+        source: {
+            reader: srcLink.bmcData.reader,
+            name: srcLink.bmcData.name,
+        },
+    };
+    window.top.postMessage(evData, '*');
 }
 
 BmcMangaList.prototype.onEntryClick = function(ev) {
@@ -104,6 +116,15 @@ BmcMangaList.prototype.onEntryDelete = function(ev) {
     const comicLabel = comicDiv.firstChild;
 
     LOGS.debug('S58', { comic: comicLabel.innerText, id: comicLabel.bmcData.id });
+
+    const evData = {
+        type: "action",
+        action: "delete",
+        comic: {
+            id: comicLabel.bmcData.id,
+        },
+    };
+    window.top.postMessage(evData, '*');
 }
 
 BmcMangaList.prototype.generateComic = function(comic) {
@@ -311,6 +332,12 @@ function addEvents(mangaList) {
         evData => evData.type === 'action' && evData.action === 'toggle' && evData.module === 'sidebar',
         evData => {
             showHideSidePanel();
+        });
+    bmcMessaging.addWindowHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'refresh' && evData.module === 'sidebar',
+        evData => {
+            mangaList.generate();
         });
 }
 

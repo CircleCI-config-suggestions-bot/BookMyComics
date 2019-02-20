@@ -90,6 +90,19 @@ BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin) {
         + `?hostOrigin=${origin}`);
 };
 
+BmcUI.prototype.refreshSidePanel = function() {
+    var evData = {
+        type: "action",
+        action: "refresh",
+        module: "sidebar",
+    };
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
+    sidepanel.postMessage(evData, '*');
+};
+
 BmcUI.prototype.removeSidePanel = function() {
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
