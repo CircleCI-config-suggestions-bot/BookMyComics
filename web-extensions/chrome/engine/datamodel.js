@@ -44,7 +44,7 @@ KeyScheme.prototype.getMap = function(cb) {
     keyToGet[this.BMC_MAP_KEY] = {};
     return this._storage.get(keyToGet, (err, data) => {
         if (err) {
-            LOGS.log('E0016');
+            LOGS.log('S16');
             return cb(err, null);
         }
         return cb(null, data[this.BMC_MAP_KEY]);
@@ -337,7 +337,7 @@ BmcComic.prototype.setProgress = function(chapter, page) {
 BmcComic.prototype.addSource = function(source) {
     const found = this._sources.find(owned => owned.is(source));
     if (found) {
-        LOGS.warn('E0014', {'data': JSON.stringify(source.serialize())});
+        LOGS.warn('E0009', {'data': JSON.stringify(source.serialize())});
         return false;
     }
     this._sources.push(source);
@@ -387,10 +387,10 @@ BmcDataAPI.prototype.findComic = function(readerName, comicName, cb) {
     let source = new BmcComicSource(comicName, readerName);
     return this._scheme.idFromSource(source, (err, id) => {
         if (err) {
-            LOGS.log('E0015', {'data': JSON.stringify(err)});
+            LOGS.log('S18', {'data': JSON.stringify(err)});
             return cb(err, null);
         }
-        LOGS.log('E0016', {'data': JSON.stringify(id)});
+        LOGS.log('S19', {'data': JSON.stringify(id)});
         return cb(null, id === undefined ? null : id);
     });
 };
@@ -417,7 +417,7 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
     const comicKey = this._scheme.keyFromId(comicId);
     return this._data.get(comicKey, (err, data) => {
         if (err) {
-            LOGS.log('E0017', {'data': JSON.stringify(err)});
+            LOGS.log('S20', {'data': JSON.stringify(err)});
             return cb(err);
         }
         if (!data) {
@@ -447,10 +447,10 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
         dataset[comicKey] = payload;
         return this._data.set(dataset, err => {
             if (err) {
-                LOGS.log('E0018', {'data': JSON.stringify(err)});
+                LOGS.log('S23', {'data': JSON.stringify(err)});
                 return cb(err);
             }
-            LOGS.log('E0019', {'comicId': comicId});
+            LOGS.log('S24', {'comicId': comicId});
             return cb(null);
         });
     });
@@ -491,7 +491,7 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
 BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) {
     return this._scheme.nextId((err, id) => {
         if (err) {
-            LOGS.log('E0020', {'data': JSON.stringify(err)});
+            LOGS.log('S25', {'data': JSON.stringify(err)});
             return cb(err);
         }
         return this._scheme.getMap((err, map) => {

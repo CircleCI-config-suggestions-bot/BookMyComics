@@ -40,7 +40,7 @@ FrameFinder.findWindow = function(frameDef) {
         // if we're in the top window, CORS will prevent introspecting the
         // webext-owned frames, but we know the frame's ID
         if (frameDef.id) {
-            LOGS.log('E0030');
+            LOGS.log('S36');
             return document.getElementById(frameDef.id).contentWindow;
         }
     } else {
@@ -51,7 +51,7 @@ FrameFinder.findWindow = function(frameDef) {
             let frame = window.parent.frames[i];
             try {
                 if (frameDef.inspect && frameDef.inspect(frame)) {
-                    LOGS.log('E0031');
+                    LOGS.log('S37');
                     return frame;
                 }
             } catch(e) {

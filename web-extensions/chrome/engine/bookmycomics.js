@@ -10,11 +10,11 @@ const ENGINE_ID = 'BookMyComics::Engine';
 function BmcEngine(hostOrigin, readerName, comicInfo) {
     this._hostOrigin = hostOrigin;
     this._db = new BmcDataAPI();
-    LOGS.log('E0012', {'elem': 'BmcDataAPI'});
+    LOGS.log('S14', {'elem': 'BmcDataAPI'});
     this._messaging = new BmcMessagingHandler(this._hostOrigin);
-    LOGS.log('E0012', {'elem': 'BmcMEssagingHandler'});
+    LOGS.log('S14', {'elem': 'BmcMEssagingHandler'});
     this._ui = new BmcUI(this._messaging, this._db);
-    LOGS.log('E0012', {'elem': 'BmcUI'});
+    LOGS.log('S14', {'elem': 'BmcUI'});
 
     // Re-use DOM-style events by using a null-text node underneath
     this._eventCore = document.createTextNode(null);
@@ -138,18 +138,18 @@ BmcEngine.prototype._forceMemoizeComic = function () {
     // If memoization is ongoing, wait for the end of it before forcing a new
     // memoization.
     if (this._comic.memoizing) {
-        LOGS.log('E0002');
+        LOGS.log('S3');
         this.addEventListener(this.events.load, () => this._forceMemoizeComic(), {once: true});
         return this._memoizeComic();
     }
 
-    LOGS.log('E0003');
+    LOGS.log('S4');
     // Now that we're sure no memoization is ongoing, reset the memoized ID,
     // and restart memoization
     this._comic.id = undefined;
     if (this._comic.name) {
         this.addEventListener(this.events.load, () => {
-            LOGS.log('E0004');
+            LOGS.log('S5');
         }, {once: true});
         this._memoizeComic();
     }
@@ -178,18 +178,18 @@ BmcEngine.prototype.setup = function() {
  */
 BmcEngine.prototype.track = function() {
     if (! this._comic.name) {
-        LOGS.log('E0005');
+        LOGS.log('S6');
         return ;
     }
-    LOGS.log('E0006', {'manga': this._comic.name,
-                       'chapter': this._comic.chapter,
-                       'page': this._comic.page});
+    LOGS.log('S7', {'manga': this._comic.name,
+                    'chapter': this._comic.chapter,
+                    'page': this._comic.page});
 
     // One single way to handle this, whether the id was already memoized or
     // not: use the event handling.
     LOGS.warn('E0007', {'event': this.events.load});
     this.addEventListener(this.events.load, () => {
-        LOGS.log('E0008', {'id': this._comic.id});
+        LOGS.log('S9', {'id': this._comic.id});
         if (this._comic.id === null) {
             this._ui.makeRegisterDialog();
             return;
@@ -212,11 +212,11 @@ BmcEngine.prototype.track = function() {
  * @return {undefined}
  */
 BmcEngine.prototype.register = function(label, cb) {
-    LOGS.log('E0009', {'label': label,
-                       'reader': this._comic.reader,
-                       'manga': this._comic.name,
-                       'chapter': this._comic.chapter,
-                       'page': this._comic.page});
+    LOGS.log('S10', {'label': label,
+                     'reader': this._comic.reader,
+                     'manga': this._comic.name,
+                     'chapter': this._comic.chapter,
+                     'page': this._comic.page});
     return this._db.registerComic(label, this._comic.reader, this._comic.info, err => {
         LOGS.warn('E0010', {'err': err});
         if (!err) {
@@ -235,9 +235,9 @@ BmcEngine.prototype.register = function(label, cb) {
  * @return {undefined}
  */
 BmcEngine.prototype.alias = function(comicId, cb) {
-    LOGS.log('E0011', {'comicId': comicId,
-                       'reader': this._comic.reader,
-                       'manga': this._comic.name});
+    LOGS.log('S12', {'comicId': comicId,
+                     'reader': this._comic.reader,
+                     'manga': this._comic.name});
     return this._db.aliasComic(comicId, this._comic.reader, this._comic.info, err => {
         if (!err) {
             this._forceMemoizeComic();

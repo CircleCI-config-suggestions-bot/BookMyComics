@@ -103,7 +103,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
     window.addEventListener('message', event => {
         if (event.type === 'message') {
             if (typeof(event) === 'Error') {
-                LOGS.log('E0021',
+                LOGS.log('S26',
                          {'data': JSON.stringify(err, ["message", "arguments", "type", "name"])});
                 return ;
             }
@@ -120,7 +120,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
             if (this._checkOrigin(event.origin)) {
                 var eventData = event.data;
                 if (typeof(eventData) !== 'object') {
-                     LOGS.warn('E0022');
+                     LOGS.warn('E0008');
                      return ;
                 }
                 BmcWindowHandlers.forEach(handler => {
@@ -134,9 +134,9 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
 
     // Now, setup communication between background script & inserted frames
     getBrowser().runtime.onMessage.addListener((event, sender, sendResponse) => {
-        LOGS.log('E0023', {'msg': JSON.stringify(event)});
+        LOGS.log('S28', {'msg': JSON.stringify(event)});
         if (typeof(event) !== 'object') {
-             LOGS.warn('E0024');
+             LOGS.warn('E0004');
              return ;
         }
         BmcWindowHandlers.forEach(handler => {

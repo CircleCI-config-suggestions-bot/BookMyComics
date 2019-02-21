@@ -183,41 +183,15 @@ function Logs(level = DEBUG) {
     this.ERRORS = {
         'E0000': 'S1',
         'E0001': 'S2',
-        'E0002': 'S3',
-        'E0003': 'S4',
-        'E0004': 'S5',
+        'E0002': 'S40',
+        'E0003': 'S43',
+        'E0004': 'S29',
         'E0005': 'S6',
         'E0006': 'S7',
         'E0007': 'S8',
-        'E0008': 'S9',
-        'E0009': 'S10',
+        'E0008': 'S27',
+        'E0009': 'S17',
         'E0010': 'S11',
-        'E0011': 'S12',
-        'E0012': 'S14',
-        'E0013': 'S16',
-        'E0014': 'S17',
-        'E0015': 'S18',
-        'E0016': 'S19',
-        'E0017': 'S20',
-        'E0018': 'S23',
-        'E0019': 'S24',
-        'E0020': 'S25',
-        'E0021': 'S26',
-        'E0022': 'S27',
-        'E0023': 'S28',
-        'E0024': 'S29',
-        'E0025': 'S30',
-        'E0026': 'S31',
-        'E0027': 'S32',
-        'E0028': 'S33',
-        'E0029': 'S34',
-        'E0030': 'S36',
-        'E0031': 'S37',
-        'E0032': 'S39',
-        'E0033': 'S40',
-        'E0034': 'S41',
-        'E0035': 'S42',
-        'E0036': 'S43',
     };
 }
 
@@ -230,12 +204,20 @@ Logs.prototype.display = function(e, printer, add) {
 };
 
 Logs.prototype.log = function(e, add) {
-    this.display(e, console.log, add);
+    if (LOCALIZATION.STRINGS.hasOwnProperty(e)) {
+        printer(LOCALIZATION.getString(e, add));
+    } else {
+        this.display('E0000', console.error, e);
+    }
 };
 
 Logs.prototype.debug = function(e, add) {
     if (this.level >= DEBUG) {
-        this.display(e, console.debug, add);
+        if (LOCALIZATION.STRINGS.hasOwnProperty(e)) {
+            printer(LOCALIZATION.getString(e, add));
+        } else {
+            this.display('E0000', console.error, e);
+        }
     }
 };
 

@@ -18,7 +18,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     var iframe = document.createElement('iframe');
     iframe.id = this.SIDEPANEL_ID;
     iframe.src = resourcePath;
-    LOGS.log('E0026', {'src': iframe.src});
+    LOGS.log('S31', {'src': iframe.src});
     iframe.style.width = '200px';
     iframe.style.height = '100vh';
     iframe.style.position = 'fixed';
@@ -32,7 +32,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'HideSidePanel',
         evData => {
-            LOGS.log('E0027');
+            LOGS.log('S32');
             this._db._data.set({'sidebar-displayed': 'false'});
             // Do not check if infobar is still around.
             // -> It's NOT supposed to be.
@@ -42,7 +42,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'ShowSidePanel',
         evData => {
-            LOGS.log('E0028');
+            LOGS.log('S33');
             this._db._data.set({'sidebar-displayed': 'true'});
             this.removeRegisterDialog();
         });
@@ -110,6 +110,6 @@ BmcUI.prototype.makeTrackingNotification = function(err) {
     if (!sidepanel) {
         return ;
     }
-    LOGS.log('E0029');
+    LOGS.log('S34');
     sidepanel.postMessage(evData, '*');
 };

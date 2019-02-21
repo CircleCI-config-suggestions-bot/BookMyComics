@@ -23,14 +23,14 @@ if (window.top === window) {
             path: window.location.pathname,
         },
     };
-    LOGS.log('E0032');
+    LOGS.log('S39');
     // Now send the message to the background page
     getBrowser().runtime.sendMessage(ev, (response, err) => {
         if (err) {
-            LOGS.warn('E0033', {'err': err});
+            LOGS.warn('E0002', {'err': err});
             return undefined;
         }
-        LOGS.log('E0034', {'data': JSON.stringify(response)});
+        LOGS.log('S41', {'data': JSON.stringify(response)});
         /*
          * And finally, we can instanciate the engine and let it spawn the UI:
          *
@@ -41,9 +41,9 @@ if (window.top === window) {
         const engine = new BmcEngine(window.location.origin,
                                      window.location.hostname,
                                      response.resource.comic);
-        LOGS.log('E0035');
+        LOGS.log('S42');
         engine.setup();
     });
 } else {
-    LOGS.warn('E0036', {'location': window.location});
+    LOGS.warn('E0003', {'location': window.location});
 }

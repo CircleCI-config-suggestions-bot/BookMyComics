@@ -36,7 +36,7 @@ function Storage() {
             // Keep Callback mode
         }
     }
-    LOGS.log('E0025', {'mode': this._mode});
+    LOGS.log('S30', {'mode': this._mode});
 }
 
 Storage.prototype.MODE_CALLBACK = 0;
