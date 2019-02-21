@@ -18,7 +18,6 @@ bmcMessaging.addWindowHandler(
               && evData.computation === 'URL:Parse:Request',
     (evData, sender, sendResponse) => {
         console.log(`BookMyComics: background-engine.js: Handling URL:Parse Request: ${evData}`);
-        let info = bmcSources.parseURL(evData.resource.origin, evData.resource.path);
         const answerEv = {
             type: 'computation',
             module: 'sources',

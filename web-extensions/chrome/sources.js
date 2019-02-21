@@ -1,5 +1,4 @@
 /* globals
-    getBrowser:readable
     MangaEdenComPlugin:readable
     FanFoxNetPlugin:readable
     MangaHereUsPlugin:readable
@@ -35,7 +34,6 @@ function BmcSources() {
             makeObj: () => new MangaReaderNetPlugin(),
         },
     ];
-    const bro = getBrowser();
     sourceDescs.forEach(desc => {
         try {
             this._readers[desc.key] = desc.makeObj();

@@ -234,7 +234,7 @@ Localization.prototype.getString = function(s, add) {
     return this.STRINGS[s][lang];
 };
 
-function Logs(level = DEBUG) {
+function Logs(level = INFO) {
     this.level = level;
 
     this.ERRORS = {
@@ -297,5 +297,8 @@ LOGS.prototype.getString = function(e, add) {
     return this.getString('E0000', e);
 };
 
+/* eslint-disable no-unused-vars */
+/* Globals imported through the including of files driven by manifest.json */
 const LOGS = new Logs();
 const LOCALIZATION = new Localization();
+/* eslint-enable no-unused-vars */

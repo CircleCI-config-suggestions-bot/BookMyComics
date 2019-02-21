@@ -331,20 +331,20 @@ function addEvents(mangaList) {
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'setup' && evData.operation === 'register',
-        evData => {
+        () => {
             LOGS.log('S54');
             showRegisterButton();
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'toggle' && evData.module === 'sidebar',
-        evData => {
+        () => {
             showHideSidePanel();
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'refresh' && evData.module === 'sidebar',
-        evData => {
+        () => {
             mangaList.generate();
         });
 }

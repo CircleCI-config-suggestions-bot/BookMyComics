@@ -85,7 +85,6 @@ function BmcMessagingHandler(topOrigin) {
  * a provided origin is accepted as the source of a message or not.
  */
 BmcMessagingHandler.prototype._checkOrigin = function(origin) {
-    let found = false;
     if (this._selfOrigin.indexOf(origin) !== -1) {
         return true;
     }
