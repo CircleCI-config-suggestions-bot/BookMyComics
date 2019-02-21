@@ -32,8 +32,8 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
             this.register(evData.label, err => {
                 let retErr = null;
                 if (err) {
-                    retErr = new Error(LOCALIZATION.getString('S15', {'label': evData.label,
-                                                                      'err': err.message}));
+                    retErr = new Error(LOGS.getString('E0010', {'label': evData.label,
+                                                                'err': err.message}));
                 }
                 this._ui.toggleSidePanel();
                 notifyResult('Register Comic', retErr);
@@ -47,8 +47,8 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
             this.alias(evData.id, err => {
                 let retErr = null;
                 if (err) {
-                    retErr = new Error(LOCALIZATION.getString('S13', {'id': evData.id,
-                                                                      'err': err.message}));
+                    retErr = new Error(LOGS.getString('E0011', {'id': evData.id,
+                                                                'err': err.message}));
                 }
                 this._ui.toggleSidePanel();
                 notifyResult('Alias Comic', retErr);
@@ -218,7 +218,7 @@ BmcEngine.prototype.register = function(label, cb) {
                      'chapter': this._comic.chapter,
                      'page': this._comic.page});
     return this._db.registerComic(label, this._comic.reader, this._comic.info, err => {
-        LOGS.warn('E0010', {'err': err});
+        LOGS.debug('S11', {'err': err});
         if (!err) {
             this._forceMemoizeComic();
         }

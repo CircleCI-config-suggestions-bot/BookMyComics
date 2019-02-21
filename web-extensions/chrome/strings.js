@@ -29,7 +29,7 @@ function Localization(lang = DEFAULT_LANG) {
 
     this.STRINGS = {
         'S1': {
-            'en': 'Unknown error code',
+            'en': 'Unknown string/error code',
         },
         'S2': {
             'en': 'BmcEngine._memoizeComic: unknown comic name.',
@@ -160,6 +160,46 @@ function Localization(lang = DEFAULT_LANG) {
         'S43': {
             'en': 'Attempting to reload for iframe: {iframe}',
         },
+        'S44': {
+            'en': 'BmcSideBar: origin {origin}',
+        },
+        'S45': {
+            'en': 'Loading required Bmc utilities',
+        },
+        'S46': {
+            'en': 'BmcSideBar: BmcMangaList: onAlias: Label={label} id={id}',
+        },
+        'S47': {
+            'en': 'BookMyComics: load-bookmark.js: sendmessage failed: err={err}',
+        },
+        'S48': {
+            'en': 'clickedOnManga!, mode={mode}, event: {event}',
+        },
+        'S49': {
+            'en': 'generating bookmark list',
+        },
+        'S50': {
+            'en': 'BmcSidePanel: BmcMangaList: Unknown MODE "{mode}"',
+        },
+        'S51': {
+            'en': 'Input of searchbox changed: filtering bookmarks list',
+        },
+        'S52': {
+            'en': "BookMyComics does not support empty labels to identify a comic.<br>"
+                   + "Please define a label in the Side Panel's text area first.",
+        },
+        'S53': {
+            'en': "BmcSidePanel: received message to display status notification op={op} err={error}",
+        },
+        'S54': {
+            'en': "BmcSidePanel: Handling request to show Register button",
+        },
+        'S55': {
+            'en': "Removing transition",
+        },
+        'S56': {
+            'en': "BmcSidePanel: {operation} failed: {error}",
+        },
     };
 }
 
@@ -191,33 +231,27 @@ function Logs(level = DEBUG) {
         'E0007': 'S8',
         'E0008': 'S27',
         'E0009': 'S17',
-        'E0010': 'S11',
+        'E0010': 'S15',
+        'E0011': 'S13',
+        'E0012': 'S38',
+        'E0013': 'S47',
+        'E0014': 'S50',
+        'E0015': 'S55',
+        'E0016': 'S56',
     };
 }
 
 Logs.prototype.display = function(e, printer, add) {
-    if (this.ERRORS.hasOwnProperty(e)) {
-        printer(`[${e}] ${LOCALIZATION.getString(this.ERRORS[e], add)}`);
-    } else {
-        this.display('E0000', console.error, e);
-    }
+    printer(this.getString(e, add));
 };
 
 Logs.prototype.log = function(e, add) {
-    if (LOCALIZATION.STRINGS.hasOwnProperty(e)) {
-        printer(LOCALIZATION.getString(e, add));
-    } else {
-        this.display('E0000', console.error, e);
-    }
+    this.display(e, console.log, add);
 };
 
 Logs.prototype.debug = function(e, add) {
     if (this.level >= DEBUG) {
-        if (LOCALIZATION.STRINGS.hasOwnProperty(e)) {
-            printer(LOCALIZATION.getString(e, add));
-        } else {
-            this.display('E0000', console.error, e);
-        }
+        this.display(e, console.debug, add);
     }
 };
 
@@ -231,6 +265,17 @@ Logs.prototype.error = function(e, add) {
     if (this.level >= ERROR) {
         this.display(e, console.error, add);
     }
+};
+
+LOGS.prototype.getString = function(e, add) {
+    if (e.startsWith('E')) {
+        if (this.ERRORS.hasOwnProperty(e)) {
+            return `[${e}] ${LOCALIZATION.getString(this.ERRORS[e], add)}`;
+        }
+    } else if (LOCALIZATION.STRINGS.hasOwnProperty(e)) {
+        return LOCALIZATION.getString(e, add);
+    }
+    return this.getString('E0000', e);
 };
 
 const LOGS = new Logs();

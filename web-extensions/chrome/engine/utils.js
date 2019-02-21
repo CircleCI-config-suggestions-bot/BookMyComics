@@ -63,6 +63,6 @@ FrameFinder.findWindow = function(frameDef) {
             }
         }
     }
-    alert(LOCALIZATION.getString('S38', {'data': JSON.stringify(frameDef)}));
+    alert(LOGS.getString('E0012', {'data': JSON.stringify(frameDef)}));
     return null;
 };
