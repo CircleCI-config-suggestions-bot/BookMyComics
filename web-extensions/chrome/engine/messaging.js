@@ -106,7 +106,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
     // the iframe will have spent its usefulness.
     window.addEventListener('message', event => {
         if (event.type === 'message') {
-            if (typeof(event) === 'Error') {
+            if (event instanceof Error) {
                 LOGS.log('S26',
                          {'data': JSON.stringify(event, ['message', 'arguments', 'type', 'name'])});
                 return ;
