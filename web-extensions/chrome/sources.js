@@ -1,3 +1,11 @@
+/* globals
+    getBrowser:readable
+    MangaEdenComPlugin:readable
+    FanFoxNetPlugin:readable
+    MangaHereUsPlugin:readable
+    MangaReaderNetPlugin:readable
+*/
+
 /**
  * This class is a proxy object which handles all supported sources and
  * provides utility functions to use the right piece of code, according to the

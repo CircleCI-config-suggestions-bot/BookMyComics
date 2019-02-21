@@ -1,3 +1,8 @@
+/* globals
+    LOCALIZATION:readable
+    LOGS:readable
+*/
+
 /**
  * This class handles the keyScheme for all data stored by BookMyComics
  * It relies on a persistent "state", stored and retrieved using the Storage
@@ -230,7 +235,7 @@ function BmcComic(label, id, chapter, page, sources) {
     this.page = page;
     this._sources = [];
     if (sources) {
-        this._sources = source.splice(0);
+        this._sources = sources.splice(0);
     }
 }
 

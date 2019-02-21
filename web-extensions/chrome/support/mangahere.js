@@ -19,9 +19,9 @@ MangaHereUsPlugin.prototype.parseURL = function(url) {
             page = 1;
         }
         if (window.location.search.length > 0) {
-            var parts = window.location.search.split('page=');
-            if (parts.length > 1) {
-                page = parseInt(parts[1].split('&')[0], 10);
+            var pageParts = window.location.search.split('page=');
+            if (pageParts.length > 1) {
+                page = parseInt(pageParts[1].split('&')[0], 10);
             }
         }
     } else {

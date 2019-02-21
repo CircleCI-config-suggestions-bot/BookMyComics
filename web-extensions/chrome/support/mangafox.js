@@ -17,7 +17,7 @@ FanFoxNetPlugin.prototype.parseURL = function(url) {
         // with a '#' anchor to show which page is currently viewed. The HTML
         // number may actually only be the initially loaded page within a
         // chapter.
-        pparts = page.split('#');
+        const pparts = page.split('#');
         if (pparts.length === 2) {
             page = pparts[1].replace('ipg', '');
         }

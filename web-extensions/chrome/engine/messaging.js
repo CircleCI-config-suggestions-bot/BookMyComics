@@ -1,3 +1,8 @@
+/* globals
+    getBrowser:readable
+    LOGS:readable
+*/
+
 /**
  * This global object is an array containing the various BmcMessageHandler
  * objects used by the page to handle its internal communication events.
@@ -104,7 +109,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
         if (event.type === 'message') {
             if (typeof(event) === 'Error') {
                 LOGS.log('S26',
-                         {'data': JSON.stringify(err, ['message', 'arguments', 'type', 'name'])});
+                         {'data': JSON.stringify(event, ['message', 'arguments', 'type', 'name'])});
                 return ;
             }
 

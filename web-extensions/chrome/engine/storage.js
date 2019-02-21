@@ -1,3 +1,8 @@
+/* globals
+    getBrowser:readable
+    LOGS:readable
+*/
+
 /**
  * This class is a very simple wrapper on top of the various browser's APIs for
  * storage, made to unify them into a simpler-to-user API.

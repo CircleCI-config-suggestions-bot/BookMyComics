@@ -1,3 +1,8 @@
+/* globals
+    BmcMessagingHandler:readable
+    BmcSources:readable
+*/
+
 const BACKGROUND_ID = 'BookMyComics/BackgroundScript';
 
 const bmcSources = new BmcSources();

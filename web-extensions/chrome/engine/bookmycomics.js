@@ -1,3 +1,10 @@
+/* globals
+    BmcDataAPI:readable
+    BmcMessagingHandler:readable
+    BmcUI:readable
+    LOGS:readable
+*/
+
 const ENGINE_ID = 'BookMyComics::Engine';
 
 /**

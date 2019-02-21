@@ -1,3 +1,9 @@
+/* globals
+    FrameFinder:readable
+    getBrowser:readable
+    LOGS:readable
+*/
+
 /**
  *
  */

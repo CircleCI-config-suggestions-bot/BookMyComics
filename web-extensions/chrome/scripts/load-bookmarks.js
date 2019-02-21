@@ -1,3 +1,11 @@
+/* globals
+    BmcDataAPI:readable
+    BmcMessagingHandler:readable
+    BmcUI:readable
+    getBrowser:readable
+    LOGS:readable
+*/
+
 const uriParams = document.location.search.split('?')[1].split('&');
 const hostOrigin = decodeURIComponent(uriParams[0].split('=')[1]);
 LOGS.log('S44', {'origin': hostOrigin});
@@ -248,12 +256,12 @@ BmcMangaList.prototype.match = function(value, match) {
 
 BmcMangaList.prototype.filter = function(filterStr) {
     for (var i = 0; i < this._node.childNodes.length; ++i) {
-        entry = this._node.childNodes[i];
+        const entry = this._node.childNodes[i];
         // Need to dig through layers to reach the label's text
-        entryLabel = (entry             // ul
-                      .childNodes[0]    // li
-                      .childNodes[0]    // div
-                      .childNodes[0]);  // span == label
+        const entryLabel = (entry             // ul
+                            .childNodes[0]    // li
+                            .childNodes[0]    // div
+                            .childNodes[0]);  // span == label
         if (this.match(entryLabel.innerText, filterStr)) {
             this.showEntry(entry);
         } else {
@@ -300,7 +308,7 @@ function addEvents(mangaList) {
             const label = sbox.value;
             // Sanitize the data first
             if (sbox.value.length <= 0) {
-                alert(Logs.getString('S52'));
+                alert(LOGS.getString('S52'));
             }
 
             // Now do the actual registration

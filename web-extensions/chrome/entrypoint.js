@@ -1,3 +1,9 @@
+/* globals
+    BmcEngine:readable
+    getBrowser:readable
+    LOGS:readable
+*/
+
 /*
  * Don't do anything if we're not in the root window.
  *
