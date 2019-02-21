@@ -1,4 +1,4 @@
-const BACKGROUND_ID = 'BookMyComics/BackgroundScript'
+const BACKGROUND_ID = 'BookMyComics/BackgroundScript';
 
 const bmcSources = new BmcSources();
 console.log('BookMyComics: background-script.js: Instanciated BmcSources');

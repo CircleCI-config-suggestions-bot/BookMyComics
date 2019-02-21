@@ -64,7 +64,7 @@ BmcUI.prototype.toggleSidePanel = function() {
         return ;
     }
     sidepanel.postMessage(evData, '*');
-}
+};
 
 BmcUI.prototype.makeRegisterDialog = function(comicName, chapter, page) {
     // Build the message to send, to force showing the register button

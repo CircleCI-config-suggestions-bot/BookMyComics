@@ -24,7 +24,7 @@ BmcMangaList.prototype.onAliasClick = function(ev) {
         id: comicLabel.bmcData.id,
     };
     window.top.postMessage(evData, '*');
-}
+};
 
 BmcMangaList.prototype.onBrowseClick = function(ev) {
     const comicLabel = ev.target;
@@ -32,7 +32,7 @@ BmcMangaList.prototype.onBrowseClick = function(ev) {
     const comicElem = comicDiv.parentElement;
     comicElem.querySelector('.nested').classList.toggle('active');
     comicLabel.classList.toggle('rollingArrow-down');
-}
+};
 
 BmcMangaList.prototype.onSourceClick = function(comic, source) {
     const ev = {
@@ -65,7 +65,7 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
         // Let the content script at the page's root handle the URL opening
         window.top.postMessage(localEv, '*');
     });
-}
+};
 
 BmcMangaList.prototype.onSourceDelete = function(ev) {
     const icon = ev.target;
@@ -94,7 +94,7 @@ BmcMangaList.prototype.onSourceDelete = function(ev) {
         },
     };
     window.top.postMessage(evData, '*');
-}
+};
 
 BmcMangaList.prototype.onEntryClick = function(ev) {
     LOGS.log('S48', {'mode': this._mode, 'event': ev});
@@ -108,7 +108,7 @@ BmcMangaList.prototype.onEntryClick = function(ev) {
     default:
         break ;
     }
-}
+};
 
 BmcMangaList.prototype.onEntryDelete = function(ev) {
     const icon = ev.target;
@@ -125,7 +125,7 @@ BmcMangaList.prototype.onEntryDelete = function(ev) {
         },
     };
     window.top.postMessage(evData, '*');
-}
+};
 
 BmcMangaList.prototype.generateComic = function(comic) {
     const elm = document.createElement('ul');
@@ -183,7 +183,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
     });
 
     return elm;
-}
+};
 
 BmcMangaList.prototype.generate = function() {
     LOGS.log('S49');
@@ -204,7 +204,7 @@ BmcMangaList.prototype.generate = function() {
             mangaList.appendChild(this.generateComic(comic))
        );
     });
-}
+};
 
 BmcMangaList.prototype.setMode = function(mode) {
     var btn = document.getElementById('side-adder');
@@ -223,15 +223,15 @@ BmcMangaList.prototype.setMode = function(mode) {
         LOGS.warn('E0014', {"mode": mode});
         return ;
     }
-}
+};
 
 BmcMangaList.prototype.hideEntry = function(entry) {
     entry.style.display = 'none';
-}
+};
 
 BmcMangaList.prototype.showEntry = function(entry) {
     entry.style.display = '';
-}
+};
 
 BmcMangaList.prototype.match = function(value, match) {
     var lvalue = value.toLowerCase();
@@ -244,7 +244,7 @@ BmcMangaList.prototype.match = function(value, match) {
         lvalue = lvalue.slice(idx);
     }
     return true;
-}
+};
 
 BmcMangaList.prototype.filter = function(filterStr) {
     for (var i = 0; i < this._node.childNodes.length; ++i) {
@@ -259,8 +259,8 @@ BmcMangaList.prototype.filter = function(filterStr) {
         } else {
             this.hideEntry(entry);
         }
-    };
-}
+    }
+};
 
 function showRegisterButton() {
     const panel = document.getElementById('side-panel');

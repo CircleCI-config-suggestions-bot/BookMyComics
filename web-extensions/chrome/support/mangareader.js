@@ -2,7 +2,7 @@ function MangaReaderNetPlugin() {
 }
 
 MangaReaderNetPlugin.prototype.parseURL = function(url) {
-    var parts = url.split("/").filter(function(s) { return s.length !== 0});
+    var parts = url.split("/").filter(s => s.length !== 0);
     var not_mangas = ["popular", "search", "alphabetical", "latest", "random"];
 
     if (parts.length < 1) {
@@ -26,7 +26,7 @@ MangaReaderNetPlugin.prototype.parseURL = function(url) {
     }
 
     return { common: { name, chapter, page }};
-}
+};
 
 MangaReaderNetPlugin.prototype.computeURL = function(comicInfo) {
     // At the time of development, MangaReader SSL certificate seems legit and
@@ -37,4 +37,4 @@ MangaReaderNetPlugin.prototype.computeURL = function(comicInfo) {
         url += `/${comicInfo.common.chapter}/${comicInfo.common.page}`;
     }
     return url;
-}
+};

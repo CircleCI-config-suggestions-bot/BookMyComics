@@ -72,7 +72,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                         }));
                     }
                     this._ui.refreshSidePanel();
-                    const kind = evData.source ? "Comic Source" : "Comic"
+                    const kind = evData.source ? 'Comic Source' : 'Comic';
                     this._ui.makeNotification(`Delete ${kind}`, retErr);
                 });
         });
@@ -117,7 +117,7 @@ BmcEngine.prototype.events = {
  */
 BmcEngine.prototype._dispatchLoad = function () {
     this.dispatchEvent(new CustomEvent(this.events.load));
-}
+};
 
 /**
  * Utility function that loads the comic's ID if any, and memorizes/caches it
@@ -154,7 +154,7 @@ BmcEngine.prototype._memoizeComic = function () {
         this._comic.memoizing = false;
         this._dispatchLoad();
     });
-}
+};
 
 BmcEngine.prototype._forceMemoizeComic = function () {
     // If memoization is ongoing, wait for the end of it before forcing a new
@@ -175,7 +175,7 @@ BmcEngine.prototype._forceMemoizeComic = function () {
         }, {once: true});
         this._memoizeComic();
     }
-}
+};
 
 /*
  * This function is the main window's entry point to setup the add-on's
@@ -188,7 +188,7 @@ BmcEngine.prototype.setup = function() {
     return this._ui.makeSidePanel(
         () => this.track(),
         this._hostOrigin);
-}
+};
 
 /*
  * This function is the entrypoint for a reader page, which spawns the right UI

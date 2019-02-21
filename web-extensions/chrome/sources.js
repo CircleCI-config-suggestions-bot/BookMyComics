@@ -45,12 +45,12 @@ BmcSources.prototype._fromOrigin = function(origin) {
         return undefined;
     }
     return this._readers[readerKey];
-}
+};
 
 BmcSources.prototype.parseURL = function(origin, url) {
     return this._fromOrigin(origin).parseURL(url);
-}
+};
 
 BmcSources.prototype.computeURL = function(origin, info) {
     return this._fromOrigin(origin).computeURL(info);
-}
+};

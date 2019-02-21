@@ -2,7 +2,7 @@ function MangaHereUsPlugin() {
 }
 
 MangaHereUsPlugin.prototype.parseURL = function(url) {
-    var parts = url.split("/").filter(function(s) { return s.length !== 0});
+    var parts = url.split("/").filter(s => s.length !== 0);
 
     var name = null;
     var chapter = null;
@@ -29,7 +29,7 @@ MangaHereUsPlugin.prototype.parseURL = function(url) {
     }
 
     return { common: { name, chapter, page }};
-}
+};
 
 MangaHereUsPlugin.prototype.computeURL = function(comicInfo) {
     // At the time of development, MangaHere.us SSL certificate is not detected
@@ -44,4 +44,4 @@ MangaHereUsPlugin.prototype.computeURL = function(comicInfo) {
         url += `?page=${comicInfo.common.page}`;
     }
     return url;
-}
+};

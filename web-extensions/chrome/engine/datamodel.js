@@ -140,7 +140,7 @@ KeyScheme.prototype.idFromSource = function(source, cb) {
  */
 KeyScheme.prototype.computeSourceKey = function(source) {
     return source.serialize();
-}
+};
 
 /**
  * This class represents a source  of a comic, namely the set of informations
@@ -174,7 +174,7 @@ function BmcComicSource(name, reader, info) {
 BmcComicSource.prototype.serialize = function() {
     // Ensure ordre by using a template string.
     return JSON.stringify(this, ['reader', 'name']);
-}
+};
 
 /**
  * This method deserializes an object from the data storage into acomplete,
@@ -191,7 +191,7 @@ BmcComicSource.prototype.serialize = function() {
 BmcComicSource.deserialize = function(key, readerInfo) {
     const obj = JSON.parse(key);
     return new BmcComicSource(obj['name'], obj['reader'], readerInfo);
-}
+};
 
 /**
  * This method compares the BmcComicSource object with the matching raw data,
@@ -205,7 +205,7 @@ BmcComicSource.deserialize = function(key, readerInfo) {
  */
 BmcComicSource.prototype.is = function(source) {
     return this.name == source.name && this.reader == source.reader && this.info === source.info;
-}
+};
 
 
 
@@ -251,7 +251,7 @@ BmcComic.prototype.serialize = function() {
             page: this.page,
         },
     };
-}
+};
 
 /**
  * @callback BmcComic~iterCb
@@ -273,7 +273,7 @@ BmcComic.prototype.iterSources = function(iterFunc) {
     for (var i = 0; i < this._sources.length; ++i) {
         iterFunc(this._sources[i]);
     }
-}
+};
 
 /**
  * This method deserializes an object from the data storage into acomplete,
@@ -291,7 +291,7 @@ BmcComic.deserialize = function(obj) {
         obj['id'],
         obj['tracking']['chapter'],
         obj['tracking']['page']);
-}
+};
 
 /**
  * This method overrides the comic entry's existing label with the one provided
@@ -303,7 +303,7 @@ BmcComic.deserialize = function(obj) {
  */
 BmcComic.prototype.setLabel = function(label) {
     this.label = label;
-}
+};
 
 /**
  * This method overrides the comic entry's existing label with the one provided
@@ -317,7 +317,7 @@ BmcComic.prototype.setLabel = function(label) {
 BmcComic.prototype.setProgress = function(chapter, page) {
     this.chapter = chapter;
     this.page = page;
-}
+};
 
 /**
  * This function adds a new source to the existing collection of sources
@@ -342,7 +342,7 @@ BmcComic.prototype.addSource = function(source) {
     }
     this._sources.push(source);
     return true;
-}
+};
 
 
 
