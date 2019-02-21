@@ -104,7 +104,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
         if (event.type === 'message') {
             if (typeof(event) === 'Error') {
                 LOGS.log('S26',
-                         {'data': JSON.stringify(err, ["message", "arguments", "type", "name"])});
+                         {'data': JSON.stringify(err, ['message', 'arguments', 'type', 'name'])});
                 return ;
             }
 

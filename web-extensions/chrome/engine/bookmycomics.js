@@ -67,7 +67,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     let retErr = null;
                     if (err) {
                         retErr = new Error(LOGS.getString('E0017', {
-                            kind: evData.source ? "Source" : "Comic",
+                            kind: evData.source ? 'Source' : 'Comic',
                             reason: err.message,
                         }));
                     }

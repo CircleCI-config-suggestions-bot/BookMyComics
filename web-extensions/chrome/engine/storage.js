@@ -43,7 +43,7 @@ Storage.prototype.MODE_CALLBACK = 0;
 Storage.prototype.MODE_PROMISE = 1;
 
 Storage.checkErr = function(err) {
-    return err && (typeof err !== "object" || Object.keys(err).length > 0);
+    return err && (typeof err !== 'object' || Object.keys(err).length > 0);
 };
 
 

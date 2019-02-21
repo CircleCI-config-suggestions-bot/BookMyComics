@@ -11,19 +11,19 @@ function BmcSources() {
     this._readers = {};
     const sourceDescs = [
         {
-            key: "www.mangaeden.com",
+            key: 'www.mangaeden.com',
             makeObj: () => new MangaEdenComPlugin(),
         },
         {
-            key: "fanfox.net",
+            key: 'fanfox.net',
             makeObj: () => new FanFoxNetPlugin(),
         },
         {
-            key: "mangahere.us",
+            key: 'mangahere.us',
             makeObj: () => new MangaHereUsPlugin(),
         },
         {
-            key: "www.mangareader.net",
+            key: 'www.mangareader.net',
             makeObj: () => new MangaReaderNetPlugin(),
         },
     ];

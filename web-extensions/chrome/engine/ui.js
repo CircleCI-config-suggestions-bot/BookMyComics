@@ -69,9 +69,9 @@ BmcUI.prototype.toggleSidePanel = function() {
 BmcUI.prototype.makeRegisterDialog = function(comicName, chapter, page) {
     // Build the message to send, to force showing the register button
     var evData = {
-        type: "action",
-        action: "setup",
-        operation: "register",
+        type: 'action',
+        action: 'setup',
+        operation: 'register',
     };
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
@@ -92,9 +92,9 @@ BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin) {
 
 BmcUI.prototype.refreshSidePanel = function() {
     var evData = {
-        type: "action",
-        action: "refresh",
-        module: "sidebar",
+        type: 'action',
+        action: 'refresh',
+        module: 'sidebar',
     };
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
@@ -114,9 +114,9 @@ BmcUI.prototype.removeSidePanel = function() {
 
 BmcUI.prototype.makeNotification = function(operation, err) {
     var evData = {
-        type: "action",
-        action: "notification",
-        operation,
+        type: 'action',
+        action: 'notification',
+        operation: 'track',
         error: (err||{}).message,
     };
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);

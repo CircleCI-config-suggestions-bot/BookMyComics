@@ -2,8 +2,8 @@ function MangaReaderNetPlugin() {
 }
 
 MangaReaderNetPlugin.prototype.parseURL = function(url) {
-    var parts = url.split("/").filter(s => s.length !== 0);
-    var not_mangas = ["popular", "search", "alphabetical", "latest", "random"];
+    var parts = url.split('/').filter(s => s.length !== 0);
+    var not_mangas = ['popular', 'search', 'alphabetical', 'latest', 'random'];
 
     if (parts.length < 1) {
         return null;

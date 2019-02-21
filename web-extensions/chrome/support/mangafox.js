@@ -2,7 +2,7 @@ function FanFoxNetPlugin() {
 }
 
 FanFoxNetPlugin.prototype.parseURL = function(url) {
-    var parts = url.split("/").filter(s => s.length !== 0);
+    var parts = url.split('/').filter(s => s.length !== 0);
 
     if (parts.length < 2) {
         return null;

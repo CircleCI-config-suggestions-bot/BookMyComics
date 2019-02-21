@@ -19,8 +19,8 @@ BmcMangaList.prototype.onAliasClick = function(ev) {
     LOGS.log('S46', {'label': ev.target.innerText,
                      'id': ev.target.bmcData.id});
     const evData = {
-        type: "action",
-        action: "alias",
+        type: 'action',
+        action: 'alias',
         id: comicLabel.bmcData.id,
     };
     window.top.postMessage(evData, '*');
@@ -83,8 +83,8 @@ BmcMangaList.prototype.onSourceDelete = function(ev) {
         id: comicLabel.bmcData.id,
     });
     const evData = {
-        type: "action",
-        action: "delete",
+        type: 'action',
+        action: 'delete',
         comic: {
             id: comicLabel.bmcData.id,
         },
@@ -118,8 +118,8 @@ BmcMangaList.prototype.onEntryDelete = function(ev) {
     LOGS.debug('S58', { comic: comicLabel.innerText, id: comicLabel.bmcData.id });
 
     const evData = {
-        type: "action",
-        action: "delete",
+        type: 'action',
+        action: 'delete',
         comic: {
             id: comicLabel.bmcData.id,
         },
@@ -187,7 +187,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
 
 BmcMangaList.prototype.generate = function() {
     LOGS.log('S49');
-    var mangaList = document.getElementById("manga-list");
+    var mangaList = document.getElementById('manga-list');
 
     // First, remove any child node, to ensure it's clean before we start
     // generating.
@@ -220,7 +220,7 @@ BmcMangaList.prototype.setMode = function(mode) {
         this.generate();
         break ;
     default:
-        LOGS.warn('E0014', {"mode": mode});
+        LOGS.warn('E0014', {'mode': mode});
         return ;
     }
 };
@@ -305,8 +305,8 @@ function addEvents(mangaList) {
 
             // Now do the actual registration
             const evData = {
-                type: "action",
-                action: "register",
+                type: 'action',
+                action: 'register',
                 label,
             };
             window.top.postMessage(evData, '*');
@@ -427,27 +427,27 @@ function shiftButtonLeft(btn) {
 
 function showHideSidePanel(mode) {
     var evData = {
-        type: "action",
+        type: 'action',
         action: null,
     };
     var togBtn = document.getElementById('hide-but');
     var regBtn = document.getElementById('register-but');
-    var panel = document.getElementById("side-panel");
+    var panel = document.getElementById('side-panel');
 
     // Ensure no transition will be ongoing after the state change.
     // removeTransitions();
 
     // Now, do the actual toggling
-    if (panel.style.display === "none") {
+    if (panel.style.display === 'none') {
         mangaList.setMode(mode || mangaList.MODE_BROWSE);
-        evData.action = "ShowSidePanel",
+        evData.action = 'ShowSidePanel',
         panel.style.display = '';
         panel.style.width = 'calc(100vw - 16px)';
         togBtn.innerText = '<';
         shiftButtonRight(togBtn);
         regBtn.style.display = 'none';
     } else {
-        evData.action = "HideSidePanel",
+        evData.action = 'HideSidePanel',
         panel.style.display = 'none';
         panel.style.width = '0';
         togBtn.innerText = '>';

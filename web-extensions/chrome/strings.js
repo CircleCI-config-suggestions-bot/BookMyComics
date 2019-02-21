@@ -7,17 +7,17 @@ const DEFAULT_LANG = 'en';
 
 String.prototype.improvedFormatter = String.prototype.improvedFormatter ||
 function () {
-    "use strict";
+    'use strict';
     var str = this.toString();
 
     if (arguments.length) {
         var t = typeof arguments[0];
         var key;
-        var args = ("string" === t || "number" === t) ?
+        var args = ('string' === t || 'number' === t) ?
             Array.prototype.slice.call(arguments) : arguments[0];
 
         for (key in args) {
-            str = str.replace(new RegExp("\\{" + key + "\\}", "gi"), args[key]);
+            str = str.replace(new RegExp('\\{' + key + '\\}', 'gi'), args[key]);
         }
     }
 
@@ -185,20 +185,20 @@ function Localization(lang = DEFAULT_LANG) {
             'en': 'Input of searchbox changed: filtering bookmarks list',
         },
         'S52': {
-            'en': "BookMyComics does not support empty labels to identify a comic.<br>"
-                   + "Please define a label in the Side Panel's text area first.",
+            'en': 'BookMyComics does not support empty labels to identify a comic.<br>'
+                   + 'Please define a label in the Side Panel\'s text area first.',
         },
         'S53': {
-            'en': "BmcSidePanel: received message to display status notification op={op} err={error}",
+            'en': 'BmcSidePanel: received message to display status notification op={op} err={error}',
         },
         'S54': {
-            'en': "BmcSidePanel: Handling request to show Register button",
+            'en': 'BmcSidePanel: Handling request to show Register button',
         },
         'S55': {
-            'en': "Removing transition",
+            'en': 'Removing transition',
         },
         'S56': {
-            'en': "BmcSidePanel: {operation} failed: {error}",
+            'en': 'BmcSidePanel: {operation} failed: {error}',
         },
         'S57': {
             'en': 'Attempting to delete source {reader}:{name} '
