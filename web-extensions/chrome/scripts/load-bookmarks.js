@@ -208,9 +208,9 @@ BmcMangaList.prototype.generate = function() {
 
     // Now that the parent is a clean slate, let's generate
     bmcDb.list((err, comics) => {
-       comics.forEach(comic =>
-            mangaList.appendChild(this.generateComic(comic))
-       );
+        comics.forEach(
+            comic => mangaList.appendChild(this.generateComic(comic))
+        );
     });
 };
 
@@ -258,10 +258,10 @@ BmcMangaList.prototype.filter = function(filterStr) {
     for (var i = 0; i < this._node.childNodes.length; ++i) {
         const entry = this._node.childNodes[i];
         // Need to dig through layers to reach the label's text
-        const entryLabel = (entry             // ul
-                            .childNodes[0]    // li
-                            .childNodes[0]    // div
-                            .childNodes[0]);  // span == label
+        const entryLabel = entry    // ul
+            .childNodes[0]          // li
+            .childNodes[0]          // div
+            .childNodes[0];         // span == label
         if (this.match(entryLabel.innerText, filterStr)) {
             this.showEntry(entry);
         } else {

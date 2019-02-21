@@ -124,8 +124,8 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
             if (this._checkOrigin(event.origin)) {
                 var eventData = event.data;
                 if (typeof(eventData) !== 'object') {
-                     LOGS.warn('E0008');
-                     return ;
+                    LOGS.warn('E0008');
+                    return ;
                 }
                 BmcWindowHandlers.forEach(handler => {
                     if (handler.select(eventData)) {
@@ -140,8 +140,8 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
     getBrowser().runtime.onMessage.addListener((event, sender, sendResponse) => {
         LOGS.log('S28', {'msg': JSON.stringify(event)});
         if (typeof(event) !== 'object') {
-             LOGS.warn('E0004');
-             return ;
+            LOGS.warn('E0004');
+            return ;
         }
         BmcWindowHandlers.forEach(handler => {
             if (handler.select(event)) {

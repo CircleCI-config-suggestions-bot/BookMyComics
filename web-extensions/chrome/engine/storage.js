@@ -77,22 +77,23 @@ Storage.checkErr = function(err) {
  *
  */
 Storage.prototype._cbify = function(funcObj, args, onSuccess, onError) {
+    function resolveCb(data, err) {
+        if (Storage.checkErr(err)) {
+            return onError(err);
+        }
+        return onSuccess(data);
+    }
+
     let allArgs = [];
     allArgs.push(args);
+
     switch(this._mode) {
-        case this.MODE_PROMISE:
-            const promise = funcObj(args);
-            return promise.catch(onError).then(onSuccess);
-        case this.MODE_CALLBACK:
-        default:
-            function resolveCb(data, err) {
-                if (Storage.checkErr(err)) {
-                    return onError(err);
-                }
-                return onSuccess(data);
-            }
-            allArgs.push(resolveCb);
-            return funcObj(args, resolveCb);
+    case this.MODE_PROMISE:
+        return funcObj(args).catch(onError).then(onSuccess);
+    case this.MODE_CALLBACK:
+    default:
+        allArgs.push(resolveCb);
+        return funcObj(args, resolveCb);
     }
 };
 
