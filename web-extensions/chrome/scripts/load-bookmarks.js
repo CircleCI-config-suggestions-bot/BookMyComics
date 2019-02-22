@@ -1,8 +1,8 @@
 const uriParams = document.location.search.split('?')[1].split('&');
 const hostOrigin = decodeURIComponent(uriParams[0].split('=')[1]);
-console.log(`BmcSideBar: origin ${hostOrigin}`);
+LOGS.log('S44', {'origin': hostOrigin});
 
-console.log('Loading required Bmc utilities');
+LOGS.log('S45');
 const bmcMessaging = new BmcMessagingHandler(hostOrigin);
 const bmcDb = new BmcDataAPI();
 
@@ -16,7 +16,8 @@ BmcMangaList.prototype.MODE_BROWSE = 'browse';
 
 BmcMangaList.prototype.onAliasClick = function(ev) {
     const comicLabel = ev.target;
-    console.log(`BmcSideBar: BmcMangaList: onAlias: Label=${ev.target.innerText} id=${ev.target.bmcData.id}`);
+    LOGS.log('S46', {'label': ev.target.innerText,
+                     'id': ev.target.bmcData.id});
     const evData = {
         type: "action",
         action: "alias",
@@ -53,7 +54,7 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
     let bro = getBrowser();
     bro.runtime.sendMessage(ev, (response, err) => {
         if (err) {
-            console.warn(`BookMyComics: load-bookmark.js: sendmessage failed: err=${err}`);
+            LOGS.warn('E0013', {'err': err});
             return undefined;
         }
         let localEv = {
@@ -67,7 +68,7 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
 }
 
 BmcMangaList.prototype.onEntryClick = function(ev) {
-    console.log('clickedOnManga!, mode=' + this._mode + ', event: ' + ev);
+    LOGS.log('S48', {'mode': this._mode, 'event': ev});
     switch (this._mode) {
     case BmcMangaList.prototype.MODE_REGISTER:
         this.onAliasClick(ev);
@@ -114,7 +115,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
 }
 
 BmcMangaList.prototype.generate = function() {
-    console.log("generating bookmark list");
+    LOGS.log('S49');
     var mangaList = document.getElementById("manga-list");
 
     // First, remove any child node, to ensure it's clean before we start
@@ -148,7 +149,7 @@ BmcMangaList.prototype.setMode = function(mode) {
         this.generate();
         break ;
     default:
-        console.warn(`BmcSidePanel: BmcMangaList: Unknown MODE "${mode}"`);
+        LOGS.warn('E0014', {"mode": mode});
         return ;
     }
 }
@@ -208,7 +209,7 @@ function addEvents(mangaList) {
     // Input in searchbox will filter the list of mangas
     var sbox = document.getElementById('searchbox');
     sbox.oninput = function() {
-        console.log('Input of searchbox changed: filtering bookmarks list');
+        LOGS.log('S51');
         var str = sbox.value;
         mangaList.filter(str);
     };
@@ -228,8 +229,7 @@ function addEvents(mangaList) {
             const label = sbox.value;
             // Sanitize the data first
             if (sbox.value.length <= 0) {
-                alert("BookMyComics does not support empty labels to identify a comic.<br>"
-                      + "Please define a label in the Side Panel's text area first.");
+                alert(Logs.getString('S52'));
             }
 
             // Now do the actual registration
@@ -246,14 +246,14 @@ function addEvents(mangaList) {
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'notification',
         evData => {
-            console.log(`BmcSidePanel: received message to display status notification op=${evData.operation} err=${evData.error}`);
+            LOGS.log('S53', {'op': evData.operation, 'error': evData.error});
             notifyResult(evData.operation, evData.error);
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'setup' && evData.operation === 'register',
         evData => {
-            console.log('BmcSidePanel: Handling request to show Register button');
+            LOGS.log('S54');
             showRegisterButton();
         });
     bmcMessaging.addWindowHandler(
@@ -320,7 +320,7 @@ function triggerTransition(elem, color) {
 }
 
 function removeTransitions() {
-    console.warn('Removing transition');
+    LOGS.warn('E0015');
     const togBtn = document.getElementById('hide-but');
     togBtn.classList.remove('notif-transform');
 }
@@ -330,7 +330,7 @@ function notifyResult(operation, error) {
     const togBtn = document.getElementById('hide-but');
     triggerTransition(togBtn, transitionColor);
     if (error) {
-        console.error(`BmcSidePanel: ${operation} failed: ${error.message}`);
+        LOGS.error('E0016', {'operation': operation, 'error': error.message});
     }
 }
 

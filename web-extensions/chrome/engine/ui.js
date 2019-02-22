@@ -18,7 +18,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     var iframe = document.createElement('iframe');
     iframe.id = this.SIDEPANEL_ID;
     iframe.src = resourcePath;
-    console.log(`Inserting iframe src=${iframe.src}`);
+    LOGS.log('S31', {'src': iframe.src});
     iframe.style.width = '200px';
     iframe.style.height = '100vh';
     iframe.style.position = 'fixed';
@@ -32,7 +32,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'HideSidePanel',
         evData => {
-            console.log('Hiding Side-Panel: Re-setting up tracker');
+            LOGS.log('S32');
             this._db._data.set({'sidebar-displayed': 'false'});
             // Do not check if infobar is still around.
             // -> It's NOT supposed to be.
@@ -42,7 +42,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'ShowSidePanel',
         evData => {
-            console.log('Showing Side-Panel: Hiding tracker');
+            LOGS.log('S33');
             this._db._data.set({'sidebar-displayed': 'true'});
             this.removeRegisterDialog();
         });
@@ -110,6 +110,6 @@ BmcUI.prototype.makeTrackingNotification = function(err) {
     if (!sidepanel) {
         return ;
     }
-    console.log(`BmcUi: Sending message to SidePanel for notification display`);
+    LOGS.log('S34');
     sidepanel.postMessage(evData, '*');
 };

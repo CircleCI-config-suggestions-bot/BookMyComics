@@ -33,16 +33,14 @@ FrameFinder.findWindow = function(frameDef) {
         // supposed to happen). As such, we expect testing to cover this, and
         // in the worst case want to make it extra clear/visible to a used to
         // report the issue to the developers
-        alert('Cannot find an frame with unknown Definition. Please raise the '
-              + 'issue to the developers, as it is due to a development '
-              + 'mistake.');
+        alert(LOCALIZATION.getString('S35'));
     }
 
     if (window === window.top) {
         // if we're in the top window, CORS will prevent introspecting the
         // webext-owned frames, but we know the frame's ID
         if (frameDef.id) {
-            console.log('FrameFinder.find: Searching frame with id approach');
+            LOGS.log('S36');
             return document.getElementById(frameDef.id).contentWindow;
         }
     } else {
@@ -53,8 +51,7 @@ FrameFinder.findWindow = function(frameDef) {
             let frame = window.parent.frames[i];
             try {
                 if (frameDef.inspect && frameDef.inspect(frame)) {
-                    console.log('FrameFinder.find: Found frame with inspect '
-                                + 'approach');
+                    LOGS.log('S37');
                     return frame;
                 }
             } catch(e) {
@@ -66,7 +63,6 @@ FrameFinder.findWindow = function(frameDef) {
             }
         }
     }
-    alert('Could not identify requested frame, please contact the webext'
-          + ' developers.<br/>' + JSON.stringify(frameDef));
+    alert(LOGS.getString('E0012', {'data': JSON.stringify(frameDef)}));
     return null;
 };

@@ -85,7 +85,7 @@ BmcMessagingHandler.prototype._checkOrigin = function(origin) {
         return true;
     }
     return this._topOrigin === origin;
-}
+};
 
 /**
  * This function shall only be called once by the BmcMessagingHandler class.
@@ -103,7 +103,8 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
     window.addEventListener('message', event => {
         if (event.type === 'message') {
             if (typeof(event) === 'Error') {
-                console.log(`Got message error: ${JSON.stringify(err, ["message", "arguments", "type", "name"])}`);
+                LOGS.log('S26',
+                         {'data': JSON.stringify(err, ["message", "arguments", "type", "name"])});
                 return ;
             }
 
@@ -119,7 +120,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
             if (this._checkOrigin(event.origin)) {
                 var eventData = event.data;
                 if (typeof(eventData) !== 'object') {
-                     console.warn('BmcMessagingHandler: EventData is of unexpected type');
+                     LOGS.warn('E0008');
                      return ;
                 }
                 BmcWindowHandlers.forEach(handler => {
@@ -133,9 +134,9 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
 
     // Now, setup communication between background script & inserted frames
     getBrowser().runtime.onMessage.addListener((event, sender, sendResponse) => {
-        console.log(`Received RUNTIME message: ${JSON.stringify(event)}`);
+        LOGS.log('S28', {'msg': JSON.stringify(event)});
         if (typeof(event) !== 'object') {
-             console.warn('BmcMessagingHandler: event is of unexpected type');
+             LOGS.warn('E0004');
              return ;
         }
         BmcWindowHandlers.forEach(handler => {
@@ -147,7 +148,7 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
         return false;
     });
     this._setup = true;
-}
+};
 
 /**
  * This function registers a handler in the messaging system according to the
@@ -169,7 +170,7 @@ BmcMessagingHandler.prototype.addWindowHandler = function(tag, selector, handler
     if (this._setup === false) {
         this.setupMessaging();
     }
-}
+};
 
 
 /**
@@ -184,4 +185,4 @@ BmcMessagingHandler.prototype.addWindowHandler = function(tag, selector, handler
  */
 BmcMessagingHandler.prototype.removeWindowHandlers = function(tag) {
     BmcWindowHandlers = BmcWindowHandlers.filter(handler => handler.tag !== tag);
-}
+};

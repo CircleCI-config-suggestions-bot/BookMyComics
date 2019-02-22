@@ -10,11 +10,11 @@ const ENGINE_ID = 'BookMyComics::Engine';
 function BmcEngine(hostOrigin, readerName, comicInfo) {
     this._hostOrigin = hostOrigin;
     this._db = new BmcDataAPI();
-    console.log('Instanciated BmcDataAPI');
+    LOGS.log('S14', {'elem': 'BmcDataAPI'});
     this._messaging = new BmcMessagingHandler(this._hostOrigin);
-    console.log('Instanciated BmcMEssagingHandler');
+    LOGS.log('S14', {'elem': 'BmcMEssagingHandler'});
     this._ui = new BmcUI(this._messaging, this._db);
-    console.log('Instanciated BmcUI');
+    LOGS.log('S14', {'elem': 'BmcUI'});
 
     // Re-use DOM-style events by using a null-text node underneath
     this._eventCore = document.createTextNode(null);
@@ -32,7 +32,8 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
             this.register(evData.label, err => {
                 let retErr = null;
                 if (err) {
-                    retErr = new Error('Could not register Comic ' + evData.label + ': ' + err.message);
+                    retErr = new Error(LOGS.getString('E0010', {'label': evData.label,
+                                                                'err': err.message}));
                 }
                 this._ui.toggleSidePanel();
                 notifyResult('Register Comic', retErr);
@@ -46,7 +47,8 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
             this.alias(evData.id, err => {
                 let retErr = null;
                 if (err) {
-                    retErr = new Error('Could not alias current page to comicId ' + evData.id + ': ' + err.message);
+                    retErr = new Error(LOGS.getString('E0011', {'id': evData.id,
+                                                                'err': err.message}));
                 }
                 this._ui.toggleSidePanel();
                 notifyResult('Alias Comic', retErr);
@@ -111,7 +113,7 @@ BmcEngine.prototype._memoizeComic = function () {
         || this._comic.name === null
         || typeof this._comic.name !== 'string'
         || this._comic.name === '') {
-        console.warn('BmcEngine._memoizeComic: unknown comic name.');
+        LOGS.warn('E0001');
         return;
     }
     if (this._comic.id !== undefined) {
@@ -136,17 +138,19 @@ BmcEngine.prototype._forceMemoizeComic = function () {
     // If memoization is ongoing, wait for the end of it before forcing a new
     // memoization.
     if (this._comic.memoizing) {
-        console.log(`BmcEngine: Resetting ID memoization after end of ongoing memoization`);
+        LOGS.log('S3');
         this.addEventListener(this.events.load, () => this._forceMemoizeComic(), {once: true});
         return this._memoizeComic();
     }
 
-    console.log(`BmcEngine: Resetting ID memoization`);
+    LOGS.log('S4');
     // Now that we're sure no memoization is ongoing, reset the memoized ID,
     // and restart memoization
     this._comic.id = undefined;
     if (this._comic.name) {
-        this.addEventListener(this.events.load, () => { console.log('Memoization reset complete'); }, {once: true});
+        this.addEventListener(this.events.load, () => {
+            LOGS.log('S5');
+        }, {once: true});
         this._memoizeComic();
     }
 }
@@ -174,16 +178,18 @@ BmcEngine.prototype.setup = function() {
  */
 BmcEngine.prototype.track = function() {
     if (! this._comic.name) {
-        console.log("BmcEngine.track: Nothing to track");
+        LOGS.log('S6');
         return ;
     }
-    console.log(`BookMyComic: bmcEngine.track: manga=${this._comic.name} chapter=${this._comic.chapter} page=${this._comic.page}`);
+    LOGS.log('S7', {'manga': this._comic.name,
+                    'chapter': this._comic.chapter,
+                    'page': this._comic.page});
 
     // One single way to handle this, whether the id was already memoized or
     // not: use the event handling.
-    console.warn(`Attempting track: event=${this.events.load}`);
+    LOGS.warn('E0007', {'event': this.events.load});
     this.addEventListener(this.events.load, () => {
-        console.log(`BookMyComic: bmcEngine.track.doTrack: Got comicId from storage: ${this._comic.id}`);
+        LOGS.log('S9', {'id': this._comic.id});
         if (this._comic.id === null) {
             this._ui.makeRegisterDialog();
             return;
@@ -206,9 +212,13 @@ BmcEngine.prototype.track = function() {
  * @return {undefined}
  */
 BmcEngine.prototype.register = function(label, cb) {
-    console.log(`BookMyComic: bmcEngine.register: label=${label} reader=${this._comic.reader} manga=${this._comic.name} chapter=${this._comic.chapter} page=${this._comic.page}`);
+    LOGS.log('S10', {'label': label,
+                     'reader': this._comic.reader,
+                     'manga': this._comic.name,
+                     'chapter': this._comic.chapter,
+                     'page': this._comic.page});
     return this._db.registerComic(label, this._comic.reader, this._comic.info, err => {
-        console.warn(`Register completed with ERR=${err}`);
+        LOGS.debug('S11', {'err': err});
         if (!err) {
             this._forceMemoizeComic();
         }
@@ -225,7 +235,9 @@ BmcEngine.prototype.register = function(label, cb) {
  * @return {undefined}
  */
 BmcEngine.prototype.alias = function(comicId, cb) {
-    console.log(`BookMyComic: bmcEngine.alias: id=${comicId} reader=${this._comic.reader} manga=${this._comic.name}`);
+    LOGS.log('S12', {'comicId': comicId,
+                     'reader': this._comic.reader,
+                     'manga': this._comic.name});
     return this._db.aliasComic(comicId, this._comic.reader, this._comic.info, err => {
         if (!err) {
             this._forceMemoizeComic();
