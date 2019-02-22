@@ -45,5 +45,5 @@ if (window.top === window) {
         engine.setup();
     });
 } else {
-    LOGS.warn('E0003', {'location': window.location});
+    LOGS.warn('E0003', {'iframe': window.location});
 }
