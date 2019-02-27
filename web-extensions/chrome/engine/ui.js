@@ -90,6 +90,19 @@ BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin) {
         + `?hostOrigin=${origin}`);
 };
 
+BmcUI.prototype.refreshSidePanel = function() {
+    var evData = {
+        type: "action",
+        action: "refresh",
+        module: "sidebar",
+    };
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
+    sidepanel.postMessage(evData, '*');
+};
+
 BmcUI.prototype.removeSidePanel = function() {
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
@@ -99,12 +112,12 @@ BmcUI.prototype.removeSidePanel = function() {
     this._messaging.removeWindowHandlers(this.SIDEPANEL_ID);
 };
 
-BmcUI.prototype.makeTrackingNotification = function(err) {
+BmcUI.prototype.makeNotification = function(operation, err) {
     var evData = {
         type: "action",
         action: "notification",
-        operation: "track",
-        error: err,
+        operation,
+        error: (err||{}).message,
     };
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {

@@ -200,6 +200,23 @@ function Localization(lang = DEFAULT_LANG) {
         'S56': {
             'en': "BmcSidePanel: {operation} failed: {error}",
         },
+        'S57': {
+            'en': 'Attempting to delete source {reader}:{name} '
+                  + 'from comic {comic} ({id})',
+        },
+        'S58': {
+            'en': 'Attempting to delete comic {comic} ({id})',
+        },
+        'S59': {
+            'en': 'Could not delete current {kind}: {reason}',
+        },
+        'S60': {
+            'en': 'BookMyComics: bmcEngine.delete: id={id} reader={reader} manga={name}',
+        },
+        'S61': {
+            'en': 'Source to remove ({reader}:{name})'
+                  + ' has already been removed from comic {id} aliases',
+        },
     };
 }
 
@@ -238,6 +255,8 @@ function Logs(level = DEBUG) {
         'E0014': 'S50',
         'E0015': 'S55',
         'E0016': 'S56',
+        'E0017': 'S59',
+        'E0018': 'S61',
     };
 }
 

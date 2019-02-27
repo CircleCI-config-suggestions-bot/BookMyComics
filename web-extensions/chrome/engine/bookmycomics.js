@@ -36,7 +36,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                                                                 'err': err.message}));
                 }
                 this._ui.toggleSidePanel();
-                notifyResult('Register Comic', retErr);
+                this._ui.makeNotification('Register Comic', retErr);
             });
         });
     // Handle "Alias"
@@ -51,8 +51,30 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                                                                 'err': err.message}));
                 }
                 this._ui.toggleSidePanel();
-                notifyResult('Alias Comic', retErr);
+                this._ui.makeNotification('Alias Comic', retErr);
             });
+        });
+    // Handle "Delete"
+    this._messaging.addWindowHandler(
+        ENGINE_ID,
+        evData => evData.type === 'action' && evData.action === 'delete',
+        evData => {
+            this.delete(
+                evData.comic.id,
+                (evData.source || {}).reader,
+                (evData.source || {}).name,
+                err => {
+                    let retErr = null;
+                    if (err) {
+                        retErr = new Error(LOGS.getString('E0017', {
+                            kind: evData.source ? "Source" : "Comic",
+                            reason: err.message,
+                        }));
+                    }
+                    this._ui.refreshSidePanel();
+                    const kind = evData.source ? "Comic Source" : "Comic"
+                    this._ui.makeNotification(`Delete ${kind}`, retErr);
+                });
         });
     // Handle "URLOpen"
     this._messaging.addWindowHandler(
@@ -195,7 +217,7 @@ BmcEngine.prototype.track = function() {
             return;
         }
         this._db.updateComic(this._comic.id, this._comic.chapter, this._comic.page,
-                             err => this._ui.makeTrackingNotification(err));
+                             err => this._ui.makeNotification('Track Comic', err));
     }, {once: true});
 
     // Now fire the load or cache hit, that shall trigger the previously
@@ -244,4 +266,38 @@ BmcEngine.prototype.alias = function(comicId, cb) {
         }
         return cb(err);
     });
+};
+
+/*
+ * This function deletes a Source from a comic or a whole Comic, given a comic
+ * ID, and an optional reader and name.  If the deleted source was the last
+ * source associated to the Comic, the Comic will be deleted along with its
+ * last Source.
+ *
+ * @param {Number} comicId - Unique comic ID
+ * @param {String} reader - Name of the source's reader
+ * @param {String} name - Name of the comic within the reader
+ *
+ * @return {undefined}
+ */
+BmcEngine.prototype.delete = function(comicId, reader, name, cb) {
+    LOGS.debug('S60', { id: comicId, reader, name });
+
+    // Common completion closure which forces memoization (in case we just
+    // removed the Comic/Source matching the current page)
+    const completeDelete = err => {
+        if (!err) {
+            this._forceMemoizeComic();
+        }
+        return cb(err);
+    };
+    // Both reader and name must be defined to identify a source according to
+    // engine/datamodel.js
+    // As such, if either is undefined, assume we're targeting the whole comic
+    if (!reader || !name) {
+        return this._db.unregisterComic(comicId, completeDelete);
+    }
+    // Otherwise, remove the source (and optionally the Comic if it was the
+    // last source)
+    return this._db.unaliasComic(comicId, reader, name, completeDelete);
 };
