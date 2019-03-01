@@ -1,3 +1,10 @@
+/* globals
+    MangaEdenComPlugin:readable
+    FanFoxNetPlugin:readable
+    MangaHereUsPlugin:readable
+    MangaReaderNetPlugin:readable
+*/
+
 /**
  * This class is a proxy object which handles all supported sources and
  * provides utility functions to use the right piece of code, according to the
@@ -11,23 +18,22 @@ function BmcSources() {
     this._readers = {};
     const sourceDescs = [
         {
-            key: "www.mangaeden.com",
+            key: 'www.mangaeden.com',
             makeObj: () => new MangaEdenComPlugin(),
         },
         {
-            key: "fanfox.net",
+            key: 'fanfox.net',
             makeObj: () => new FanFoxNetPlugin(),
         },
         {
-            key: "mangahere.us",
+            key: 'mangahere.us',
             makeObj: () => new MangaHereUsPlugin(),
         },
         {
-            key: "www.mangareader.net",
+            key: 'www.mangareader.net',
             makeObj: () => new MangaReaderNetPlugin(),
         },
     ];
-    const bro = getBrowser();
     sourceDescs.forEach(desc => {
         try {
             this._readers[desc.key] = desc.makeObj();
@@ -45,12 +51,12 @@ BmcSources.prototype._fromOrigin = function(origin) {
         return undefined;
     }
     return this._readers[readerKey];
-}
+};
 
 BmcSources.prototype.parseURL = function(origin, url) {
     return this._fromOrigin(origin).parseURL(url);
-}
+};
 
 BmcSources.prototype.computeURL = function(origin, info) {
     return this._fromOrigin(origin).computeURL(info);
-}
+};

@@ -1,3 +1,9 @@
+/* globals
+    FrameFinder:readable
+    getBrowser:readable
+    LOGS:readable
+*/
+
 /**
  *
  */
@@ -7,14 +13,9 @@ function BmcUI(messagingHandler, db) {
     this._db = db;
 }
 
-function isChrome() {
-    return window.chrome !== undefined;
-}
-
 BmcUI.prototype.SIDEPANEL_ID = FrameFinder.definitions.SIDEPANEL.id;
 
 BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
-    var height = '100vh';
     var iframe = document.createElement('iframe');
     iframe.id = this.SIDEPANEL_ID;
     iframe.src = resourcePath;
@@ -31,7 +32,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     this._messaging.addWindowHandler(
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'HideSidePanel',
-        evData => {
+        () => {
             LOGS.log('S32');
             this._db._data.set({'sidebar-displayed': 'false'});
             // Do not check if infobar is still around.
@@ -41,7 +42,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     this._messaging.addWindowHandler(
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'ShowSidePanel',
-        evData => {
+        () => {
             LOGS.log('S33');
             this._db._data.set({'sidebar-displayed': 'true'});
             this.removeRegisterDialog();
@@ -64,14 +65,14 @@ BmcUI.prototype.toggleSidePanel = function() {
         return ;
     }
     sidepanel.postMessage(evData, '*');
-}
+};
 
-BmcUI.prototype.makeRegisterDialog = function(comicName, chapter, page) {
+BmcUI.prototype.makeRegisterDialog = function() {
     // Build the message to send, to force showing the register button
     var evData = {
-        type: "action",
-        action: "setup",
-        operation: "register",
+        type: 'action',
+        action: 'setup',
+        operation: 'register',
     };
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
@@ -92,9 +93,9 @@ BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin) {
 
 BmcUI.prototype.refreshSidePanel = function() {
     var evData = {
-        type: "action",
-        action: "refresh",
-        module: "sidebar",
+        type: 'action',
+        action: 'refresh',
+        module: 'sidebar',
     };
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
@@ -114,9 +115,9 @@ BmcUI.prototype.removeSidePanel = function() {
 
 BmcUI.prototype.makeNotification = function(operation, err) {
     var evData = {
-        type: "action",
-        action: "notification",
-        operation,
+        type: 'action',
+        action: 'notification',
+        operation: 'track',
         error: (err||{}).message,
     };
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);

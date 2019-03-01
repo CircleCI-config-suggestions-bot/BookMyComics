@@ -1,3 +1,8 @@
+/* globals
+    getBrowser:readable
+    LOGS:readable
+*/
+
 /**
  * This class is a very simple wrapper on top of the various browser's APIs for
  * storage, made to unify them into a simpler-to-user API.
@@ -43,7 +48,7 @@ Storage.prototype.MODE_CALLBACK = 0;
 Storage.prototype.MODE_PROMISE = 1;
 
 Storage.checkErr = function(err) {
-    return err && (typeof err !== "object" || Object.keys(err).length > 0);
+    return err && (typeof err !== 'object' || Object.keys(err).length > 0);
 };
 
 
@@ -72,22 +77,23 @@ Storage.checkErr = function(err) {
  *
  */
 Storage.prototype._cbify = function(funcObj, args, onSuccess, onError) {
+    function resolveCb(data, err) {
+        if (Storage.checkErr(err)) {
+            return onError(err);
+        }
+        return onSuccess(data);
+    }
+
     let allArgs = [];
     allArgs.push(args);
+
     switch(this._mode) {
-        case this.MODE_PROMISE:
-            const promise = funcObj(args);
-            return promise.catch(onError).then(onSuccess);
-        case this.MODE_CALLBACK:
-        default:
-            function resolveCb(data, err) {
-                if (Storage.checkErr(err)) {
-                    return onError(err);
-                }
-                return onSuccess(data);
-            }
-            allArgs.push(resolveCb);
-            return funcObj(args, resolveCb);
+    case this.MODE_PROMISE:
+        return funcObj(args).catch(onError).then(onSuccess);
+    case this.MODE_CALLBACK:
+    default:
+        allArgs.push(resolveCb);
+        return funcObj(args, resolveCb);
     }
 };
 

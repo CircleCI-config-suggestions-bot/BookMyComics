@@ -2,7 +2,7 @@ function FanFoxNetPlugin() {
 }
 
 FanFoxNetPlugin.prototype.parseURL = function(url) {
-    var parts = url.split("/").filter(function(s) { return s.length !== 0});
+    var parts = url.split('/').filter(s => s.length !== 0);
 
     if (parts.length < 2) {
         return null;
@@ -17,14 +17,14 @@ FanFoxNetPlugin.prototype.parseURL = function(url) {
         // with a '#' anchor to show which page is currently viewed. The HTML
         // number may actually only be the initially loaded page within a
         // chapter.
-        pparts = page.split('#');
+        const pparts = page.split('#');
         if (pparts.length === 2) {
             page = pparts[1].replace('ipg', '');
         }
     }
 
     return { common: { name, chapter, page }};
-}
+};
 
 FanFoxNetPlugin.prototype.computeURL = function(comicInfo) {
     // At the time of development, FanFox SSL certificate seems legit and
@@ -35,4 +35,4 @@ FanFoxNetPlugin.prototype.computeURL = function(comicInfo) {
         url += `/${comicInfo.common.chapter}/${comicInfo.common.page}.html`;
     }
     return url;
-}
+};

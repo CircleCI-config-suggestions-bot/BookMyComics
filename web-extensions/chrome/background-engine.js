@@ -1,4 +1,9 @@
-const BACKGROUND_ID = 'BookMyComics/BackgroundScript'
+/* globals
+    BmcMessagingHandler:readable
+    BmcSources:readable
+*/
+
+const BACKGROUND_ID = 'BookMyComics/BackgroundScript';
 
 const bmcSources = new BmcSources();
 console.log('BookMyComics: background-script.js: Instanciated BmcSources');
@@ -13,7 +18,6 @@ bmcMessaging.addWindowHandler(
               && evData.computation === 'URL:Parse:Request',
     (evData, sender, sendResponse) => {
         console.log(`BookMyComics: background-engine.js: Handling URL:Parse Request: ${evData}`);
-        let info = bmcSources.parseURL(evData.resource.origin, evData.resource.path);
         const answerEv = {
             type: 'computation',
             module: 'sources',

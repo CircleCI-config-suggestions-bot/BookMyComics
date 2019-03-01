@@ -1,3 +1,8 @@
+/* globals
+    getBrowser:readable
+    LOGS:readable
+*/
+
 /**
  * This global object is an array containing the various BmcMessageHandler
  * objects used by the page to handle its internal communication events.
@@ -80,7 +85,6 @@ function BmcMessagingHandler(topOrigin) {
  * a provided origin is accepted as the source of a message or not.
  */
 BmcMessagingHandler.prototype._checkOrigin = function(origin) {
-    let found = false;
     if (this._selfOrigin.indexOf(origin) !== -1) {
         return true;
     }
@@ -102,9 +106,9 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
     // the iframe will have spent its usefulness.
     window.addEventListener('message', event => {
         if (event.type === 'message') {
-            if (typeof(event) === 'Error') {
+            if (event instanceof Error) {
                 LOGS.log('S26',
-                         {'data': JSON.stringify(err, ["message", "arguments", "type", "name"])});
+                         {'data': JSON.stringify(event, ['message', 'arguments', 'type', 'name'])});
                 return ;
             }
 
@@ -120,8 +124,8 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
             if (this._checkOrigin(event.origin)) {
                 var eventData = event.data;
                 if (typeof(eventData) !== 'object') {
-                     LOGS.warn('E0008');
-                     return ;
+                    LOGS.warn('E0008');
+                    return ;
                 }
                 BmcWindowHandlers.forEach(handler => {
                     if (handler.select(eventData)) {
@@ -136,8 +140,8 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
     getBrowser().runtime.onMessage.addListener((event, sender, sendResponse) => {
         LOGS.log('S28', {'msg': JSON.stringify(event)});
         if (typeof(event) !== 'object') {
-             LOGS.warn('E0004');
-             return ;
+            LOGS.warn('E0004');
+            return ;
         }
         BmcWindowHandlers.forEach(handler => {
             if (handler.select(event)) {

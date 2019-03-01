@@ -1,3 +1,11 @@
+/* globals
+    BmcDataAPI:readable
+    BmcMessagingHandler:readable
+    BmcUI:readable
+    getBrowser:readable
+    LOGS:readable
+*/
+
 const uriParams = document.location.search.split('?')[1].split('&');
 const hostOrigin = decodeURIComponent(uriParams[0].split('=')[1]);
 LOGS.log('S44', {'origin': hostOrigin});
@@ -19,12 +27,12 @@ BmcMangaList.prototype.onAliasClick = function(ev) {
     LOGS.log('S46', {'label': ev.target.innerText,
                      'id': ev.target.bmcData.id});
     const evData = {
-        type: "action",
-        action: "alias",
+        type: 'action',
+        action: 'alias',
         id: comicLabel.bmcData.id,
     };
     window.top.postMessage(evData, '*');
-}
+};
 
 BmcMangaList.prototype.onBrowseClick = function(ev) {
     const comicLabel = ev.target;
@@ -32,7 +40,7 @@ BmcMangaList.prototype.onBrowseClick = function(ev) {
     const comicElem = comicDiv.parentElement;
     comicElem.querySelector('.nested').classList.toggle('active');
     comicLabel.classList.toggle('rollingArrow-down');
-}
+};
 
 BmcMangaList.prototype.onSourceClick = function(comic, source) {
     const ev = {
@@ -65,7 +73,7 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
         // Let the content script at the page's root handle the URL opening
         window.top.postMessage(localEv, '*');
     });
-}
+};
 
 BmcMangaList.prototype.onSourceDelete = function(ev) {
     const icon = ev.target;
@@ -83,8 +91,8 @@ BmcMangaList.prototype.onSourceDelete = function(ev) {
         id: comicLabel.bmcData.id,
     });
     const evData = {
-        type: "action",
-        action: "delete",
+        type: 'action',
+        action: 'delete',
         comic: {
             id: comicLabel.bmcData.id,
         },
@@ -94,7 +102,7 @@ BmcMangaList.prototype.onSourceDelete = function(ev) {
         },
     };
     window.top.postMessage(evData, '*');
-}
+};
 
 BmcMangaList.prototype.onEntryClick = function(ev) {
     LOGS.log('S48', {'mode': this._mode, 'event': ev});
@@ -108,7 +116,7 @@ BmcMangaList.prototype.onEntryClick = function(ev) {
     default:
         break ;
     }
-}
+};
 
 BmcMangaList.prototype.onEntryDelete = function(ev) {
     const icon = ev.target;
@@ -118,14 +126,14 @@ BmcMangaList.prototype.onEntryDelete = function(ev) {
     LOGS.debug('S58', { comic: comicLabel.innerText, id: comicLabel.bmcData.id });
 
     const evData = {
-        type: "action",
-        action: "delete",
+        type: 'action',
+        action: 'delete',
         comic: {
             id: comicLabel.bmcData.id,
         },
     };
     window.top.postMessage(evData, '*');
-}
+};
 
 BmcMangaList.prototype.generateComic = function(comic) {
     const elm = document.createElement('ul');
@@ -183,11 +191,11 @@ BmcMangaList.prototype.generateComic = function(comic) {
     });
 
     return elm;
-}
+};
 
 BmcMangaList.prototype.generate = function() {
     LOGS.log('S49');
-    var mangaList = document.getElementById("manga-list");
+    var mangaList = document.getElementById('manga-list');
 
     // First, remove any child node, to ensure it's clean before we start
     // generating.
@@ -200,11 +208,11 @@ BmcMangaList.prototype.generate = function() {
 
     // Now that the parent is a clean slate, let's generate
     bmcDb.list((err, comics) => {
-       comics.forEach(comic =>
-            mangaList.appendChild(this.generateComic(comic))
-       );
+        comics.forEach(
+            comic => mangaList.appendChild(this.generateComic(comic))
+        );
     });
-}
+};
 
 BmcMangaList.prototype.setMode = function(mode) {
     var btn = document.getElementById('side-adder');
@@ -220,18 +228,18 @@ BmcMangaList.prototype.setMode = function(mode) {
         this.generate();
         break ;
     default:
-        LOGS.warn('E0014', {"mode": mode});
+        LOGS.warn('E0014', {'mode': mode});
         return ;
     }
-}
+};
 
 BmcMangaList.prototype.hideEntry = function(entry) {
     entry.style.display = 'none';
-}
+};
 
 BmcMangaList.prototype.showEntry = function(entry) {
     entry.style.display = '';
-}
+};
 
 BmcMangaList.prototype.match = function(value, match) {
     var lvalue = value.toLowerCase();
@@ -244,23 +252,23 @@ BmcMangaList.prototype.match = function(value, match) {
         lvalue = lvalue.slice(idx);
     }
     return true;
-}
+};
 
 BmcMangaList.prototype.filter = function(filterStr) {
     for (var i = 0; i < this._node.childNodes.length; ++i) {
-        entry = this._node.childNodes[i];
+        const entry = this._node.childNodes[i];
         // Need to dig through layers to reach the label's text
-        entryLabel = (entry             // ul
-                      .childNodes[0]    // li
-                      .childNodes[0]    // div
-                      .childNodes[0]);  // span == label
+        const entryLabel = entry    // ul
+            .childNodes[0]          // li
+            .childNodes[0]          // div
+            .childNodes[0];         // span == label
         if (this.match(entryLabel.innerText, filterStr)) {
             this.showEntry(entry);
         } else {
             this.hideEntry(entry);
         }
-    };
-}
+    }
+};
 
 function showRegisterButton() {
     const panel = document.getElementById('side-panel');
@@ -300,13 +308,13 @@ function addEvents(mangaList) {
             const label = sbox.value;
             // Sanitize the data first
             if (sbox.value.length <= 0) {
-                alert(Logs.getString('S52'));
+                alert(LOGS.getString('S52'));
             }
 
             // Now do the actual registration
             const evData = {
-                type: "action",
-                action: "register",
+                type: 'action',
+                action: 'register',
                 label,
             };
             window.top.postMessage(evData, '*');
@@ -323,20 +331,20 @@ function addEvents(mangaList) {
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'setup' && evData.operation === 'register',
-        evData => {
+        () => {
             LOGS.log('S54');
             showRegisterButton();
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'toggle' && evData.module === 'sidebar',
-        evData => {
+        () => {
             showHideSidePanel();
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'refresh' && evData.module === 'sidebar',
-        evData => {
+        () => {
             mangaList.generate();
         });
 }
@@ -427,27 +435,27 @@ function shiftButtonLeft(btn) {
 
 function showHideSidePanel(mode) {
     var evData = {
-        type: "action",
+        type: 'action',
         action: null,
     };
     var togBtn = document.getElementById('hide-but');
     var regBtn = document.getElementById('register-but');
-    var panel = document.getElementById("side-panel");
+    var panel = document.getElementById('side-panel');
 
     // Ensure no transition will be ongoing after the state change.
     // removeTransitions();
 
     // Now, do the actual toggling
-    if (panel.style.display === "none") {
+    if (panel.style.display === 'none') {
         mangaList.setMode(mode || mangaList.MODE_BROWSE);
-        evData.action = "ShowSidePanel",
+        evData.action = 'ShowSidePanel',
         panel.style.display = '';
         panel.style.width = 'calc(100vw - 16px)';
         togBtn.innerText = '<';
         shiftButtonRight(togBtn);
         regBtn.style.display = 'none';
     } else {
-        evData.action = "HideSidePanel",
+        evData.action = 'HideSidePanel',
         panel.style.display = 'none';
         panel.style.width = '0';
         togBtn.innerText = '>';

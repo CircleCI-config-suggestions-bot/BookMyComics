@@ -2,7 +2,7 @@ function MangaEdenComPlugin() {
 }
 
 MangaEdenComPlugin.prototype.parseURL = function(url) {
-    var parts = url.split("/").filter(function(s) { return s.length !== 0});
+    var parts = url.split('/').filter(s => s.length !== 0);
 
     if (parts.length < 3) {
         return null;
@@ -18,7 +18,7 @@ MangaEdenComPlugin.prototype.parseURL = function(url) {
     }
 
     return { common: { name, chapter, page }, lang, readingLang };
-}
+};
 
 MangaEdenComPlugin.prototype.computeURL = function(comicInfo) {
     // At the time of development, MangaEden SSL certificate seems legit and
@@ -29,4 +29,4 @@ MangaEdenComPlugin.prototype.computeURL = function(comicInfo) {
         url += `/${comicInfo.common.chapter}/${comicInfo.common.page || 1}/`;
     }
     return url;
-}
+};

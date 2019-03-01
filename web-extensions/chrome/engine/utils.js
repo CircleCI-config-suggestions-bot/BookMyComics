@@ -1,3 +1,8 @@
+/* globals
+    LOCALIZATION:readable
+    LOGS:readable
+*/
+
 /**
  *
  * The FrameFinder class is an utility class which finds a frame from the
