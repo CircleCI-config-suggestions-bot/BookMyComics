@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "description": "A WebExtension to track your ongoing Manga/Comics scans",
   "devDependencies": {
-    "eslint": "^5.14.1"
+    "eslint": "^5.14.1",
+    "watchify": "^3.11.1"
   },
   "scripts": {
     "lint": "eslint $(git ls-files | grep '.js$')",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "CHROME_BIN=$(which chrome || which chromium || which chromium-browser) ./node_modules/.bin/karma start --single-run"
   },
   "repository": {
     "type": "git",
@@ -31,5 +32,13 @@
   "bugs": {
     "url": "https://github.com/joacchim/BookMyComics/issues"
   },
-  "homepage": "https://github.com/joacchim/BookMyComics#readme"
+  "homepage": "https://github.com/joacchim/BookMyComics#readme",
+  "dependencies": {
+    "karma": "^4.0.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-mocha": "^1.3.0",
+    "mocha": "^6.0.2",
+    "sinon-chrome": "^2.3.2"
+  }
 }
