@@ -64,3 +64,62 @@ jobs:
       - run:
           name: Package Extension
           command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ -a build/ build
+
+      # Persist required files for functional testing to the workspace
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build/
+
+  setup-testing:
+    executor: browser-testing
+    working_directory: ~/repo
+    steps:
+      - cached-checkout
+
+      # Install python deps
+      - restore_cache:
+          keys:
+            - v1-pydeps-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-pydeps-{{ .Branch }}-
+            - v1-pydeps-
+      - run: pip3 install virtualenv
+      - run: virtualenv venv
+      - run: ./venv/bin/pip3 install -r requirements.txt
+      - save_cache:
+          paths:
+            - venv
+          key: v1-pydeps-{{ checksum "requirements.txt" }}
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - venv/
+
+  test-browser:
+    executor: browser-testing
+    working_directory: ~/repo
+    steps:
+      - cached-checkout
+      - attach_workspace:
+          at: /tmp/ws
+      - run: /tmp/ws/venv/bin/python3 test.py --package=/tmp/ws/build/*.zip
+
+workflows:
+  version: 2
+  pre-merge:
+    jobs:
+      - build-ext
+      - setup-testing
+      - test-browser:
+          name: test-firefox
+          context: BookMyComics-Firefox
+          requires:
+          - build-ext
+          - setup-testing
+      - test-browser:
+          name: test-chrome
+          context: BookMyComics-Chrome
+          requires:
+          - build-ext
+          - setup-testing
