@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "A WebExtension to track your ongoing Manga/Comics scans",
   "devDependencies": {
+    "browserify": "^16.2.3",
     "eslint": "^5.14.1",
+    "karma-browserify": "^6.0.0",
     "watchify": "^3.11.1"
   },
   "scripts": {

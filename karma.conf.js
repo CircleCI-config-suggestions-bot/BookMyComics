@@ -2,7 +2,10 @@
 module.exports = function(config) {
     config.set({
         basePath: '',
-        frameworks: [ 'mocha' ],
+        frameworks: [ 'mocha', 'browserify' ],
+        preprocessors: {
+            'tests/unit/*.js': ['browserify'],
+        },
         files: [
             // Testing dependencies
             'node_modules/sinon-chrome/bundle/sinon-chrome-webextensions.min.js',
