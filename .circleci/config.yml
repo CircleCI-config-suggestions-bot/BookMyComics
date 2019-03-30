@@ -56,5 +56,11 @@ jobs:
 
       # Actual testing steps
       - run:
-          name: Lint
+          name: Lint Code
           command: yarn run lint
+      - run:
+          name: Lint Extension
+          command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ -a build/ lint
+      - run:
+          name: Package Extension
+          command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ -a build/ build
