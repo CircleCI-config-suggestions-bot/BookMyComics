@@ -3,21 +3,43 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
-version: 2
-jobs:
-  build:
+version: 2.1
+
+commands:
+  cached-checkout:
+    description: "A checkout command using cache automatically"
+    steps:
+      - restore_cache:
+          keys:
+            - v1-source-{{ .Branch }}-{{ .Revision }}
+            - v1-source-{{ .Branch }}-
+            - v1-source-
+      - checkout
+      - save_cache:
+          key: v1-source-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
+
+executors:
+  node-testing:
     docker:
       # Using the LTS v10 (dubnium) image
       - image: circleci/node:dubnium-browsers
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
+  browser-testing:
+    docker:
+      # Using CIRCLECI's python image with browsers testing baked in
+      # (geckodriver & chrome are relevant for us)
+      - image: circleci/python:3.7.3-stretch-browsers
+
+jobs:
+  build-ext:
+    executor: node-testing
     working_directory: ~/repo
 
     steps:
-      - checkout
-      # Download and cache dependencies
+      - cached-checkout
+
+      # Download and cache node dependencies
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
