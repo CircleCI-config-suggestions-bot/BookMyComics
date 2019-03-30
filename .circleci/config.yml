@@ -42,14 +42,19 @@ jobs:
       # Download and cache node dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-      - run: yarn install
+            - v1-nodedeps-{{ .Branch }}-{{ checksum "package.json" }}
+            - v1-nodedeps-{{ .Branch }}-
+            - v1-nodedeps-
+      - run:
+          name: Check for outdated dependencies
+          command: yarn install --frozen-lockfile
+      - run: yarn install --pure-lockfile
       - save_cache:
           paths:
             - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+          key: v1-nodedeps-{{ .Branch }}-{{ checksum "package.json" }}
+
+      # Actual testing steps
       - run:
           name: Lint
           command: yarn run lint
