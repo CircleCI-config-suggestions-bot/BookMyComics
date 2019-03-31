@@ -93,7 +93,7 @@ Storage.prototype._cbify = function(funcObj, args, onSuccess, onError) {
     case this.MODE_CALLBACK:
     default:
         allArgs.push(resolveCb);
-        return funcObj(args, resolveCb);
+        return funcObj.call(this._area, args, resolveCb);
     }
 };
 
