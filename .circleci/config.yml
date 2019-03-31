@@ -3,31 +3,126 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
-version: 2
-jobs:
-  build:
+version: 2.1
+
+commands:
+  cached-checkout:
+    description: "A checkout command using cache automatically"
+    steps:
+      - restore_cache:
+          keys:
+            - v1-source-{{ .Branch }}-{{ .Revision }}
+            - v1-source-{{ .Branch }}-
+            - v1-source-
+      - checkout
+      - save_cache:
+          key: v1-source-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
+
+executors:
+  node-testing:
     docker:
       # Using the LTS v10 (dubnium) image
       - image: circleci/node:dubnium-browsers
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
+  browser-testing:
+    docker:
+      # Using CIRCLECI's python image with browsers testing baked in
+      # (geckodriver & chrome are relevant for us)
+      - image: circleci/python:3.7.3-stretch-browsers
+
+jobs:
+  build-ext:
+    executor: node-testing
     working_directory: ~/repo
 
     steps:
-      - checkout
-      # Download and cache dependencies
+      - cached-checkout
+
+      # Download and cache node dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-      - run: yarn install
+            - v1-nodedeps-{{ .Branch }}-{{ checksum "package.json" }}
+            - v1-nodedeps-{{ .Branch }}-
+            - v1-nodedeps-
+      - run:
+          name: Check for outdated dependencies
+          command: yarn install --frozen-lockfile
+      - run: yarn install --pure-lockfile
       - save_cache:
           paths:
             - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+          key: v1-nodedeps-{{ .Branch }}-{{ checksum "package.json" }}
+
+      # Actual testing steps
       - run:
-          name: Lint
+          name: Lint Code
           command: yarn run lint
+      - run:
+          name: Lint Extension
+          command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ -a build/ lint
+      - run:
+          name: Package Extension
+          command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ -a build/ build
+
+      # Persist required files for functional testing to the workspace
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build/
+
+  setup-testing:
+    executor: browser-testing
+    working_directory: ~/repo
+    steps:
+      - cached-checkout
+
+      # Install python deps
+      - restore_cache:
+          keys:
+            - v1-pydeps-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-pydeps-{{ .Branch }}-
+            - v1-pydeps-
+      - run: pip3 install virtualenv
+      - run: virtualenv --relocatable venv
+      - run: ./venv/bin/pip3 install -r requirements.txt
+      - save_cache:
+          paths:
+            - venv
+          key: v1-pydeps-{{ checksum "requirements.txt" }}
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - venv/
+
+  test-browser:
+    executor: browser-testing
+    working_directory: ~/repo
+    steps:
+      - cached-checkout
+      - attach_workspace:
+          at: /tmp/ws
+      - run:
+          command: /tmp/ws/venv/bin/pytest --browser ${BROWSER}
+          environment:
+            # Useful for firefox driver which relies on packaged extension
+            WEBEXT_DIR: /tmp/ws/build
+
+workflows:
+  version: 2
+  pre-merge:
+    jobs:
+      - build-ext
+      - setup-testing
+      - test-browser:
+          name: test-firefox
+          context: BookMyComics-Firefox
+          requires:
+          - build-ext
+          - setup-testing
+      - test-browser:
+          name: test-chrome
+          context: BookMyComics-Chrome
+          requires:
+          - setup-testing

@@ -1,0 +1,7 @@
+.*.*.sw*
+*~
+node_modules/
+build/
+venv/
+geckodriver.log
+*.pyc
