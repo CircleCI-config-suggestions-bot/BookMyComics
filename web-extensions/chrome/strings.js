@@ -286,7 +286,7 @@ Logs.prototype.error = function(e, add) {
     }
 };
 
-LOGS.prototype.getString = function(e, add) {
+Logs.prototype.getString = function(e, add) {
     if (e.startsWith('E')) {
         if (this.ERRORS.hasOwnProperty(e)) {
             return `[${e}] ${LOCALIZATION.getString(this.ERRORS[e], add)}`;
