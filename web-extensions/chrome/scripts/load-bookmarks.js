@@ -214,23 +214,9 @@ BmcMangaList.prototype.generate = function() {
     });
 };
 
-BmcMangaList.prototype.setMode = function(mode) {
-    var btn = document.getElementById('side-adder');
-    switch (mode) {
-    case BmcMangaList.prototype.MODE_REGISTER:
-        btn.style.display = '';
-        this._mode = mode;
-        this.generate();
-        break ;
-    case BmcMangaList.prototype.MODE_BROWSE:
-        btn.style.display = 'none';
-        this._mode = mode;
-        this.generate();
-        break ;
-    default:
-        LOGS.warn('E0014', {'mode': mode});
-        return ;
-    }
+BmcMangaList.prototype.setMode = function() {
+    //this._mode = mode;
+    this.generate();
 };
 
 BmcMangaList.prototype.hideEntry = function(entry) {
@@ -281,9 +267,7 @@ function showRegisterButton() {
 function addEvents(mangaList) {
     // Clicking on the  `>`/`<` button will show/hide the panel
     var but = document.getElementById('hide-but');
-    but.onclick = function() {
-        showHideSidePanel();
-    };
+    but.onclick = showHideSidePanel;
 
     // Input in searchbox will filter the list of mangas
     var sbox = document.getElementById('searchbox');
@@ -296,21 +280,26 @@ function addEvents(mangaList) {
     // On Register-but click, show the SidePanel in "REGISTER" mode
     const regBtn = document.getElementById('register-but');
     if (regBtn) {
-        regBtn.onclick = function() {
-            showHideSidePanel(mangaList.MODE_REGISTER);
-        };
+        regBtn.onclick = showHideSidePanelAdder;
     }
 
     // On button-add click, Trigger a new comic registration
     var addBut = document.getElementById('side-adder');
     if (addBut) {
-        addBut.onclick = function() {
-            const label = sbox.value;
-            // Sanitize the data first
-            if (sbox.value.length <= 0) {
-                alert(LOGS.getString('S52'));
+        addBut.onclick = showHideSidePanelAdder;
+    }
+    var cancelBut = document.getElementById('add-cancel');
+    if (cancelBut) {
+        cancelBut.onclick = showHideSidePanelAdder;
+    }
+    var confirmBut = document.getElementById('add-confirm');
+    if (confirmBut) {
+        confirmBut.onclick = function() {
+            const label = document.getElementById('bookmark-name').value.trim();
+            if (label.length < 1) {
+                return;
             }
-
+            showHideSidePanelAdder();
             // Now do the actual registration
             const evData = {
                 type: 'action',
@@ -318,6 +307,17 @@ function addEvents(mangaList) {
                 label,
             };
             window.top.postMessage(evData, '*');
+        };
+    }
+    var bookmarkName = document.getElementById('bookmark-name');
+    if (bookmarkName) {
+        bookmarkName.oninput = function() {
+            confirmBut.disabled = this.value.trim().length === 0;
+            if (confirmBut.disabled === true) {
+                confirmBut.classList.add('disabled');
+            } else {
+                confirmBut.classList.remove('disabled');
+            }
         };
     }
 
@@ -433,7 +433,7 @@ function shiftButtonLeft(btn) {
     }
 }
 
-function showHideSidePanel(mode) {
+function showHideSidePanel() {
     var evData = {
         type: 'action',
         action: null,
@@ -447,7 +447,7 @@ function showHideSidePanel(mode) {
 
     // Now, do the actual toggling
     if (panel.style.display === 'none') {
-        mangaList.setMode(mode || mangaList.MODE_BROWSE);
+        mangaList.setMode();
         evData.action = 'ShowSidePanel',
         panel.style.display = '';
         panel.style.width = 'calc(100vw - 16px)';
@@ -464,6 +464,37 @@ function showHideSidePanel(mode) {
     }
     // Notify top window of the SidePanel action
     window.top.postMessage(evData, '*');
+}
+
+function showHideSidePanelAdder() {
+    var sidePanel = document.getElementById('side-panel');
+    var sidePanelAdder = document.getElementById('side-panel-adder');
+    var hideBut = document.getElementById('hide-but');
+    var regBtn = document.getElementById('register-but');
+
+    if (sidePanelAdder.style.display === 'block') {
+        var prev = sidePanel.getAttribute('prev');
+        sidePanel.setAttribute('prev', '');
+        sidePanel.style.display = prev;
+        sidePanelAdder.style.display = '';
+        hideBut.style.display = '';
+        if (prev === 'none') {
+            regBtn.style.display = '';
+        }
+    } else {
+        var bookmarkName = document.getElementById('bookmark-name');
+        var confirmBut = document.getElementById('add-confirm');
+
+        sidePanel.setAttribute('prev', sidePanel.style.display);
+        sidePanel.style.display = 'none';
+        sidePanelAdder.style.display = 'block';
+        bookmarkName.value = '';
+        hideBut.style.display = 'none';
+        bookmarkName.focus();
+        confirmBut.classList.add('disabled');
+        confirmBut.disabled = true;
+        regBtn.style.display = 'none';
+    }
 }
 
 // Hide panel by default

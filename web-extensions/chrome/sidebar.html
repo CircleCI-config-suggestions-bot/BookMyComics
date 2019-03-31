@@ -36,7 +36,7 @@
       .label:hover + .fa-trash {
         display: initial;
       }
-      #side-panel {
+      #side-panel,#side-panel-adder {
         width: calc(100vw - 16px);
         border-right: 1px solid #ccc;
         position: absolute;
@@ -45,6 +45,9 @@
         overflow-y: auto;
         background-color: #fcfcfc;
         left: 0;
+      }
+      #side-panel-adder {
+        display: none;
       }
       #hide-but {
         position: absolute;
@@ -66,15 +69,14 @@
           transition-delay: 0s;
           transition-duration: 2s;
       }
-      #searchbox {
+      #searchbox, #bookmark-name {
         width: calc(100vw - 24px);
-        border-right: 1px solid #ccc;
         top: 0;
         background-color: #fdfdfd;
         left: 0;
         border: 1px solid #cecece;
         right: 0;
-        padding: 3px;
+        padding: 4px;
       }
       #searchbox > div {
         font-size: 14px;
@@ -82,20 +84,26 @@
         border-bottom: 1px solid #ccc;
         cursor: text;
       }
-      #searchbox:focus, #searchbox:hover {
-        border-color: #078dd8;
-        box-shadow: 0 0 8px #078dd8;
+      #searchbox:focus, #searchbox:hover, #bookmark-name:focus, #bookmark-name:hover {
+        border-color: #6ec6f7;
+        box-shadow: 0 0 0px #6ec6f7;
+      }
+      #bookmark-name {
+        margin-bottom: 3px;
       }
       #register-but {
         position: absolute;
-        top: 0;
-        padding: 1px;
-        background-color: #00aa00;
+        top: 70px;
+        padding: 3px;
+        padding-top: 2px;
+        background-color: #3fbf3f;
+        color: #fff;
         font-size: 16px;
-        left: 0;
+        left: 3px;
+        width: 18px;
+        text-align: center;
         border: 1px solid #ccc;
-        border-left: none;
-        border-radius: 0 3px 3px 0;
+        border-radius: 14px;
         cursor: pointer;
       }
       #register-but:hover {
@@ -155,10 +163,28 @@
         padding: 4px;
         background-color: #71d72a;
         font-weight: bold;
+      }
+      .button-add:not(.disabled):hover {
+        background-color: #7fec34;
         cursor: pointer;
       }
-      .button-add:hover {
-        background-color: #7fec34;
+      .disabled {
+        background-color: #ccc;
+      }
+      .cancel {
+        background-color: #d7712a;
+      }
+      .cancel:not(.disabled):hover {
+        background-color: #ec7f34;
+        cursor: pointer;
+      }
+      #bookmark-add-title {
+        text-align: center;
+        background-color: #444;
+        color: #fff;
+        padding: 3px;
+        margin: 0;
+        margin-bottom: 4px;
       }
     </style>
     <script src="strings.js"></script>
@@ -175,6 +201,12 @@
       <div id="side-adder" class="button-add">+</div>
       <input type="text" placeholder="Search..." id="searchbox"></input>
       <div id="manga-list"></div>
+    </div>
+    <div id="side-panel-adder">
+      <h3 id="bookmark-add-title">Add a new bookmark</h3>
+      <input type="text" placeholder="Bookmark name" id="bookmark-name"></input>
+      <div id="add-confirm" class="button-add">Confirm</div>
+      <div id="add-cancel" class="button-add cancel">Cancel</div>
     </div>
     <div id="register-but">+</div>
     <div id="hide-but">&lt;</div>
