@@ -421,15 +421,15 @@ function notifyResult(operation, error) {
 
 function shiftButtonRight(btn) {
     if (btn) {
-        btn.style.left = '';
-        btn.style.right = '0';
+        btn.classList.add('right');
+        btn.classList.remove('left');
     }
 }
 
 function shiftButtonLeft(btn) {
     if (btn) {
-        btn.style.left = '0';
-        btn.style.right = 'initial';
+        btn.classList.remove('right');
+        btn.classList.add('left');
     }
 }
 

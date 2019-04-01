@@ -52,14 +52,27 @@
       #hide-but {
         position: absolute;
         top: 100px;
-        padding: 2px;
+        padding: 3px;
         background-color: #fcfcfc;
-        font-size: 18px;
-        right: 0;
+        font-size: 16px;
         border: 1px solid #ccc;
-        border-left: none;
-        border-radius: 0 3px 3px 0;
+        border-radius: 14px;
         cursor: pointer;
+        width: 18px;
+        text-align: center;
+        transition: left .3s, right .3s;
+      }
+      #hide-but.left {
+        left: -6px;
+      }
+      #hide-but.left:hover {
+        left: 0;
+      }
+      #hide-but.right {
+        right: 0;
+      }
+      #hide-but.right:hover {
+        right: 4px;
       }
       #hide-but:hover {
         background-color: #ebebeb;
@@ -99,15 +112,17 @@
         background-color: #3fbf3f;
         color: #fff;
         font-size: 16px;
-        left: 3px;
+        left: -6px;
         width: 18px;
         text-align: center;
         border: 1px solid #ccc;
         border-radius: 14px;
         cursor: pointer;
+        transition: left .3s;
       }
       #register-but:hover {
         background-color: #00ff00;
+        left: 0;
       }
       #manga-list > ul, #manga-list > ul > div {
         padding: 0;
