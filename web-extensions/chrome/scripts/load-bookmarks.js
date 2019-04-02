@@ -16,12 +16,9 @@ const bmcDb = new BmcDataAPI();
 
 function BmcMangaList() {
     this._node = document.getElementById('manga-list');
-    this._mode = BmcMangaList.MODE_BROWSE;
 }
 
-BmcMangaList.prototype.MODE_REGISTER = 'register';
-BmcMangaList.prototype.MODE_BROWSE = 'browse';
-
+// TODO: should be handled somehow
 BmcMangaList.prototype.onAliasClick = function(ev) {
     const comicLabel = ev.target;
     LOGS.log('S46', {'label': ev.target.innerText,
@@ -105,17 +102,7 @@ BmcMangaList.prototype.onSourceDelete = function(ev) {
 };
 
 BmcMangaList.prototype.onEntryClick = function(ev) {
-    LOGS.log('S48', {'mode': this._mode, 'event': ev});
-    switch (this._mode) {
-    case BmcMangaList.prototype.MODE_REGISTER:
-        this.onAliasClick(ev);
-        break ;
-    case BmcMangaList.prototype.MODE_BROWSE:
-        this.onBrowseClick(ev);
-        break ;
-    default:
-        break ;
-    }
+    this.onBrowseClick(ev);
 };
 
 BmcMangaList.prototype.onEntryDelete = function(ev) {
@@ -214,11 +201,6 @@ BmcMangaList.prototype.generate = function() {
     });
 };
 
-BmcMangaList.prototype.setMode = function() {
-    //this._mode = mode;
-    this.generate();
-};
-
 BmcMangaList.prototype.hideEntry = function(entry) {
     entry.style.display = 'none';
 };
@@ -277,7 +259,6 @@ function addEvents(mangaList) {
         mangaList.filter(str);
     };
 
-    // On Register-but click, show the SidePanel in "REGISTER" mode
     const regBtn = document.getElementById('register-but');
     if (regBtn) {
         regBtn.onclick = showHideSidePanelAdder;
@@ -447,7 +428,6 @@ function showHideSidePanel() {
 
     // Now, do the actual toggling
     if (panel.style.display === 'none') {
-        mangaList.setMode();
         evData.action = 'ShowSidePanel',
         panel.style.display = '';
         panel.style.width = 'calc(100vw - 16px)';
@@ -460,7 +440,7 @@ function showHideSidePanel() {
         panel.style.width = '0';
         togBtn.innerText = '>';
         shiftButtonLeft(togBtn);
-        regBtn.style.display = 'none';
+        regBtn.style.display = '';
     }
     // Notify top window of the SidePanel action
     window.top.postMessage(evData, '*');
