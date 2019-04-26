@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from .base import BaseWebdriverWrapper
-from .utils import make_realpath
+
 
 class Wrapper(BaseWebdriverWrapper):
     def __init__(self, *args, **kwargs):
@@ -20,9 +20,7 @@ class Wrapper(BaseWebdriverWrapper):
         
         self._driver = webdriver.Firefox(options=options,
                                          capabilities=capabilities)
-        self._setup_driver()
 
-    def _setup_driver(self):
-        print('Loading addon from "{}"'.format(self._packed_fpath))
-        self._driver.install_addon(self._packed_fpath, temporary=True)
+        print('Loading addon from "{}"'.format(self._ext.packed_path))
+        self._driver.install_addon(self._ext.packed_path, temporary=True)
         print('Driver installed add-on')

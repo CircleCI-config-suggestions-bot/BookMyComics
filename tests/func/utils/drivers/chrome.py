@@ -8,7 +8,7 @@ class Wrapper(BaseWebdriverWrapper):
         super(Wrapper, self).__init__(*args, **kwargs)
 
         options = webdriver.ChromeOptions()
-        options.add_argument('--load-extension={}'.format(self._unpacked_path))
+        options.add_argument('--load-extension={}'.format(self._ext.unpacked_path))
         options.add_argument('--headless')
 
         self._driver = webdriver.Chrome(options=options)

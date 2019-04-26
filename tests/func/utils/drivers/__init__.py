@@ -1,3 +1,5 @@
+from ..extension import Extension
+
 from . import firefox, chrome
 
 
@@ -17,7 +19,7 @@ def get_driver(name):
     wrapper = WD_WRAPPERS.get(name, None)
 
     if not wrapper:
-        WD_WRAPPERS[name] = wrappers[name]('./web-extensions/chrome')
+        WD_WRAPPERS[name] = wrappers[name](Extension())
         wrapper = WD_WRAPPERS[name]
 
     return wrapper.driver
