@@ -1,6 +1,4 @@
-import pytest
-
-from .utils import drivers
+from .func.utils import drivers
 
 
 def pytest_addoption(parser):
