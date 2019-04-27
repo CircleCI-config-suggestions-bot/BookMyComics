@@ -42,11 +42,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     retErr = new Error(LOGS.getString('E0010', {'label': evData.label,
                                                                 'err': err.message}));
                 }
-                this._ui.makeNotification('Register Comic', retErr,
-                                          {'comicId': this._comic.id,
-                                           'comicSource': this._comic.reader,
-                                           'comicName': this._comic.name,
-                                          });
+                this.sendNotificationWithComicInfo('Register Comic', retErr);
             });
         });
     // Handle "Alias"
@@ -60,11 +56,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     retErr = new Error(LOGS.getString('E0011', {'id': evData.id,
                                                                 'err': err.message}));
                 }
-                this._ui.makeNotification('Alias Comic', retErr,
-                                          {'comicId': this._comic.id,
-                                           'comicSource': this._comic.reader,
-                                           'comicName': this._comic.name,
-                                          });
+                this.sendNotificationWithComicInfo('Alias Comic', retErr);
             });
         });
     // Handle "Delete"
@@ -231,11 +223,7 @@ BmcEngine.prototype.track = function() {
         }
         this._db.updateComic(
             this._comic.id, this._comic.chapter, this._comic.page,
-            err => this._ui.makeNotification('track', err, {
-                'comicId': this._comic.id,
-                'comicSource': this._comic.reader,
-                'comicName': this._comic.name,
-            })
+            err => this.sendNotificationWithComicInfo('track', err),
         );
     }, {once: true});
 
@@ -319,4 +307,12 @@ BmcEngine.prototype.delete = function(comicId, reader, name, cb) {
     // Otherwise, remove the source (and optionally the Comic if it was the
     // last source)
     return this._db.unaliasComic(comicId, reader, name, completeDelete);
+};
+
+BmcEngine.prototype.sendNotificationWithComicInfo = function(event, err) {
+    this._ui.makeNotification(event, err,
+                              {'comicId': this._comic.id,
+                               'comicSource': this._comic.reader,
+                               'comicName': this._comic.name,
+                              });
 };

@@ -53,6 +53,8 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
             LOGS.log('S33');
             this.fullSize(evData.fullSize === 'true');
         });
+    // We receive this event when the sidebar UI is loaded. If the sidebar was
+    // open, we need to re-open it to keep the previous "state".
     this._messaging.addWindowHandler(
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'CheckSidebar',
