@@ -572,6 +572,3 @@ function showHideSidePanelDeleter() {
     mangaList.sourceDelete(mangaList.currentComic.id, mangaList.currentComic.reader,
                            mangaList.currentComic.name);
 }
-
-// Hide panel by default
-// showHideSidePanel();

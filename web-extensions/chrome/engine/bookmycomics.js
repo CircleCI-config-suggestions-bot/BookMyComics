@@ -223,8 +223,7 @@ BmcEngine.prototype.track = function() {
         }
         this._db.updateComic(
             this._comic.id, this._comic.chapter, this._comic.page,
-            err => this.sendNotificationWithComicInfo('track', err),
-        );
+            err => this.sendNotificationWithComicInfo('track', err));
     }, {once: true});
 
     // Now fire the load or cache hit, that shall trigger the previously
