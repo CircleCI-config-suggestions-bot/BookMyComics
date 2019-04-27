@@ -8,7 +8,11 @@ from .utils.extension import Extension
 
 EXT = Extension()
 
-@pytest.mark.parametrize('reader_url', EXT.supported_readers)
+TEST_URLS = EXT.supported_readers + [
+    pytest.param('https://www.qwant.com/', marks=pytest.mark.xfail)
+]
+
+@pytest.mark.parametrize('reader_url', TEST_URLS)
 def test_001_load(webdriver, reader_url):
     # Load the reader's URL
     webdriver.get(reader_url)
