@@ -116,10 +116,7 @@ BmcMangaList.prototype.onEntryClick = function(ev) {
 };
 
 BmcMangaList.prototype.onEntryDelete = function(ev) {
-    this.deleteEntry(ev.target);
-};
-
-BmcMangaList.prototype.deleteEntry = function(icon) {
+    const icon = ev.target;
     const comicDiv = icon.parentElement;
     const comicLabel = comicDiv.firstChild;
 
