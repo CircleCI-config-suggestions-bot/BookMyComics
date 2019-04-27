@@ -47,7 +47,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         });
     this._messaging.addWindowHandler(
         this.SIDEPANEL_ID,
-        evData => evData.type === 'action' && evData.action === 'IFrameSize',
+        evData => evData.type === 'action' && evData.action === 'IFrameResize',
         evData => {
             LOGS.log('S33');
             this.fullSize(evData.fullSize === 'true');
@@ -137,8 +137,8 @@ BmcUI.prototype.removeSidePanel = function() {
     this._messaging.removeWindowHandlers(this.SIDEPANEL_ID);
 };
 
-// If `extras` is passed, it needs to be a dictionary. All keys that are already
-// in the `evData` dictionary will be ignored.
+// The `extras` dictionary is an optional argument. All duplicate keys between
+// `extras` and the `evData` dictionary will be ignored and lost.
 BmcUI.prototype.makeNotification = function(operation, err, extras) {
     if (typeof operation === 'undefined') {
         // FIXME: use localization instead

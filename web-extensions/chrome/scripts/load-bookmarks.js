@@ -531,7 +531,7 @@ function showHideSidePanelAdder() {
         hideBut.style.display = '';
         if (prev === '') {
             // Force iframe to non full size.
-            window.top.postMessage({'type': 'action', 'action': 'IFrameSize'}, '*');
+            window.top.postMessage({'type': 'action', 'action': 'IFrameResize'}, '*');
             if (mangaList.isRegistered === true) {
                 delBtn.style.display = 'block';
             } else if (mangaList.isRegistered === false) {
@@ -548,7 +548,7 @@ function showHideSidePanelAdder() {
         sidePanel.setAttribute('prev', sidePanel.style.display);
 
         // Force iframe to full size.
-        window.top.postMessage({'type': 'action', 'action': 'IFrameSize', 'fullSize': 'true'}, '*');
+        window.top.postMessage({'type': 'action', 'action': 'IFrameResize', 'fullSize': 'true'}, '*');
 
         sidePanel.style.display = 'none';
         sidePanelAdder.style.display = 'block';
