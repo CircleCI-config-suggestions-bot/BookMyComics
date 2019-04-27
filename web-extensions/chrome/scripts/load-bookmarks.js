@@ -251,6 +251,7 @@ BmcMangaList.prototype.filter = function(filterStr) {
 function showDeleteButton() {
     displayButton(document.getElementById('delete-but'));
     document.getElementById('register-but').style.display = '';
+    document.getElementById('side-adder').disabled = true;
 }
 
 function showRegisterButton() {
