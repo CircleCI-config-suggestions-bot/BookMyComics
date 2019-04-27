@@ -80,6 +80,9 @@ jobs:
           name: Setup manifest
           command: python3 setup.py ${BROWSER}
       - run:
+          name: Error and String codes
+          command: python ./tools/logs_codes.py
+      - run:
           name: Package Extension
           command: /tmp/ws/node_modules/.bin/web-ext -s web-extensions/chrome/ -a ./build-${BROWSER}/ build
 

@@ -28,9 +28,9 @@ function Localization(lang = DEFAULT_LANG) {
     this.lang = lang;
 
     this.STRINGS = {
-        'S1': {
-            'en': 'Unknown string/error code',
-        },
+        // 'S1': {
+        //     'en': 'Unknown string/error code',
+        // },
         'S2': {
             'en': 'BmcEngine._memoizeComic: unknown comic name.',
         },
@@ -64,15 +64,15 @@ function Localization(lang = DEFAULT_LANG) {
         'S12': {
             'en': 'BookMyComic: bmcEngine.alias: id={comicId} reader={reader} manga={manga}',
         },
-        'S13': {
-            'en': 'Could not alias current page to comicId {id}: {err}',
-        },
+        // 'S13': {
+        //     'en': 'Could not alias current page to comicId {id}: {err}',
+        // },
         'S14': {
             'en': 'Instanciated {elem}',
         },
-        'S15': {
-            'en': 'Could not register Comic {label}: {err}',
-        },
+        // 'S15': {
+        //     'en': 'Could not register Comic {label}: {err}',
+        // },
         'S16': {
             'en': 'Scheme could not retrieve Comic map',
         },
@@ -88,12 +88,12 @@ function Localization(lang = DEFAULT_LANG) {
         'S20': {
             'en': 'Could not find comicId: {data}',
         },
-        'S21': {
-            'en': 'Could not find comic data',
-        },
-        'S22': {
-            'en': 'Cannot go backwards in comic',
-        },
+        // 'S21': {
+        //     'en': 'Could not find comic data',
+        // },
+        // 'S22': {
+        //     'en': 'Cannot go backwards in comic',
+        // },
         'S23': {
             'en': 'Got Update error: {data}',
         },
@@ -130,21 +130,21 @@ function Localization(lang = DEFAULT_LANG) {
         'S34': {
             'en': 'BmcUi: Sending message to SidePanel for notification display',
         },
-        'S35': {
-            'en': 'Cannot find an frame with unknown Definition. Please raise the '
-              + 'issue to the developers, as it is due to a development '
-              + 'mistake.',
-        },
+        // 'S35': {
+        //     'en': 'Cannot find an frame with unknown Definition. Please raise the '
+        //       + 'issue to the developers, as it is due to a development '
+        //       + 'mistake.',
+        // },
         'S36': {
             'en': 'FrameFinder.find: Searching frame with id approach',
         },
         'S37': {
             'en': 'FrameFinder.find: Found frame with inspect approach',
         },
-        'S38': {
-            'en': 'Could not identify requested frame, please contact the webext'
-                          + ' developers.<br/>{data}',
-        },
+        // 'S38': {
+        //     'en': 'Could not identify requested frame, please contact the webext'
+        //                   + ' developers.<br/>{data}',
+        // },
         'S39': {
             'en': 'BookMyComics: entrypoint.js: Requesting URL parsing from background script',
         },
@@ -184,10 +184,10 @@ function Localization(lang = DEFAULT_LANG) {
         'S51': {
             'en': 'Input of searchbox changed: filtering bookmarks list',
         },
-        'S52': {
-            'en': 'BookMyComics does not support empty labels to identify a comic.<br>'
-                   + 'Please define a label in the Side Panel\'s text area first.',
-        },
+        // 'S52': {
+        //     'en': 'BookMyComics does not support empty labels to identify a comic.<br>'
+        //            + 'Please define a label in the Side Panel\'s text area first.',
+        // },
         'S53': {
             'en': 'BmcSidePanel: received message to display status notification op={op} err={error}',
         },
@@ -207,16 +207,16 @@ function Localization(lang = DEFAULT_LANG) {
         'S58': {
             'en': 'Attempting to delete comic {comic} ({id})',
         },
-        'S59': {
-            'en': 'Could not delete current {kind}: {reason}',
-        },
+        // 'S59': {
+        //     'en': 'Could not delete current {kind}: {reason}',
+        // },
         'S60': {
             'en': 'BookMyComics: bmcEngine.delete: id={id} reader={reader} manga={name}',
         },
-        'S61': {
-            'en': 'Source to remove ({reader}:{name})'
-                  + ' has already been removed from comic {id} aliases',
-        },
+        // 'S61': {
+        //     'en': 'Source to remove ({reader}:{name})'
+        //           + ' has already been removed from comic {id} aliases',
+        // },
     };
 }
 
@@ -238,25 +238,25 @@ function Logs(level = INFO) {
     this.level = level;
 
     this.ERRORS = {
-        'E0000': 'S1',
+        // 'E0000': 'S1',
         'E0001': 'S2',
         'E0002': 'S40',
         'E0003': 'S43',
         'E0004': 'S29',
-        'E0005': 'S6',
-        'E0006': 'S7',
+        // 'E0005': 'S6',
+        // 'E0006': 'S7',
         'E0007': 'S8',
         'E0008': 'S27',
         'E0009': 'S17',
-        'E0010': 'S15',
-        'E0011': 'S13',
-        'E0012': 'S38',
+        // 'E0010': 'S15',
+        // 'E0011': 'S13',
+        // 'E0012': 'S38',
         'E0013': 'S47',
         'E0014': 'S50',
         'E0015': 'S55',
         'E0016': 'S56',
-        'E0017': 'S59',
-        'E0018': 'S61',
+        // 'E0017': 'S59',
+        // 'E0018': 'S61',
     };
 }
 
