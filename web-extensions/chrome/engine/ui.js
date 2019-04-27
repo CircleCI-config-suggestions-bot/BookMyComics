@@ -140,10 +140,14 @@ BmcUI.prototype.removeSidePanel = function() {
 // If `extras` is passed, it needs to be a dictionary. All keys that are already
 // in the `evData` dictionary will be ignored.
 BmcUI.prototype.makeNotification = function(operation, err, extras) {
+    if (typeof operation === 'undefined') {
+        // FIXME: use localization instead
+        console.warn('Missing operation in BmcUI.makeNotification');
+    }
     var evData = {
         type: 'action',
         action: 'notification',
-        operation: operation||'undefined',
+        operation: operation,
         error: (err||{}).message,
     };
     if (typeof extras === 'object') {
