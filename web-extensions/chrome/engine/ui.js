@@ -21,9 +21,9 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     iframe.src = resourcePath;
     LOGS.log('S31', {'src': iframe.src});
     iframe.style.width = '200px';
-    iframe.style.height = '100vh';
+    iframe.style.height = '58px';
     iframe.style.position = 'fixed';
-    iframe.style.top = '0';
+    iframe.style.top = '70px';
     iframe.style.left = '0';
     iframe.style.zIndex = '1000000'; // Some high value
     iframe.style.border = 'none';
@@ -35,9 +35,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         () => {
             LOGS.log('S32');
             this._db._data.set({'sidebar-displayed': 'false'});
-            // Do not check if infobar is still around.
-            // -> It's NOT supposed to be.
-            setupTracker();
+            this.toggleSidePanel(false);
         });
     this._messaging.addWindowHandler(
         this.SIDEPANEL_ID,
@@ -45,26 +43,54 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         () => {
             LOGS.log('S33');
             this._db._data.set({'sidebar-displayed': 'true'});
-            this.removeRegisterDialog();
+            // this.removeRegisterDialog();
+            this.toggleSidePanel(true);
         });
-    this._db._data.get('sidebar-displayed', (err, value) => {
-        if (value === 'true') {
-            this.toggleSidePanel();
-        }
-    });
+    this._messaging.addWindowHandler(
+        this.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'IFrameSize',
+        evData => {
+            LOGS.log('S33');
+            this.fullSize(evData.fullSize === 'true');
+        });
+    this._messaging.addWindowHandler(
+        this.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'CheckSidebar',
+        () => {
+            this._db._data.get('sidebar-displayed', (err, value) => {
+                if (value['sidebar-displayed'] === 'true') {
+                    this.toggleSidePanel(true, true);
+                }
+            });
+            setupTracker();
+        });
 };
 
-BmcUI.prototype.toggleSidePanel = function() {
-    const evData = {
-        type: 'action',
-        action: 'toggle',
-        module: 'sidebar',
-    };
+BmcUI.prototype.fullSize = function(showSidebar) {
+    var iframe = document.getElementById(this.SIDEPANEL_ID);
+    if (showSidebar === true) {
+        iframe.style.height = '100vh';
+        iframe.style.top = '0';
+    } else {
+        iframe.style.height = '58px';
+        iframe.style.top = '70px';
+    }
+};
+
+BmcUI.prototype.toggleSidePanel = function(showSidebar, sendMessage) {
+    this.fullSize(showSidebar);
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
         return ;
     }
-    sidepanel.postMessage(evData, '*');
+    if (sendMessage === true) {
+        const evData = {
+            type: 'action',
+            action: 'toggle',
+            module: 'sidebar',
+        };
+        sidepanel.postMessage(evData, '*');
+    }
 };
 
 BmcUI.prototype.makeRegisterDialog = function() {
@@ -132,7 +158,7 @@ BmcUI.prototype.makeNotification = function(operation, err, extras) {
         operation: operation||'undefined',
         error: (err||{}).message,
     };
-    if (extras) {
+    if (typeof extras === 'object') {
         Object.keys(extras).forEach(key => {
             if (evData[key] === undefined) {
                 evData[key] = extras[key];

@@ -42,8 +42,11 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     retErr = new Error(LOGS.getString('E0010', {'label': evData.label,
                                                                 'err': err.message}));
                 }
-                this._ui.toggleSidePanel();
-                this._ui.makeNotification('Register Comic', retErr);
+                this._ui.makeNotification('Register Comic', retErr,
+                                          {'comicId': this._comic.id,
+                                           'comicSource': this._comic.reader,
+                                           'comicName': this._comic.name,
+                                          });
             });
         });
     // Handle "Alias"
@@ -57,8 +60,11 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     retErr = new Error(LOGS.getString('E0011', {'id': evData.id,
                                                                 'err': err.message}));
                 }
-                this._ui.toggleSidePanel();
-                this._ui.makeNotification('Alias Comic', retErr);
+                this._ui.makeNotification('Alias Comic', retErr,
+                                          {'comicId': this._comic.id,
+                                           'comicSource': this._comic.reader,
+                                           'comicName': this._comic.name,
+                                          });
             });
         });
     // Handle "Delete"
