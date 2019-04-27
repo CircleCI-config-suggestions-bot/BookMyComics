@@ -17,6 +17,7 @@ class Wrapper(BaseWebdriverWrapper):
 
         capabilities = DesiredCapabilities.FIREFOX
         capabilities['marionette'] = True
+        capabilities['loggingPrefs'] = {'browser': 'ALL'}
         
         self._driver = webdriver.Firefox(options=options,
                                          capabilities=capabilities)
