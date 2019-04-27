@@ -43,7 +43,6 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         () => {
             LOGS.log('S33');
             this._db._data.set({'sidebar-displayed': 'true'});
-            // this.removeRegisterDialog();
             this.toggleSidePanel(true);
         });
     this._messaging.addWindowHandler(
@@ -100,19 +99,6 @@ BmcUI.prototype.makeRegisterDialog = function() {
     var evData = {
         type: 'action',
         action: 'setup',
-        operation: 'register',
-    };
-    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
-    if (!sidepanel) {
-        return ;
-    }
-    sidepanel.postMessage(evData, '*');
-};
-
-BmcUI.prototype.removeRegisterDialog = function() {
-    var evData = {
-        type: 'action',
-        action: 'remove',
         operation: 'register',
     };
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
