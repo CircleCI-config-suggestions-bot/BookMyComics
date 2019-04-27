@@ -206,7 +206,7 @@ BmcEngine.prototype.setup = function() {
  *
  */
 BmcEngine.prototype.track = function() {
-    if (! this._comic.name) {
+    if (!this._comic.name) {
         LOGS.log('S6');
         return ;
     }
@@ -223,8 +223,14 @@ BmcEngine.prototype.track = function() {
             this._ui.makeRegisterDialog();
             return;
         }
-        this._db.updateComic(this._comic.id, this._comic.chapter, this._comic.page,
-                             err => this._ui.makeNotification('Track Comic', err));
+        this._db.updateComic(
+            this._comic.id, this._comic.chapter, this._comic.page,
+            err => this._ui.makeNotification('track', err, {
+                'comicId': this._comic.id,
+                'comicSource': this._comic.reader,
+                'comicName': this._comic.name,
+            })
+        );
     }, {once: true});
 
     // Now fire the load or cache hit, that shall trigger the previously

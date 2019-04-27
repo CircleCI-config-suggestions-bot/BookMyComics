@@ -82,6 +82,16 @@ BmcUI.prototype.makeRegisterDialog = function() {
 };
 
 BmcUI.prototype.removeRegisterDialog = function() {
+    var evData = {
+        type: 'action',
+        action: 'remove',
+        operation: 'register',
+    };
+    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
+    if (!sidepanel) {
+        return ;
+    }
+    sidepanel.postMessage(evData, '*');
 };
 
 BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin) {
@@ -113,13 +123,22 @@ BmcUI.prototype.removeSidePanel = function() {
     this._messaging.removeWindowHandlers(this.SIDEPANEL_ID);
 };
 
-BmcUI.prototype.makeNotification = function(operation, err) {
+// If `extras` is passed, it needs to be a dictionary. All keys that are already
+// in the `evData` dictionary will be ignored.
+BmcUI.prototype.makeNotification = function(operation, err, extras) {
     var evData = {
         type: 'action',
         action: 'notification',
-        operation: 'track',
+        operation: operation||'undefined',
         error: (err||{}).message,
     };
+    if (extras) {
+        Object.keys(extras).forEach(key => {
+            if (evData[key] === undefined) {
+                evData[key] = extras[key];
+            }
+        });
+    }
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
         return ;
