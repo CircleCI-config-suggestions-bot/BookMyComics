@@ -21,5 +21,7 @@ def get_driver(name):
     if not wrapper:
         WD_WRAPPERS[name] = wrappers[name](Extension())
         wrapper = WD_WRAPPERS[name]
+        # Force the driver to retry all DOM operations up to N seconds.
+        wrapper.driver.implicitly_wait(10)
 
     return wrapper.driver

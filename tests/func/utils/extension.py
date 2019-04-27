@@ -64,3 +64,19 @@ class Extension:
     @property
     def packed_path(self):
         return self._packed_fpath
+
+    @property
+    def supported_readers(self):
+        def sanitize_url(url):
+            """ Replaces starting and ending asterisks in URL patterns to make
+            it a usable URL """
+            ret = url
+            if ret.startswith('*'):
+                ret = 'https' + ret[1:]
+            if ret.endswith('*'):
+                ret = ret[:-1]
+            return ret
+
+        return [sanitize_url(match)
+                for entry in self._data['content_scripts']
+                for match in entry['matches']]
