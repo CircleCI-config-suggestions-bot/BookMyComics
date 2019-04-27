@@ -35,6 +35,8 @@ BmcMangaList.prototype.onBrowseClick = function(ev) {
     const target = ev.target;
     const comicDiv = target.parentElement;
     const comicElem = comicDiv.parentElement;
+    // The "Array.prototype.slice.call" call is to prevent chrome very bad handling of DOM
+    // iteration.
     const nested = Array.prototype.slice.call(comicElem.getElementsByClassName('nested'));
     for (var i = 0; i < nested.length; ++i) {
         nested[i].classList.toggle('active');
