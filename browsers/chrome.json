@@ -1,0 +1,99 @@
+{
+    "name": "BookMyComics",
+    "version": "0.1",
+    "description": "A slightly intrusive extension to keep track of your comics/manga reading progress",
+    "manifest_version": 2,
+    "background": {
+        "scripts": [
+            "strings.js",
+            "utils.js",
+            "engine/utils.js",
+            "engine/messaging.js",
+            "support/mangaeden.js",
+            "support/mangafox.js",
+            "support/mangahere.js",
+            "support/mangareader.js",
+            "sources.js",
+            "background-engine.js"
+        ]
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://www.mangaeden.com/en/en-manga/*"],
+            "js": [
+                "strings.js",
+                "utils.js",
+                "engine/utils.js",
+                "engine/storage.js",
+                "engine/datamodel.js",
+                "engine/messaging.js",
+                "engine/ui.js",
+                "engine/bookmycomics.js",
+                "entrypoint.js"
+            ],
+            "all_frames": true
+        },
+        {
+            "matches": ["*://fanfox.net/manga/*"],
+            "js": [
+                "strings.js",
+                "utils.js",
+                "engine/utils.js",
+                "engine/storage.js",
+                "engine/datamodel.js",
+                "engine/messaging.js",
+                "engine/ui.js",
+                "engine/bookmycomics.js",
+                "entrypoint.js"
+            ],
+            "all_frames": true
+        },
+        {
+            "matches": ["*://mangahere.us/*"],
+            "js": [
+                "strings.js",
+                "utils.js",
+                "engine/utils.js",
+                "engine/storage.js",
+                "engine/datamodel.js",
+                "engine/messaging.js",
+                "engine/ui.js",
+                "engine/bookmycomics.js",
+                "entrypoint.js"
+            ],
+            "all_frames": true
+        },
+        {
+            "matches": ["https://www.mangareader.net/*"],
+            "js": [
+                "strings.js",
+                "utils.js",
+                "engine/utils.js",
+                "engine/storage.js",
+                "engine/datamodel.js",
+                "engine/messaging.js",
+                "engine/ui.js",
+                "engine/bookmycomics.js",
+                "entrypoint.js"
+            ],
+            "all_frames": true
+        }
+    ],
+    "web_accessible_resources": [
+        "sidebar.html",
+        "strings.js",
+        "utils.js",
+        "engine/utils.js",
+        "engine/storage.js",
+        "engine/datamodel.js",
+        "engine/messaging.js",
+        "engine/ui.js",
+        "engine/bookmycomics.js",
+        "scripts/*",
+        "support/*"
+    ],
+    "permissions": [
+        "activeTab",
+        "storage"
+    ]
+}

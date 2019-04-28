@@ -62,6 +62,9 @@ jobs:
           name: Lint Extension
           command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ -a build/ lint
       - run:
+          name: Setup manifest
+          command: python3 setup.py ${BROWSER}
+      - run:
           name: Package Extension
           command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ -a build/ build
 

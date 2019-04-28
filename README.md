@@ -2,3 +2,14 @@
 
 # BookMyComics
 Firefox/Chrome add-on to keep track of your latest comics/manga/manhua/webtoon reads.
+
+## Starting
+
+In order to handle both Chrome and Firefox, we need to handle two different `manifest.json` files. To do so, we created a little script to set it up called `setup.py`. When starting just run as follow:
+
+```bash
+# To start working on Firefox:
+> python3 setup.py firefox
+# To start working on Chrome:
+> python3 setup.py chrome
+```
