@@ -1,6 +1,6 @@
 /* globals
     BmcEngine:readable
-    getBrowser:readable
+    compat:readable
     LOGS:readable
 */
 
@@ -31,7 +31,7 @@ if (window.top === window) {
     };
     LOGS.log('S39');
     // Now send the message to the background page
-    getBrowser().runtime.sendMessage(ev, (response, err) => {
+    compat.sendMessage(ev, (err, response) => {
         if (err) {
             LOGS.warn('E0002', {'err': err});
             return undefined;

@@ -2,7 +2,7 @@
     BmcDataAPI:readable
     BmcMessagingHandler:readable
     BmcUI:readable
-    getBrowser:readable
+    compat:readable
     LOGS:readable
 */
 
@@ -61,8 +61,7 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
             }, source.info),
         },
     };
-    let bro = getBrowser();
-    bro.runtime.sendMessage(ev, (response, err) => {
+    compat.sendMessage(ev, (err, response) => {
         if (err) {
             LOGS.warn('E0013', {'err': err});
             return undefined;

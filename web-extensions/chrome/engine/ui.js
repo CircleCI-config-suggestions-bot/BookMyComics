@@ -34,7 +34,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         evData => evData.type === 'action' && evData.action === 'HideSidePanel',
         () => {
             LOGS.log('S32');
-            this._db._data.set({'sidebar-displayed': 'false'});
+            this._db._data.set({'sidebar-displayed': 'false'}, () => {});
             this.toggleSidePanel(false);
         });
     this._messaging.addWindowHandler(
@@ -42,7 +42,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         evData => evData.type === 'action' && evData.action === 'ShowSidePanel',
         () => {
             LOGS.log('S33');
-            this._db._data.set({'sidebar-displayed': 'true'});
+            this._db._data.set({'sidebar-displayed': 'true'}, () => {});
             this.toggleSidePanel(true);
         });
     this._messaging.addWindowHandler(
@@ -59,7 +59,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         evData => evData.type === 'action' && evData.action === 'CheckSidebar',
         () => {
             this._db._data.get('sidebar-displayed', (err, value) => {
-                if (value['sidebar-displayed'] === 'true') {
+                if (value && value['sidebar-displayed'] === 'true') {
                     this.toggleSidePanel(true, true);
                 }
             });

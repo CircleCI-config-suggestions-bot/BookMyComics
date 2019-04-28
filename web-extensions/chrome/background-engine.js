@@ -16,7 +16,7 @@ bmcMessaging.addWindowHandler(
     evData => evData.type === 'computation'
               && evData.module === 'sources'
               && evData.computation === 'URL:Parse:Request',
-    (evData, sender, sendResponse) => {
+    evData => { // Don't receive `sender`, as we don't use it.
         console.log(`BookMyComics: background-engine.js: Handling URL:Parse Request: ${evData}`);
         const answerEv = {
             type: 'computation',
@@ -29,7 +29,7 @@ bmcMessaging.addWindowHandler(
                                            evData.resource.path),
             }
         };
-        return sendResponse(answerEv);
+        return answerEv;
     });
 
 bmcMessaging.addWindowHandler(
@@ -37,7 +37,7 @@ bmcMessaging.addWindowHandler(
     evData => evData.type === 'computation'
               && evData.module === 'sources'
               && evData.computation === 'URL:Generate:Request',
-    (evData, sender, sendResponse) => {
+    evData => { // Don't receive `sender`, as we don't use it.
         console.log(`BookMyComics: background-engine.js: Handling URL:Generate Request: ${evData}`);
         const answerEv = {
             type: 'computation',
@@ -50,5 +50,5 @@ bmcMessaging.addWindowHandler(
                                            evData.resource.comic),
             }
         };
-        return sendResponse(answerEv);
+        return answerEv;
     });
