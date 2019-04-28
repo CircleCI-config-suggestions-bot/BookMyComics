@@ -32,7 +32,7 @@ executors:
       - image: circleci/python:3.7.3-stretch-browsers
 
 jobs:
-  build-ext:
+  basic-testing:
     executor: node-testing
     working_directory: ~/repo
 
@@ -54,22 +54,41 @@ jobs:
             - node_modules
           key: v1-nodedeps-{{ .Branch }}-{{ checksum "package.json" }}
 
-      # Actual testing steps
+      # Persist required files for building the webext pack
+      # (web-ext tool from node_modules)
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules/
+
       - run:
           name: Lint Code
           command: yarn run lint
       - run:
           name: Lint Extension
-          command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ -a build/ lint
+          command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ lint
+
+  build-ext:
+    executor: node-testing
+    working_directory: ~/repo
+    steps:
+      - cached-checkout
+      - attach_workspace:
+          at: /tmp/ws
+
+      - run:
+          name: Setup manifest
+          command: python3 setup.py ${BROWSER}
       - run:
           name: Package Extension
-          command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ -a build/ build
+          command: /tmp/ws/node_modules/.bin/web-ext -s web-extensions/chrome/ -a ./build-${BROWSER}/ build
 
-      # Persist required files for functional testing to the workspace
+      # Persist packed webext for functional testing
       - persist_to_workspace:
           root: .
           paths:
-            - build/
+            - build-*
+
 
   setup-testing:
     executor: browser-testing
@@ -91,6 +110,7 @@ jobs:
             - venv
           key: v1-pydeps-{{ checksum "requirements.txt" }}
 
+      # Persist required files for functional testing to the workspace
       - persist_to_workspace:
           root: .
           paths:
@@ -103,23 +123,36 @@ jobs:
       - cached-checkout
       - attach_workspace:
           at: /tmp/ws
+
+      # Work-around to define env variables from another, for the subsequent
+      # steps.
+      #  - Useful for firefox driver which relies on packaged extension
+      - run:
+          name: Define Packed Webext path
+          command: |
+            echo 'export WEBEXT_DIR="/tmp/ws/build-${BROWSER}"' >> $BASH_ENV
+      - run:
+          name: Setup manifest
+          command: python3 setup.py ${BROWSER}
       - run:
           command: /tmp/ws/venv/bin/pytest --browser ${BROWSER}
-          environment:
-            # Useful for firefox driver which relies on packaged extension
-            WEBEXT_DIR: /tmp/ws/build
 
 workflows:
   version: 2
   pre-merge:
     jobs:
-      - build-ext
+      - basic-testing
       - setup-testing
+      - build-ext:
+          name: build-firefox
+          context: BookMyComics-Firefox
+          requires:
+          - basic-testing
       - test-browser:
           name: test-firefox
           context: BookMyComics-Firefox
           requires:
-          - build-ext
+          - build-firefox
           - setup-testing
       - test-browser:
           name: test-chrome
