@@ -3,10 +3,16 @@
     "version": "0.1",
     "description": "A slightly intrusive extension to keep track of your comics/manga reading progress",
     "manifest_version": 2,
+    "applications": {
+        "gecko": {
+            "id": "support@bookmycomics.org"
+        }
+    },
     "background": {
         "scripts": [
             "strings.js",
             "utils.js",
+            "compat.js",
             "engine/utils.js",
             "engine/messaging.js",
             "support/mangaeden.js",
@@ -23,6 +29,7 @@
             "js": [
                 "strings.js",
                 "utils.js",
+                "compat.js",
                 "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
@@ -38,6 +45,7 @@
             "js": [
                 "strings.js",
                 "utils.js",
+                "compat.js",
                 "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
@@ -53,6 +61,7 @@
             "js": [
                 "strings.js",
                 "utils.js",
+                "compat.js",
                 "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
@@ -68,6 +77,7 @@
             "js": [
                 "strings.js",
                 "utils.js",
+                "compat.js",
                 "engine/utils.js",
                 "engine/storage.js",
                 "engine/datamodel.js",
@@ -83,6 +93,7 @@
         "sidebar.html",
         "strings.js",
         "utils.js",
+        "compat.js",
         "engine/utils.js",
         "engine/storage.js",
         "engine/datamodel.js",
