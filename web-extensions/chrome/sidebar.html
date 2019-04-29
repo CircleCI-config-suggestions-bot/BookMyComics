@@ -3,166 +3,218 @@
   <head>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' filesystem: ; object-src 'self'; ">
     <style>
-      @font-face {
-        font-family: 'FontAwesome';
-        src: url('./resources/fontawesome-webfont.woff2');
-        font-weight: normal;
-        font-style: normal;
-      }
-      .fa {
-        display: inline-block;
-        font: normal normal normal 14px/1 FontAwesome;
-        font-size: 14px;
-        font-size: inherit;
-        text-rendering: auto;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-      .fa-trash {
-        position: absolute;
-        right: 2px;
-        top: calc(50% - 7px);
-        display: none;
-      }
-      .fa-trash::before {
-        content: "\f1f8";
-      }
-      .label-container {
-        position: relative;
-      }
-      .label {
-        width: 100%;
-      }
-      .label:hover + .fa-trash {
-        display: initial;
-      }
-      #side-panel {
-        width: calc(100vw - 16px);
-        border-right: 1px solid #ccc;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        overflow-y: auto;
-        background-color: #fcfcfc;
-        left: 0;
-      }
-      #hide-but {
-        position: absolute;
-        top: 100px;
-        padding: 2px;
-        background-color: #fcfcfc;
-        font-size: 18px;
-        right: 0;
-        border: 1px solid #ccc;
-        border-left: none;
-        border-radius: 0 3px 3px 0;
-        cursor: pointer;
-      }
-      #hide-but:hover {
-        background-color: #ebebeb;
-      }
-      .notif-transform {
-          transition-property: 'background-color';
-          transition-delay: 0s;
-          transition-duration: 2s;
-      }
-      #searchbox {
-        width: calc(100vw - 24px);
-        border-right: 1px solid #ccc;
-        top: 0;
-        background-color: #fdfdfd;
-        left: 0;
-        border: 1px solid #cecece;
-        right: 0;
-        padding: 3px;
-      }
-      #searchbox > div {
-        font-size: 14px;
-        padding: 5px;
-        border-bottom: 1px solid #ccc;
-        cursor: text;
-      }
-      #searchbox:focus, #searchbox:hover {
-        border-color: #078dd8;
-        box-shadow: 0 0 8px #078dd8;
-      }
-      #register-but {
-        position: absolute;
-        top: 0;
-        padding: 1px;
-        background-color: #00aa00;
-        font-size: 16px;
-        left: 0;
-        border: 1px solid #ccc;
-        border-left: none;
-        border-radius: 0 3px 3px 0;
-        cursor: pointer;
-      }
-      #register-but:hover {
-        background-color: #00ff00;
-      }
-      #manga-list > ul, #manga-list > ul > div {
-        padding: 0;
-        margin: 0;
-      }
-      .mangaListItem > li > div:first-child {
-        font-size: 14px;
-        padding: 5px;
-        border-bottom: 1px solid #ccc;
-        cursor: pointer;
-      }
-      ul, .mangaListItem {
-        list-style-type: none;
-      }
-      .rollingArrow {
-        cursor: pointer;
-        user-select: none;
-      }
-      .rollingArrow::before {
-        content: "\25B6";
-        color: black;
-        display: inline-block;
-        margin-right: 6px;
-      }
-      .rollingArrow-down::before {
-        transform: rotate(90deg);
-      }
-      .nested {
-        display: none;
-      }
-      .active {
-        display: block;
-        margin-left: 10px;
-        margin-top: -1px;
-        border-left: 1px solid #ccc;
-        border-bottom: 1px solid #ccc;
-        border-bottom-left-radius: 4px;
-        background-color: #fdfdfd;
-      }
-      .nested.active > div {
-        cursor: pointer;
-        padding-bottom: 1px;
-        padding-left: 10px;
-        font-size: 14px;
-      }
-      .nested.active > div:hover {
-        background-color: #ccf;
-      }
-      .button-add {
-        width: 100%;
-        color: #fff;
-        text-align: center;
-        padding: 4px;
-        background-color: #71d72a;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      .button-add:hover {
-        background-color: #7fec34;
-      }
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('./resources/fontawesome-webfont.woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+.fa {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: 14px;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.label-container > .fa-trash {
+  position: absolute;
+  right: 2px;
+  top: calc(50% - 7px);
+  display: none;
+}
+.fa-trash::before {
+  content: "\f1f8";
+}
+.label-container {
+  position: relative;
+}
+.label {
+  width: 100%;
+}
+.label:hover + .fa-trash, .fa-trash:hover {
+  display: initial;
+}
+.label-container > .fa-trash:hover {
+  color: red;
+}
+#side-panel,#side-panel-adder {
+  width: calc(100vw - 16px);
+  border-right: 1px solid #ccc;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow-y: auto;
+  background-color: #fcfcfc;
+  left: 0;
+  display: none;
+}
+#hide-but {
+  position: absolute;
+  top: 30px;
+  padding: 3px;
+  padding-top: 2px;
+  background-color: #fcfcfc;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 14px;
+  cursor: pointer;
+  width: 18px;
+  text-align: center;
+  transition: left .3s, right .3s;
+}
+#hide-but.left {
+  left: -6px;
+}
+#hide-but.left:hover {
+  left: 0;
+}
+#hide-but.right {
+  right: 0;
+}
+#hide-but.right:hover {
+  right: 4px;
+}
+#hide-but:hover {
+  background-color: #ebebeb;
+}
+.notif-transform {
+  transition-property: 'background-color';
+  transition-delay: 0s;
+  transition-duration: 2s;
+}
+#searchbox, #bookmark-name {
+  width: calc(100vw - 24px);
+  top: 0;
+  background-color: #fdfdfd;
+  left: 0;
+  border: 1px solid #cecece;
+  right: 0;
+  padding: 4px;
+}
+#searchbox > div {
+  font-size: 14px;
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+  cursor: text;
+}
+#searchbox:focus, #searchbox:hover, #bookmark-name:focus, #bookmark-name:hover {
+  border-color: #6ec6f7;
+  box-shadow: 0 0 0px #6ec6f7;
+}
+#bookmark-name {
+  margin-bottom: 3px;
+}
+#register-but, #delete-but {
+  position: absolute;
+  top: 0px;
+  padding: 3px;
+  padding-top: 2px;
+  background-color: #3fbf3f;
+  color: #fff;
+  font-size: 16px;
+  left: -6px;
+  width: 18px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: left .3s;
+  display: none;
+}
+#delete-but {
+  background-color: #e00;
+}
+#register-but:hover, #delete-but:hover {
+  background-color: #00ff00;
+  left: 0;
+}
+#delete-but:hover {
+  background-color: red;
+}
+#manga-list > ul, #manga-list > ul > div {
+  padding: 0;
+  margin: 0;
+}
+.mangaListItem > div:first-child {
+  font-size: 14px;
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+ul, .mangaListItem {
+  list-style-type: none;
+}
+.rollingArrow {
+  cursor: pointer;
+  user-select: none;
+}
+.rollingArrow::before {
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+}
+.rollingArrow-down::before {
+  transform: rotate(90deg);
+}
+.nested {
+  display: none;
+}
+.active {
+  display: block;
+  margin-left: 10px;
+  margin-top: -1px;
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  border-bottom-left-radius: 4px;
+  background-color: #fdfdfd;
+}
+.nested.active > div {
+  cursor: pointer;
+  padding-bottom: 1px;
+  padding-left: 10px;
+  font-size: 14px;
+}
+.nested.active > div:hover {
+  background-color: #ccf;
+}
+.button-add {
+  width: 100%;
+  color: #fff;
+  text-align: center;
+  padding: 4px;
+  background-color: #71d72a;
+  font-weight: bold;
+  border: 0;
+}
+.button-add:disabled {
+  background-color: #ccc;
+}
+.button-add:not(:disabled):hover {
+  background-color: #7fec34;
+  cursor: pointer;
+}
+.cancel {
+  background-color: #d7712a;
+}
+.cancel:not(.disabled):hover {
+  background-color: #ec7f34;
+  cursor: pointer;
+}
+#bookmark-add-title {
+  text-align: center;
+  background-color: #444;
+  color: #fff;
+  padding: 3px;
+  margin: 0;
+  margin-bottom: 4px;
+}
     </style>
     <script src="strings.js"></script>
     <script src="utils.js"></script>
+    <script src="compat.js"></script>
     <script src="engine/utils.js"></script>
     <script src="engine/storage.js"></script>
     <script src="engine/datamodel.js"></script>
@@ -172,12 +224,19 @@
   </head>
   <body>
     <div id="side-panel">
-      <div id="side-adder" class="button-add">+</div>
+      <button id="side-adder" class="button-add" disabled>+</button>
       <input type="text" placeholder="Search..." id="searchbox"></input>
       <div id="manga-list"></div>
     </div>
+    <div id="side-panel-adder">
+      <h3 id="bookmark-add-title">Add a new bookmark</h3>
+      <input type="text" placeholder="Bookmark name" id="bookmark-name"></input>
+      <button id="add-confirm" class="button-add">Confirm</button>
+      <button id="add-cancel" class="button-add cancel">Cancel</button>
+    </div>
     <div id="register-but">+</div>
-    <div id="hide-but">&lt;</div>
+    <div id="delete-but"><span class="fa fa-trash"></span></div>
+    <div id="hide-but" class="left">&gt;</div>
   </body>
   <script src="scripts/load-bookmarks.js" crossorigin="anonymous"></script>
 </html>

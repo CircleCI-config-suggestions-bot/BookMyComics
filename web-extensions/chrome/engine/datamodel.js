@@ -684,9 +684,13 @@ BmcDataAPI.prototype.list = function(cb) {
         if (err) {
             return cb(err, null);
         }
+        // Ensure that we don't crash if data is undefined
+        // -> No data found in the storage
+        // -> Add-on was never used yet.
+        const sanitizedData = data || {};
         // Build an inverse mapping; comicId -> sources list
         // Default to empty-object if no map found (never created yet)
-        const map = data[this._scheme.BMC_MAP_KEY] || {};
+        const map = sanitizedData[this._scheme.BMC_MAP_KEY] || {};
         const inverseMap = Object.keys(map).reduce((acc, key) => {
             const comicId = map[key].id;
             if (acc[comicId] === undefined) {
@@ -695,13 +699,13 @@ BmcDataAPI.prototype.list = function(cb) {
             acc[comicId].push(BmcComicSource.deserialize(key, map[key].info));
             return acc;
         }, {});
-        const keys = Object.keys(data).filter(
+        const keys = Object.keys(sanitizedData).filter(
             key => key.indexOf(this._scheme.BMC_KEY_PREFIX) !== -1
         );
         // Directly use the inverse mapping to set all sources while creating
         // the BmcComic objects.
         const results = keys.map(key => {
-            const comic = BmcComic.deserialize(data[key]);
+            const comic = BmcComic.deserialize(sanitizedData[key]);
             if (inverseMap[comic.id]) {
                 inverseMap[comic.id].forEach(source => {
                     comic.addSource(source);

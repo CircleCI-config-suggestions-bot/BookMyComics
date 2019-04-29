@@ -2,7 +2,7 @@
     BmcDataAPI:readable
     BmcMessagingHandler:readable
     BmcUI:readable
-    getBrowser:readable
+    compat:readable
     LOGS:readable
 */
 
@@ -16,12 +16,9 @@ const bmcDb = new BmcDataAPI();
 
 function BmcMangaList() {
     this._node = document.getElementById('manga-list');
-    this._mode = BmcMangaList.MODE_BROWSE;
 }
 
-BmcMangaList.prototype.MODE_REGISTER = 'register';
-BmcMangaList.prototype.MODE_BROWSE = 'browse';
-
+// TODO: should be handled somehow
 BmcMangaList.prototype.onAliasClick = function(ev) {
     const comicLabel = ev.target;
     LOGS.log('S46', {'label': ev.target.innerText,
@@ -35,11 +32,16 @@ BmcMangaList.prototype.onAliasClick = function(ev) {
 };
 
 BmcMangaList.prototype.onBrowseClick = function(ev) {
-    const comicLabel = ev.target;
-    const comicDiv = comicLabel.parentElement;
+    const target = ev.target;
+    const comicDiv = target.parentElement;
     const comicElem = comicDiv.parentElement;
-    comicElem.querySelector('.nested').classList.toggle('active');
-    comicLabel.classList.toggle('rollingArrow-down');
+    // The "Array.prototype.slice.call" call is to prevent chrome very bad handling of DOM
+    // iteration.
+    const nested = Array.prototype.slice.call(comicElem.getElementsByClassName('nested'));
+    for (var i = 0; i < nested.length; ++i) {
+        nested[i].classList.toggle('active');
+    }
+    target.classList.toggle('rollingArrow-down');
 };
 
 BmcMangaList.prototype.onSourceClick = function(comic, source) {
@@ -59,8 +61,7 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
             }, source.info),
         },
     };
-    let bro = getBrowser();
-    bro.runtime.sendMessage(ev, (response, err) => {
+    compat.sendMessage(ev, (err, response) => {
         if (err) {
             LOGS.warn('E0013', {'err': err});
             return undefined;
@@ -84,38 +85,33 @@ BmcMangaList.prototype.onSourceDelete = function(ev) {
     const comicDiv = comicElem.firstChild;
     const comicLabel = comicDiv.firstChild;
 
+    this.sourceDelete(comicLabel.bmcData.id, srcLink.bmcData.reader, srcLink.bmcData.name,
+                      comicLabel.innerText);
+};
+
+BmcMangaList.prototype.sourceDelete = function(comicId, reader, name, comicLabel) {
     LOGS.debug('S57', {
-        reader: srcLink.bmcData.reader,
-        name: srcLink.bmcData.name,
-        comic: comicLabel.innerText,
-        id: comicLabel.bmcData.id,
+        reader: reader,
+        name: name,
+        comic: comicLabel || 'current page',
+        id: comicId,
     });
     const evData = {
         type: 'action',
         action: 'delete',
         comic: {
-            id: comicLabel.bmcData.id,
+            id: comicId,
         },
         source: {
-            reader: srcLink.bmcData.reader,
-            name: srcLink.bmcData.name,
+            reader: reader,
+            name: name,
         },
     };
     window.top.postMessage(evData, '*');
 };
 
 BmcMangaList.prototype.onEntryClick = function(ev) {
-    LOGS.log('S48', {'mode': this._mode, 'event': ev});
-    switch (this._mode) {
-    case BmcMangaList.prototype.MODE_REGISTER:
-        this.onAliasClick(ev);
-        break ;
-    case BmcMangaList.prototype.MODE_BROWSE:
-        this.onBrowseClick(ev);
-        break ;
-    default:
-        break ;
-    }
+    this.onBrowseClick(ev);
 };
 
 BmcMangaList.prototype.onEntryDelete = function(ev) {
@@ -136,16 +132,14 @@ BmcMangaList.prototype.onEntryDelete = function(ev) {
 };
 
 BmcMangaList.prototype.generateComic = function(comic) {
-    const elm = document.createElement('ul');
+    const elm = document.createElement('div');
     elm.classList.toggle('mangaListItem');
-
-    const comicElem = document.createElement('li');
-    elm.appendChild(comicElem);
 
     // Define the content on comic Label's line
     const comicDiv = document.createElement('div');
     comicDiv.classList.add('label-container');
-    comicElem.appendChild(comicDiv);
+    comicDiv.onclick = this.onEntryClick.bind(this);
+    elm.appendChild(comicDiv);
 
     const comicLabel = document.createElement('div');
     comicLabel.classList.add('label', 'rollingArrow');
@@ -153,7 +147,6 @@ BmcMangaList.prototype.generateComic = function(comic) {
     comicLabel.bmcData = {
         id: comic.id,
     };
-    comicLabel.onclick = this.onEntryClick.bind(this);
     comicDiv.appendChild(comicLabel);
 
     const deleteIcon = document.createElement('span');
@@ -165,7 +158,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
     // Define the list of sources beneath the comic's Label
     const comicSrcList = document.createElement('div');
     comicSrcList.classList.toggle('nested');
-    comicElem.appendChild(comicSrcList);
+    elm.appendChild(comicSrcList);
 
     comic.iterSources(source => {
         const srcElem = document.createElement('div');
@@ -214,25 +207,6 @@ BmcMangaList.prototype.generate = function() {
     });
 };
 
-BmcMangaList.prototype.setMode = function(mode) {
-    var btn = document.getElementById('side-adder');
-    switch (mode) {
-    case BmcMangaList.prototype.MODE_REGISTER:
-        btn.style.display = '';
-        this._mode = mode;
-        this.generate();
-        break ;
-    case BmcMangaList.prototype.MODE_BROWSE:
-        btn.style.display = 'none';
-        this._mode = mode;
-        this.generate();
-        break ;
-    default:
-        LOGS.warn('E0014', {'mode': mode});
-        return ;
-    }
-};
-
 BmcMangaList.prototype.hideEntry = function(entry) {
     entry.style.display = 'none';
 };
@@ -270,20 +244,29 @@ BmcMangaList.prototype.filter = function(filterStr) {
     }
 };
 
+function showDeleteButton() {
+    displayButton(document.getElementById('delete-but'));
+    document.getElementById('register-but').style.display = '';
+    document.getElementById('side-adder').disabled = true;
+}
+
 function showRegisterButton() {
+    displayButton(document.getElementById('register-but'));
+    document.getElementById('delete-but').style.display = '';
+    document.getElementById('side-adder').disabled = false;
+}
+
+function displayButton(btn) {
     const panel = document.getElementById('side-panel');
-    const regBtn = document.getElementById('register-but');
-    if (panel && regBtn && panel.style.display === 'none') {
-        regBtn.style.display = '';
+    if (panel && btn && panel.style.display !== 'block') {
+        btn.style.display = 'block';
     }
 }
 
 function addEvents(mangaList) {
     // Clicking on the  `>`/`<` button will show/hide the panel
     var but = document.getElementById('hide-but');
-    but.onclick = function() {
-        showHideSidePanel();
-    };
+    but.onclick = showHideSidePanel;
 
     // Input in searchbox will filter the list of mangas
     var sbox = document.getElementById('searchbox');
@@ -293,31 +276,45 @@ function addEvents(mangaList) {
         mangaList.filter(str);
     };
 
-    // On Register-but click, show the SidePanel in "REGISTER" mode
     const regBtn = document.getElementById('register-but');
     if (regBtn) {
-        regBtn.onclick = function() {
-            showHideSidePanel(mangaList.MODE_REGISTER);
-        };
+        regBtn.onclick = showHideSidePanelAdder;
+    }
+    const delBtn = document.getElementById('delete-but');
+    if (delBtn) {
+        delBtn.onclick = showHideSidePanelDeleter;
     }
 
     // On button-add click, Trigger a new comic registration
     var addBut = document.getElementById('side-adder');
     if (addBut) {
-        addBut.onclick = function() {
-            const label = sbox.value;
-            // Sanitize the data first
-            if (sbox.value.length <= 0) {
-                alert(LOGS.getString('S52'));
+        addBut.onclick = showHideSidePanelAdder;
+    }
+    var cancelBut = document.getElementById('add-cancel');
+    if (cancelBut) {
+        cancelBut.onclick = showHideSidePanelAdder;
+    }
+    var confirmBut = document.getElementById('add-confirm');
+    if (confirmBut) {
+        confirmBut.onclick = function() {
+            const label = document.getElementById('bookmark-name').value.trim();
+            if (label.length < 1) {
+                return;
             }
-
-            // Now do the actual registration
+            showHideSidePanelAdder();
+            // Now do the actual registration.
             const evData = {
                 type: 'action',
                 action: 'register',
                 label,
             };
             window.top.postMessage(evData, '*');
+        };
+    }
+    var bookmarkName = document.getElementById('bookmark-name');
+    if (bookmarkName) {
+        bookmarkName.oninput = function() {
+            confirmBut.disabled = this.value.trim().length === 0;
         };
     }
 
@@ -332,8 +329,29 @@ function addEvents(mangaList) {
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'setup' && evData.operation === 'register',
         () => {
-            LOGS.log('S54');
+            mangaList.isRegistered = false;
             showRegisterButton();
+            LOGS.log('S54');
+        });
+    bmcMessaging.addWindowHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'notification' && evData.operation === 'track',
+        evData => {
+            if (evData.error) {
+                console.error(evData.error);
+            } else if (evData.comicId === undefined || evData.comicSource === undefined ||
+                       evData.comicName === undefined) {
+                // FIXME: use i18n string here instead.
+                console.error('Missing information for current comic', evData);
+            } else {
+                mangaList.isRegistered = true;
+                mangaList.currentComic = {
+                    'id': evData.comicId,
+                    'source': evData.comicSource,
+                    'name': evData.comicName,
+                };
+                showDeleteButton();
+            }
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
@@ -347,6 +365,32 @@ function addEvents(mangaList) {
         () => {
             mangaList.generate();
         });
+    bmcMessaging.addWindowHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'notification' &&
+                  (evData.operation === 'Alias Comic' || evData.operation === 'Register Comic' ||
+                   evData.operation === 'Delete Comic Source' || evData.operation === 'Delete Comic'),
+        evData => {
+            if (evData.operation.startsWith('Delete')) {
+                mangaList.isRegistered = false;
+                mangaList.currentComic = undefined;
+                regBtn.style.display = delBtn.style.display;
+                delBtn.style.display = '';
+            } else {
+                mangaList.isRegistered = true;
+                delBtn.style.display = regBtn.style.display;
+                regBtn.style.display = '';
+                mangaList.currentComic = {
+                    'id': evData.comicId,
+                    'source': evData.comicSource,
+                    'name': evData.comicName,
+                };
+            }
+        });
+
+    // Now that we're ready, we can ask to the UI handler to check if we have to open the sidebar
+    // or not.
+    window.top.postMessage({'type': 'action', 'action': 'CheckSidebar'}, '*');
 }
 
 var mangaList = new BmcMangaList();
@@ -421,50 +465,106 @@ function notifyResult(operation, error) {
 
 function shiftButtonRight(btn) {
     if (btn) {
-        btn.style.left = '';
-        btn.style.right = '0';
+        btn.classList.add('right');
+        btn.classList.remove('left');
     }
 }
 
 function shiftButtonLeft(btn) {
     if (btn) {
-        btn.style.left = '0';
-        btn.style.right = 'initial';
+        btn.classList.remove('right');
+        btn.classList.add('left');
     }
 }
 
-function showHideSidePanel(mode) {
+function showHideSidePanel() {
     var evData = {
         type: 'action',
         action: null,
     };
     var togBtn = document.getElementById('hide-but');
     var regBtn = document.getElementById('register-but');
+    var delBtn = document.getElementById('delete-but');
     var panel = document.getElementById('side-panel');
 
     // Ensure no transition will be ongoing after the state change.
     // removeTransitions();
 
     // Now, do the actual toggling
-    if (panel.style.display === 'none') {
-        mangaList.setMode(mode || mangaList.MODE_BROWSE);
-        evData.action = 'ShowSidePanel',
-        panel.style.display = '';
-        panel.style.width = 'calc(100vw - 16px)';
+    if (panel.style.display !== 'block') {
+        evData.action = 'ShowSidePanel';
+        panel.style.display = 'block';
         togBtn.innerText = '<';
         shiftButtonRight(togBtn);
-        regBtn.style.display = 'none';
+        delBtn.style.display = '';
+        regBtn.style.display = '';
+        togBtn.style.top = '100px';
     } else {
-        evData.action = 'HideSidePanel',
-        panel.style.display = 'none';
-        panel.style.width = '0';
+        evData.action = 'HideSidePanel';
+        panel.style.display = '';
         togBtn.innerText = '>';
         shiftButtonLeft(togBtn);
-        regBtn.style.display = 'none';
+        if (mangaList.isRegistered === true) {
+            delBtn.style.display = 'block';
+        } else if (mangaList.isRegistered === false) {
+            regBtn.style.display = 'block';
+        }
+        togBtn.style.top = '';
     }
     // Notify top window of the SidePanel action
     window.top.postMessage(evData, '*');
 }
 
-// Hide panel by default
-showHideSidePanel();
+function showHideSidePanelAdder() {
+    var sidePanel = document.getElementById('side-panel');
+    var sidePanelAdder = document.getElementById('side-panel-adder');
+    var hideBut = document.getElementById('hide-but');
+    var regBtn = document.getElementById('register-but');
+    var delBtn = document.getElementById('delete-but');
+
+    if (sidePanelAdder.style.display === 'block') {
+        let prev = sidePanel.getAttribute('prev');
+        sidePanel.style.display = prev;
+        sidePanel.setAttribute('prev', '');
+        sidePanelAdder.style.display = '';
+        hideBut.style.display = '';
+        if (prev === '') {
+            // Force iframe to non full size.
+            window.top.postMessage({'type': 'action', 'action': 'IFrameResize'}, '*');
+            if (mangaList.isRegistered === true) {
+                delBtn.style.display = 'block';
+            } else if (mangaList.isRegistered === false) {
+                regBtn.style.display = 'block';
+            }
+        } else {
+            // Show sidebar.
+            window.top.postMessage({'type': 'action', 'action': 'ShowSidePanel'}, '*');
+        }
+    } else {
+        var bookmarkName = document.getElementById('bookmark-name');
+        var confirmBut = document.getElementById('add-confirm');
+
+        sidePanel.setAttribute('prev', sidePanel.style.display);
+
+        // Force iframe to full size.
+        window.top.postMessage({'type': 'action', 'action': 'IFrameResize', 'fullSize': 'true'}, '*');
+
+        sidePanel.style.display = 'none';
+        sidePanelAdder.style.display = 'block';
+        bookmarkName.value = '';
+        bookmarkName.focus();
+        confirmBut.disabled = true;
+        regBtn.style.display = '';
+        delBtn.style.display = '';
+        hideBut.style.display = 'none';
+    }
+}
+
+function showHideSidePanelDeleter() {
+    if (!mangaList.currentComic) {
+        // FIXME: change to localization tool
+        console.error('No current comic information available');
+    }
+    mangaList.sourceDelete(mangaList.currentComic.id, mangaList.currentComic.reader,
+                           mangaList.currentComic.name);
+}

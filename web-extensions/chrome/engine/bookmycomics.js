@@ -42,8 +42,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     retErr = new Error(LOGS.getString('E0010', {'label': evData.label,
                                                                 'err': err.message}));
                 }
-                this._ui.toggleSidePanel();
-                this._ui.makeNotification('Register Comic', retErr);
+                this.sendNotificationWithComicInfo('Register Comic', retErr);
             });
         });
     // Handle "Alias"
@@ -57,8 +56,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     retErr = new Error(LOGS.getString('E0011', {'id': evData.id,
                                                                 'err': err.message}));
                 }
-                this._ui.toggleSidePanel();
-                this._ui.makeNotification('Alias Comic', retErr);
+                this.sendNotificationWithComicInfo('Alias Comic', retErr);
             });
         });
     // Handle "Delete"
@@ -206,7 +204,7 @@ BmcEngine.prototype.setup = function() {
  *
  */
 BmcEngine.prototype.track = function() {
-    if (! this._comic.name) {
+    if (!this._comic.name) {
         LOGS.log('S6');
         return ;
     }
@@ -223,8 +221,9 @@ BmcEngine.prototype.track = function() {
             this._ui.makeRegisterDialog();
             return;
         }
-        this._db.updateComic(this._comic.id, this._comic.chapter, this._comic.page,
-                             err => this._ui.makeNotification('Track Comic', err));
+        this._db.updateComic(
+            this._comic.id, this._comic.chapter, this._comic.page,
+            err => this.sendNotificationWithComicInfo('track', err));
     }, {once: true});
 
     // Now fire the load or cache hit, that shall trigger the previously
@@ -307,4 +306,12 @@ BmcEngine.prototype.delete = function(comicId, reader, name, cb) {
     // Otherwise, remove the source (and optionally the Comic if it was the
     // last source)
     return this._db.unaliasComic(comicId, reader, name, completeDelete);
+};
+
+BmcEngine.prototype.sendNotificationWithComicInfo = function(event, err) {
+    this._ui.makeNotification(event, err,
+                              {'comicId': this._comic.id,
+                               'comicSource': this._comic.reader,
+                               'comicName': this._comic.name,
+                              });
 };

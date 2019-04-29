@@ -46,7 +46,8 @@ function BmcSources() {
 BmcSources.prototype._fromOrigin = function(origin) {
     const readerKey = Object.keys(this._readers).find(
         key => origin.indexOf(key) !== -1);
-    if (! readerKey) {
+    if (!readerKey) {
+        // FIXME: david, fix it please!
         console.warn('Could not find reader instance.');
         return undefined;
     }

@@ -1,4 +1,5 @@
 /* globals
+    compat:readable
     getBrowser:readable
     LOGS:readable
 */
@@ -143,13 +144,15 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
             LOGS.warn('E0004');
             return ;
         }
+        let msg = null;
         BmcWindowHandlers.forEach(handler => {
             if (handler.select(event)) {
-                handler.handle(event, sender, sendResponse);
+                msg = handler.handle(event, sender);
             }
         });
+
         // Force the closing of the sendResponse Channel
-        return false;
+        return compat.sendResponse(sendResponse, msg);
     });
     this._setup = true;
 };
