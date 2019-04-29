@@ -172,15 +172,15 @@ function Localization(lang = DEFAULT_LANG) {
         'S47': {
             'en': 'BookMyComics: load-bookmark.js: sendmessage failed: err={err}',
         },
-        'S48': {
-            'en': 'clickedOnManga!, mode={mode}, event: {event}',
-        },
+        // 'S48': {
+        //     'en': 'clickedOnManga!, mode={mode}, event: {event}',
+        // },
         'S49': {
             'en': 'generating bookmark list',
         },
-        'S50': {
-            'en': 'BmcSidePanel: BmcMangaList: Unknown MODE "{mode}"',
-        },
+        // 'S50': {
+        //     'en': 'BmcSidePanel: BmcMangaList: Unknown MODE "{mode}"',
+        // },
         'S51': {
             'en': 'Input of searchbox changed: filtering bookmarks list',
         },
@@ -252,7 +252,7 @@ function Logs(level = INFO) {
         // 'E0011': 'S13',
         // 'E0012': 'S38',
         'E0013': 'S47',
-        'E0014': 'S50',
+        // 'E0014': 'S50',
         'E0015': 'S55',
         'E0016': 'S56',
         // 'E0017': 'S59',
