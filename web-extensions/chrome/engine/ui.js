@@ -20,7 +20,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     iframe.id = this.SIDEPANEL_ID;
     iframe.src = resourcePath;
     LOGS.log('S31', {'src': iframe.src});
-    iframe.style.width = '200px';
+    iframe.style.width = '206px';
     iframe.style.height = '58px';
     iframe.style.position = 'fixed';
     iframe.style.top = '70px';

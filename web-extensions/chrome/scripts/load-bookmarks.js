@@ -18,18 +18,23 @@ function BmcMangaList() {
     this._node = document.getElementById('manga-list');
 }
 
-// TODO: should be handled somehow
-BmcMangaList.prototype.onAliasClick = function(ev) {
-    const comicLabel = ev.target;
-    LOGS.log('S46', {'label': ev.target.innerText,
-                     'id': ev.target.bmcData.id});
+function emptyElem(elem) {
+    // NOTE: This method seems to be the most efficient as shown by
+    // https://jsperf.com/innerhtml-vs-removechild/15
+    while (elem.firstChild) {
+        elem.removeChild(elem.firstChild);
+    }
+}
+
+function sendAliasRequest(comicId) {
+    LOGS.log('S46', {'id': comicId});
     const evData = {
         type: 'action',
         action: 'alias',
-        id: comicLabel.bmcData.id,
+        id: comicId,
     };
     window.top.postMessage(evData, '*');
-};
+}
 
 BmcMangaList.prototype.onBrowseClick = function(ev) {
     const target = ev.target;
@@ -192,12 +197,7 @@ BmcMangaList.prototype.generate = function() {
 
     // First, remove any child node, to ensure it's clean before we start
     // generating.
-    //
-    // NOTE: This method seems to be the most efficient as shown by
-    // https://jsperf.com/innerhtml-vs-removechild/15
-    while (mangaList.firstChild) {
-        mangaList.removeChild(mangaList.firstChild);
-    }
+    emptyElem(mangaList);
 
     // Now that the parent is a clean slate, let's generate
     bmcDb.list((err, comics) => {
@@ -290,6 +290,10 @@ function addEvents(mangaList) {
     if (addBut) {
         addBut.onclick = showHideSidePanelAdder;
     }
+    var addIntoExistingBut = document.getElementById('add-into-existing');
+    if (addIntoExistingBut) {
+        addIntoExistingBut.onclick = showHideAddIntoExisting;
+    }
     var cancelBut = document.getElementById('add-cancel');
     if (cancelBut) {
         cancelBut.onclick = showHideSidePanelAdder;
@@ -310,6 +314,48 @@ function addEvents(mangaList) {
             };
             window.top.postMessage(evData, '*');
         };
+    }
+    var confirmExistingBut = document.getElementById('add-existing-confirm');
+    if (confirmExistingBut) {
+        confirmExistingBut.onclick = function() {
+            const selected = Array.prototype.slice.call(document.getElementById('existing-entries')
+                                                                .getElementsByClassName('selected'));
+            if (selected.length === 0) {
+                console.log("No entry selected, we shouldn't be here...");
+                return;
+            }
+            // We send the message to add into the DB.
+            sendAliasRequest(selected[0].bmcData.id);
+            // We hide the current panel.
+            showHideAddIntoExisting();
+            // We also hide the "adder" panel.
+            showHideSidePanelAdder();
+        };
+    }
+    var cancelExistingBut = document.getElementById('add-existing-cancel');
+    if (cancelExistingBut) {
+        cancelExistingBut.onclick = function() {
+            // Hide current panel to go back to the "adder" one.
+            showHideAddIntoExisting();
+        }
+    }
+    var filterExistingEntries = document.getElementById('filter-existing');
+    if (filterExistingEntries) {
+        function inputChanges() {
+            var entries = Array.prototype.slice.call(document.getElementById('existing-entries')
+                                                             .childNodes);
+            for (let i = 0; i < entries.length; ++i) {
+                if (entries[i].innerText.indexOf(this.value) !== -1) {
+                    entries[i].style.display = '';
+                } else {
+                    entries[i].style.display = 'none';
+                }
+            }
+        }
+        filterExistingEntries.onkeyup = inputChanges;
+        filterExistingEntries.onchange = inputChanges;
+        filterExistingEntries.oninput = inputChanges;
+        filterExistingEntries.onpaste = inputChanges;
     }
     var bookmarkName = document.getElementById('bookmark-name');
     if (bookmarkName) {
@@ -513,6 +559,51 @@ function showHideSidePanel() {
     }
     // Notify top window of the SidePanel action
     window.top.postMessage(evData, '*');
+}
+
+function switchSelectedEntry() {
+    if (this.classList.contains('selected')) {
+        this.classList.remove('selected');
+        document.getElementById('add-existing-confirm').disabled = true;
+    } else {
+        const nested = Array.prototype.slice.call(this.parentElement.getElementsByClassName('selected'));
+        for (var i = 0; i < nested.length; ++i) {
+            nested[i].classList.remove('selected');
+        }
+        this.classList.add('selected');
+        document.getElementById('add-existing-confirm').disabled = false;
+    }
+}
+
+function showHideAddIntoExisting() {
+    var sidePanelAdder = document.getElementById('side-panel-adder');
+    var sidePanelAddIntoExisting = document.getElementById('side-panel-add-into-existing');
+
+    if (sidePanelAddIntoExisting.style.display !== 'block') {
+        sidePanelAdder.style.display = '';
+        sidePanelAddIntoExisting.style.display = 'block';
+        // Fill list of available entries.
+        var entries = document.getElementById('existing-entries');
+        emptyElem(entries);
+
+        // Now that the parent is a clean slate, let's generate
+        bmcDb.list((err, comics) => {
+            comics.forEach(
+                comic => {
+                    var entry = document.createElement('div');
+                    entry.innerText = comic.label;
+                    entry.bmcData = {
+                        id: comic.id,
+                    };
+                    entry.onclick = switchSelectedEntry;
+                    entries.appendChild(entry);
+                }
+            );
+        });
+    } else {
+        sidePanelAdder.style.display = 'block';
+        sidePanelAddIntoExisting.style.display = '';
+    }
 }
 
 function showHideSidePanelAdder() {
