@@ -1,6 +1,8 @@
 from .func.utils import drivers
 from .func.utils.bmc import BmcController
 
+from selenium import webdriver
+
 
 def pytest_addoption(parser):
     parser.addoption("--browser", action="append", default=[],
@@ -20,11 +22,12 @@ def pytest_generate_tests(metafunc):
 
 def pytest_exception_interact(node, call, report):
     # import pdb; pdb.set_trace()
-    if report.failed:
+    controller = node.funcargs['controller']
+    if report.failed and isinstance(controller.driver, webdriver.Chrome):
         # Retrieve test's browser logs through the webdriver
         s = '\n'.join([
             str(line) for line in
-            node.funcargs['controller'].driver.get_log('browser')
+            controller.driver.get_log('browser')
         ])
         if len(s) > 0:
             print('\n=== CONSOLE LOGS ===')

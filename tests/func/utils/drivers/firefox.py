@@ -1,7 +1,3 @@
-import json
-import os
-from os import path
-
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
@@ -17,8 +13,7 @@ class Wrapper(BaseWebdriverWrapper):
 
         capabilities = DesiredCapabilities.FIREFOX
         capabilities['marionette'] = True
-        capabilities['loggingPrefs'] = {'browser': 'ALL'}
-        
+
         self._driver = webdriver.Firefox(options=options,
                                          capabilities=capabilities)
 
