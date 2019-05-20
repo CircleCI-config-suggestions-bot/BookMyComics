@@ -20,7 +20,10 @@ def check_error_codes(file_path, error_codes, string_codes, errors):
         return
     for index, line in enumerate(content.splitlines()):
         line = line.strip()
-        if line.startswith('LOGS.'):
+        start_log = 'LOGS.' in line
+        start_loc = 'LOCALIZATION.' in line
+        if start_loc or start_log:
+            line = line.split('LOGS.')[1] if start_log else line.split('LOCALIZATION.')[1]
             code = line.split("'")[1].split("'")[0]
             if code.startswith('E'):
                 if code not in error_codes:
@@ -145,7 +148,7 @@ def main_func():
         for error in errors:
             print("=> {}".format(error))
     else:
-        print("=== NOT ERROR FOUND ===")
+        print("==> NO ERROR FOUND")
     return len(errors)
 
 
