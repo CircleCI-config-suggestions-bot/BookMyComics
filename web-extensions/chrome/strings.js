@@ -218,7 +218,7 @@ function Localization(lang = DEFAULT_LANG) {
                   + ' has already been removed from comic {id} aliases',
         },
         'S62': {
-            'en': 'Invalid chapter/page information received: {chapter}/{page}'.
+            'en': 'Invalid chapter/page information received: {chapter}/{page}',
         }
     };
 }

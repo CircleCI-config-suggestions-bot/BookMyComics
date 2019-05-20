@@ -435,25 +435,32 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
          * once. We may actually want to accept that, though.
          * Similarly, we may want to allow backwards-tracking too.. ?
          */
-        if (payload.tracking.chapter !== undefined && payload.tracking.page !== undefined) {
+        if (payload.tracking.chapter !== undefined) {
+            var trackPage = 0;
+            if (payload.tracking.page !== undefined) {
+                trackPage = parseInt(payload.tracking.page);
+            }
             const trackChapter = parseInt(payload.tracking.chapter);
-            const trackPage = parseInt(payload.tracking.page);
             const currentChapter = parseInt(chapter);
-            const currentPage = parseInt(page);
+            var currentPage = 0;
+            if (typeof page !== 'undefined') {
+                currentPage = parseInt(page);
+            }
 
-            if (trackChapter > currentChapter || trackPage > currentPage) {
+            if (trackChapter > currentChapter ||
+                    (trackChapter === currentChapter && trackPage > currentPage)) {
                 LOGS.warn('S22');
-                // Re-tracking the last tracked page; Reload ? OR clicked on last read ?
-                // anyways -> Early return, while ensuring we're not growing the stack
+                // We're at an earlier point in the manga than what's stored so we leave
+                // earlier while ensuring we're not growing the stack.
                 return setTimeout(() => cb(null), 0);
             }
         }
         // Re-tracking the last tracked page; Reload ? OR clicked on last read ?
-        // anyways -> Early return, while ensuring we're not growing the stack
+        // anyways -> Early return, while ensuring we're not growing the stack.
         if (payload.tracking.chapter === chapter && payload.tracking.page === page) {
             return setTimeout(() => cb(null), 0);
         }
-        if (typeof chapter === 'undefined' || typeof page === 'undefined') {
+        if (typeof chapter === 'undefined') {
             return cb(new Error(LOGS.getString('E0019', {chapter, page})));
         }
         payload.tracking.chapter = chapter;
