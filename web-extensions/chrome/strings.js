@@ -217,6 +217,9 @@ function Localization(lang = DEFAULT_LANG) {
             'en': 'Source to remove ({reader}:{name})'
                   + ' has already been removed from comic {id} aliases',
         },
+        'S62': {
+            'en': 'Invalid chapter/page information received: {chapter}/{page}',
+        }
     };
 }
 
@@ -257,6 +260,7 @@ function Logs(level = INFO) {
         'E0016': 'S56',
         'E0017': 'S59',
         'E0018': 'S61',
+        'E0019': 'S62',
     };
 }
 
