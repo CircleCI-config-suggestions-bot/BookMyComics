@@ -259,13 +259,6 @@ BmcComic.prototype.serialize = function() {
 };
 
 /**
- * @callback BmcComic~iterCb
- *
- * @param {BmcComicSource}
- *
- * @return {undefined}
- */
-/**
  * This method loops over sources.
  *
  * @param {BmcComic~iterCb} iterFunc - The callback to be called on each source.
@@ -368,7 +361,6 @@ BmcComic.prototype.addSource = function(source) {
     this._sources.push(source);
     return true;
 };
-
 
 
 

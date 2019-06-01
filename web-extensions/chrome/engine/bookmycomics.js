@@ -42,7 +42,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     retErr = new Error(LOGS.getString('E0010', {'label': evData.label,
                                                                 'err': err.message}));
                 }
-                this.sendNotificationWithComicInfo('Register Comic', retErr);
+                this.sendNotificationWithComicInfo('Register Comic', retErr, evData.label);
             });
         });
     // Handle "Alias"
@@ -56,7 +56,7 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     retErr = new Error(LOGS.getString('E0011', {'id': evData.id,
                                                                 'err': err.message}));
                 }
-                this.sendNotificationWithComicInfo('Alias Comic', retErr);
+                this.sendNotificationWithComicInfo('Alias Comic', retErr, evData.id);
             });
         });
     // Handle "Delete"
@@ -308,9 +308,9 @@ BmcEngine.prototype.delete = function(comicId, reader, name, cb) {
     return this._db.unaliasComic(comicId, reader, name, completeDelete);
 };
 
-BmcEngine.prototype.sendNotificationWithComicInfo = function(event, err) {
+BmcEngine.prototype.sendNotificationWithComicInfo = function(event, err, id) {
     this._ui.makeNotification(event, err,
-                              {'comicId': this._comic.id,
+                              {'comicId': id,
                                'comicSource': this._comic.reader,
                                'comicName': this._comic.name,
                               });
