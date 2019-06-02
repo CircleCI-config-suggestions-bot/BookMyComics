@@ -4,6 +4,7 @@
     BmcUI:readable
     compat:readable
     LOGS:readable
+    cloneArray
 */
 
 const uriParams = document.location.search.split('?')[1].split('&');
@@ -326,7 +327,7 @@ function addEvents(mangaList) {
                 document.getElementById('existing-entries')
                     .getElementsByClassName('selected'));
             if (selected.length === 0) {
-                console.log("No entry selected, we shouldn't be here...");
+                LOGS.log('S64');
                 return;
             }
             // We send the message to add into the DB.
@@ -342,13 +343,12 @@ function addEvents(mangaList) {
         cancelExistingBut.onclick = function() {
             // Hide current panel to go back to the "adder" one.
             showHideAddIntoExisting();
-        }
+        };
     }
     var filterExistingEntries = document.getElementById('filter-existing');
     if (filterExistingEntries) {
-        function inputChanges() {
-            var entries = cloneArray(document.getElementById('existing-entries')
-                                                             .childNodes);
+        let inputChanges = function() {
+            var entries = cloneArray(document.getElementById('existing-entries').childNodes);
             for (let i = 0; i < entries.length; ++i) {
                 if (entries[i].innerText.indexOf(this.value) !== -1) {
                     entries[i].style.display = '';
@@ -356,7 +356,7 @@ function addEvents(mangaList) {
                     entries[i].style.display = 'none';
                 }
             }
-        }
+        };
         filterExistingEntries.onkeyup = inputChanges;
         filterExistingEntries.onchange = inputChanges;
         filterExistingEntries.oninput = inputChanges;
@@ -389,11 +389,11 @@ function addEvents(mangaList) {
         evData => evData.type === 'action' && evData.action === 'notification' && evData.operation === 'track',
         evData => {
             if (evData.error) {
+                // eslint-disable-next-line no-console
                 console.error(evData.error);
             } else if (evData.comicId === undefined || evData.comicSource === undefined ||
                        evData.comicName === undefined) {
-                // FIXME: use i18n string here instead.
-                console.error('Missing information for current comic', evData);
+                LOGS.error('E0021', {'evData': evData});
             } else {
                 mangaList.isRegistered = true;
                 mangaList.currentComic = {
@@ -658,8 +658,7 @@ function showHideSidePanelAdder() {
 
 function showHideSidePanelDeleter() {
     if (!mangaList.currentComic) {
-        // FIXME: change to localization tool
-        console.error('No current comic information available');
+        LOGS.error('E0020');
     }
     mangaList.sourceDelete(mangaList.currentComic.id, mangaList.currentComic.reader,
                            mangaList.currentComic.name);

@@ -38,6 +38,7 @@ function BmcSources() {
         try {
             this._readers[desc.key] = desc.makeObj();
         } catch(e) {
+            // eslint-disable-next-line no-console
             console.error(`Could not load script for ${desc.key}: ${e.message}`);
         }
     });
@@ -48,6 +49,7 @@ BmcSources.prototype._fromOrigin = function(origin) {
         key => origin.indexOf(key) !== -1);
     if (!readerKey) {
         // FIXME: david, fix it please!
+        // eslint-disable-next-line no-console
         console.warn('Could not find reader instance.');
         return undefined;
     }

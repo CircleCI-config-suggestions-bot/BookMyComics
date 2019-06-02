@@ -141,8 +141,7 @@ BmcUI.prototype.removeSidePanel = function() {
 // `extras` and the `evData` dictionary will be ignored and lost.
 BmcUI.prototype.makeNotification = function(operation, err, extras) {
     if (typeof operation === 'undefined') {
-        // FIXME: use localization instead
-        console.warn('Missing operation in BmcUI.makeNotification');
+        LOGS.warn('S70');
     }
     var evData = {
         type: 'action',

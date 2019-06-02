@@ -1,17 +1,8 @@
-from os import listdir
-from os.path import isfile, join
+from utils import get_all_js_files, get_file_content
 import sys
 
+
 STRINGS_PATH = 'web-extensions/chrome/strings.js'
-
-
-def get_file_content(path):
-    try:
-        with open(path, 'r') as f:
-            return f.read()
-    except Exception as e:
-        print('get_file_content failed on "{}": {}'.format(path, e))
-        return None
 
 
 def check_error_codes(file_path, error_codes, string_codes, errors):
@@ -43,21 +34,6 @@ def check_error_codes(file_path, error_codes, string_codes, errors):
                                                                              code))
                 else:
                     string_codes[code]['usage'] += 1
-
-
-def get_all_js_files(path):
-    all_files = []
-
-    for f in listdir(path):
-        f_path = join(path, f)
-        if f_path.endswith(STRINGS_PATH):
-            continue
-        if isfile(f_path):
-            if f_path.endswith('js'):
-                all_files.append(f_path)
-        else:
-            all_files.extend(get_all_js_files(f_path))
-    return all_files
 
 
 def get_all_defined_strings_and_error_codes(errors):
@@ -133,7 +109,7 @@ def main_func():
     print("Found {} error codes".format(len(error_codes)))
     print("Found {} string codes".format(len(string_codes)))
     print("=> Getting all js files...")
-    all_js_files = get_all_js_files('web-extensions')
+    all_js_files = get_all_js_files('web-extensions', STRINGS_PATH)
     print("<= Done")
     print("Found {} js files".format(len(all_js_files)))
     print("=> Checking all js files...")
@@ -148,7 +124,7 @@ def main_func():
         for error in errors:
             print("=> {}".format(error))
     else:
-        print("==> NO ERROR FOUND")
+        print("=== NO ERROR FOUND ===")
     return len(errors)
 
 

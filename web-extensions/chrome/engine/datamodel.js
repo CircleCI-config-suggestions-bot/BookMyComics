@@ -293,7 +293,7 @@ BmcComic.prototype.getSource = function(sourceReader) {
     for (var i = 0; i < this._sources.length; ++i) {
         const source = this._sources[i];
 
-         if (source.reader === sourceReader) {
+        if (source.reader === sourceReader) {
             return source;
         }
     }

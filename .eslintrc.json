@@ -11,7 +11,7 @@
             "ObjectExpression": "first"
         }],
         "linebreak-style": [ "error", "unix" ],
-        "no-console": "warn",
+        "no-console": "error",
         "quotes": [ "error", "single" ],
         "semi": [ "error", "always" ]
     }
