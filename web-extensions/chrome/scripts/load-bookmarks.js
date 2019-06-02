@@ -27,22 +27,26 @@ function emptyElem(elem) {
 }
 
 function sendAliasRequest(comicId) {
-    LOGS.log('S46', {'id': comicId});
-    const evData = {
-        type: 'action',
-        action: 'alias',
-        id: comicId,
-    };
-    window.top.postMessage(evData, '*');
+    bmcDb.getComic(comicId, (err, comic) => {
+        let label = '<unknown manga>';
+        if (comic !== null) {
+            label = comic.label;
+        }
+        LOGS.log('S46', {'id': comicId, 'label': label});
+        const evData = {
+            type: 'action',
+            action: 'alias',
+            id: comicId,
+        };
+        window.top.postMessage(evData, '*');
+    });
 }
 
 BmcMangaList.prototype.onBrowseClick = function(ev) {
     const target = ev.target;
     const comicDiv = target.parentElement;
     const comicElem = comicDiv.parentElement;
-    // The "Array.prototype.slice.call" call is to prevent chrome very bad handling of DOM
-    // iteration.
-    const nested = Array.prototype.slice.call(comicElem.getElementsByClassName('nested'));
+    const nested = cloneArray(comicElem.getElementsByClassName('nested'));
     for (var i = 0; i < nested.length; ++i) {
         nested[i].classList.toggle('active');
     }
@@ -318,8 +322,9 @@ function addEvents(mangaList) {
     var confirmExistingBut = document.getElementById('add-existing-confirm');
     if (confirmExistingBut) {
         confirmExistingBut.onclick = function() {
-            const selected = Array.prototype.slice.call(document.getElementById('existing-entries')
-                                                                .getElementsByClassName('selected'));
+            const selected = cloneArray(
+                document.getElementById('existing-entries')
+                    .getElementsByClassName('selected'));
             if (selected.length === 0) {
                 console.log("No entry selected, we shouldn't be here...");
                 return;
@@ -342,7 +347,7 @@ function addEvents(mangaList) {
     var filterExistingEntries = document.getElementById('filter-existing');
     if (filterExistingEntries) {
         function inputChanges() {
-            var entries = Array.prototype.slice.call(document.getElementById('existing-entries')
+            var entries = cloneArray(document.getElementById('existing-entries')
                                                              .childNodes);
             for (let i = 0; i < entries.length; ++i) {
                 if (entries[i].innerText.indexOf(this.value) !== -1) {
@@ -566,7 +571,7 @@ function switchSelectedEntry() {
         this.classList.remove('selected');
         document.getElementById('add-existing-confirm').disabled = true;
     } else {
-        const nested = Array.prototype.slice.call(this.parentElement.getElementsByClassName('selected'));
+        const nested = cloneArray(this.parentElement.getElementsByClassName('selected'));
         for (var i = 0; i < nested.length; ++i) {
             nested[i].classList.remove('selected');
         }
