@@ -272,6 +272,18 @@ function displayButton(btn) {
     }
 }
 
+function inputChanges() {
+    var entries = Array.prototype.slice.call(document.getElementById('existing-entries')
+        .childNodes);
+    for (let i = 0; i < entries.length; ++i) {
+        if (entries[i].innerText.indexOf(this.value) !== -1) {
+            entries[i].style.display = '';
+        } else {
+            entries[i].style.display = 'none';
+        }
+    }
+}
+
 function addEvents(mangaList) {
     // Clicking on the  `>`/`<` button will show/hide the panel
     var but = document.getElementById('hide-but');
@@ -442,6 +454,7 @@ function addEvents(mangaList) {
                 };
                 if (evData.operation === 'Alias Comic') {
                     const mangas = Array.prototype.slice.call(document.getElementsByClassName('mangaListItem'));
+                    let sourcesRef;
                     for (let i = 0; i < mangas.length; ++i) {
                         // div.mangaListItem > div.label-container > div.label
                         const manga = mangas[i].firstChild.firstChild;
