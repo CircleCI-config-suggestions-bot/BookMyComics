@@ -193,9 +193,8 @@ BmcMangaList.prototype.generateComic = function(comic) {
     comicSrcList.classList.toggle('nested');
     elm.appendChild(comicSrcList);
 
-    let self = this;
     comic.iterSources(source => {
-        self.generateSource(comic, source, comicSrcList);
+        this.generateSource(comic, source, comicSrcList);
     });
 
     return elm;

@@ -42,6 +42,8 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
                     retErr = new Error(LOGS.getString('E0010', {'label': evData.label,
                                                                 'err': err.message}));
                 }
+                // FIXME: Register a .once callback on the memoization completion, which would call
+                // this method so the last parameter can be an id (as it should be).
                 this.sendNotificationWithComicInfo('Register Comic', retErr, evData.label);
             });
         });
