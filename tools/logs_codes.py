@@ -15,7 +15,10 @@ def check_error_codes(file_path, error_codes, string_codes, errors):
         start_loc = 'LOCALIZATION.' in line
         if start_loc or start_log:
             line = line.split('LOGS.')[1] if start_log else line.split('LOCALIZATION.')[1]
-            code = line.split("'")[1].split("'")[0]
+            code = line.split("'")
+            if len(code) < 2:
+                continue
+            code = code[1].split("'")[0]
             if code.startswith('E'):
                 if code not in error_codes:
                     errors.append('[{}:{}]: Unknown error code "{}"'.format(file_path, index + 1,
