@@ -6,3 +6,4 @@ venv/
 geckodriver.log
 *.pyc
 web-extensions/chrome/manifest.json
+**.DS_Store

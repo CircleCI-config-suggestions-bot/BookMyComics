@@ -281,6 +281,26 @@ BmcComic.prototype.iterSources = function(iterFunc) {
 };
 
 /**
+ * This method return the matching source (comparison being performed on the
+ * reader) or `null` if non matching was found.
+ *
+ * @param {string} sourceReader - The reader of the source we want to get.
+ *
+ * @return {BmcComicSource}
+ *
+ */
+BmcComic.prototype.getSource = function(sourceReader) {
+    for (var i = 0; i < this._sources.length; ++i) {
+        const source = this._sources[i];
+
+        if (source.reader === sourceReader) {
+            return source;
+        }
+    }
+    return null;
+};
+
+/**
  * This method deserializes an object from the data storage into acomplete,
  * usable JS object with utility methods.
  *
@@ -688,6 +708,44 @@ BmcDataAPI.prototype.unaliasComic = function(comicId, reader, name, cb) {
     });
 };
 
+/**
+ * This function is only meant to be used by the BmcDataAPI type to build the
+ * comics list.
+ */
+function buildComicList(self, data, comicId) {
+    // Ensure that we don't crash if data is undefined
+    // -> No data found in the storage
+    // -> Add-on was never used yet.
+    const sanitizedData = data || {};
+    // Build an inverse mapping; comicId -> sources list
+    // Default to empty-object if no map found (never created yet)
+    const map = sanitizedData[self._scheme.BMC_MAP_KEY] || {};
+    const inverseMap = Object.keys(map).reduce((acc, key) => {
+        const comicId = map[key].id;
+        if (acc[comicId] === undefined) {
+            acc[comicId] = [];
+        }
+        acc[comicId].push(BmcComicSource.deserialize(key, map[key].info));
+        return acc;
+    }, {});
+    let keys = Object.keys(sanitizedData).filter(
+        key => key.indexOf(self._scheme.BMC_KEY_PREFIX) !== -1
+    );
+    if (typeof comicId !== 'undefined') {
+        keys = keys.filter(key => sanitizedData[key]['id'] === comicId);
+    }
+    // Directly use the inverse mapping to set all sources while creating
+    // the BmcComic objects.
+    return keys.map(key => {
+        const comic = BmcComic.deserialize(sanitizedData[key]);
+        if (inverseMap[comic.id]) {
+            inverseMap[comic.id].forEach(source => {
+                comic.addSource(source);
+            });
+        }
+        return comic;
+    });
+}
 
 /**
  * This method returns the complete list of tracked comics
@@ -701,35 +759,26 @@ BmcDataAPI.prototype.list = function(cb) {
         if (err) {
             return cb(err, null);
         }
-        // Ensure that we don't crash if data is undefined
-        // -> No data found in the storage
-        // -> Add-on was never used yet.
-        const sanitizedData = data || {};
-        // Build an inverse mapping; comicId -> sources list
-        // Default to empty-object if no map found (never created yet)
-        const map = sanitizedData[this._scheme.BMC_MAP_KEY] || {};
-        const inverseMap = Object.keys(map).reduce((acc, key) => {
-            const comicId = map[key].id;
-            if (acc[comicId] === undefined) {
-                acc[comicId] = [];
-            }
-            acc[comicId].push(BmcComicSource.deserialize(key, map[key].info));
-            return acc;
-        }, {});
-        const keys = Object.keys(sanitizedData).filter(
-            key => key.indexOf(this._scheme.BMC_KEY_PREFIX) !== -1
-        );
-        // Directly use the inverse mapping to set all sources while creating
-        // the BmcComic objects.
-        const results = keys.map(key => {
-            const comic = BmcComic.deserialize(sanitizedData[key]);
-            if (inverseMap[comic.id]) {
-                inverseMap[comic.id].forEach(source => {
-                    comic.addSource(source);
-                });
-            }
-            return comic;
-        });
-        return cb(null, results);
+        return cb(null, buildComicList(this, data));
+    });
+};
+
+/**
+ * This method returns the comic with the given name or `null`` if not found.
+ *
+ * @method
+ *
+ * @returns BmcComic
+ */
+BmcDataAPI.prototype.getComic = function(comicId, cb) {
+    this._data.get(null, (err, data) => {
+        if (err) {
+            return cb(err, null);
+        }
+        const results = buildComicList(this, data, comicId);
+        if (results.length === 0) {
+            return cb(null, null);
+        }
+        return cb(null, results[0]);
     });
 };

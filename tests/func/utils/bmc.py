@@ -1,4 +1,6 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class FrameFocus:
@@ -54,6 +56,11 @@ class SideBarController:
         with FrameFocus(self._driver, self._frame):
             togbtn = self._driver.find_element(by=By.ID, value='hide-but')
             togbtn.click()
+
+    def wait_for_text(self, expected_text, elem_id, timeout=10):
+        with FrameFocus(self._driver, self._frame):
+            wait = WebDriverWait(self._driver, timeout)
+            wait.until(EC.text_to_be_present_in_element((By.ID, elem_id), expected_text))
 
 
 class BmcController:

@@ -1,7 +1,10 @@
 from .utils.extension import Extension
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 EXT = Extension()
+SIDEBAR_WIDTH = 206
+COLLAPSED_SIDEBAR_HEIGHT = 58
 
 
 def test_002_sidebar_default_hidden(controller):
@@ -15,7 +18,7 @@ def test_002_sidebar_default_hidden(controller):
     # -> This guarantees that the users can continue clicking on the page's
     # button when the sidebar is hidden.
     size = controller.sidebar.size
-    assert size['height'] == 58.0 and size['width'] == 200.0
+    assert size['height'] == COLLAPSED_SIDEBAR_HEIGHT and size['width'] == SIDEBAR_WIDTH
 
     # Ensures that the content of the sidebar is hidden
     assert controller.sidebar.hidden
@@ -31,11 +34,12 @@ def test_002_sidebar_displayed(controller):
     if controller.sidebar.hidden:
         controller.sidebar.toggle()
 
+    controller.sidebar.wait_for_text('<', 'hide-but')
+
     # Ensures that the size is expanded (as opposed to reduced when hidden)
     # Otherwise, the display won't be clearly visible for the user
     size = controller.sidebar.size
-    viewport_h = controller.driver.execute_script('return window.innerHeight')
-    assert size['height'] == viewport_h and size['width'] == 200.0
+    assert size['height'] > COLLAPSED_SIDEBAR_HEIGHT and size['width'] == SIDEBAR_WIDTH
 
     # Ensures that the content of the sidebar is hidden
     assert not controller.sidebar.hidden

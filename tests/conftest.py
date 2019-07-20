@@ -21,7 +21,6 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_exception_interact(node, call, report):
-    # import pdb; pdb.set_trace()
     controller = node.funcargs['controller']
     if report.failed and isinstance(controller.driver, webdriver.Chrome):
         # Retrieve test's browser logs through the webdriver

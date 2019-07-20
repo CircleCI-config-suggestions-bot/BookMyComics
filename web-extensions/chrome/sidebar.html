@@ -39,8 +39,8 @@
 .label-container > .fa-trash:hover {
   color: red;
 }
-#side-panel,#side-panel-adder {
-  width: calc(100vw - 16px);
+#side-panel,#side-panel-adder,#side-panel-add-into-existing {
+  width: calc(100vw - 22px);
   border-right: 1px solid #ccc;
   position: absolute;
   top: 0;
@@ -84,13 +84,10 @@
   transition-delay: 0s;
   transition-duration: 2s;
 }
-#searchbox, #bookmark-name {
-  width: calc(100vw - 24px);
-  top: 0;
+#searchbox, #bookmark-name, #filter-existing {
+  width: calc(100% - 10px);
   background-color: #fdfdfd;
-  left: 0;
   border: 1px solid #cecece;
-  right: 0;
   padding: 4px;
 }
 #searchbox > div {
@@ -211,6 +208,34 @@ ul, .mangaListItem {
   margin: 0;
   margin-bottom: 4px;
 }
+#filter-existing {
+  margin: 3px 0;
+}
+#add-into-existing {
+  margin: 10px 0;
+  background-color: #6d6dce;
+  padding: 9px 0;
+}
+#add-into-existing:hover {
+  background-color: #7e7ee8;
+}
+#existing-entries {
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  height: calc(100vh - 116px);
+  overflow-y: scroll;
+  margin-bottom: 1px;
+  background-color: #f9f7f7;
+}
+#existing-entries > div {
+  text-align: center;
+  padding: 2px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+#existing-entries > div:hover, #existing-entries > div.selected {
+  background-color: #bbbbff;
+}
     </style>
     <script src="strings.js"></script>
     <script src="utils.js"></script>
@@ -230,9 +255,17 @@ ul, .mangaListItem {
     </div>
     <div id="side-panel-adder">
       <h3 id="bookmark-add-title">Add a new bookmark</h3>
+      <button id="add-into-existing" class="button-add">Add into existing manga</button>
       <input type="text" placeholder="Bookmark name" id="bookmark-name"></input>
       <button id="add-confirm" class="button-add">Confirm</button>
       <button id="add-cancel" class="button-add cancel">Cancel</button>
+    </div>
+    <div id="side-panel-add-into-existing">
+      <h3 id="bookmark-add-title">Select in which existing entry to add it</h3>
+      <input type="text" placeholder="Filter existing entries" id="filter-existing"></input>
+      <div id="existing-entries"></div>
+      <button id="add-existing-confirm" class="button-add" disabled>Confirm</button>
+      <button id="add-existing-cancel" class="button-add cancel">Cancel</button>
     </div>
     <div id="register-but">+</div>
     <div id="delete-but"><span class="fa fa-trash"></span></div>

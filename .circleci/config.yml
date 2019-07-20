@@ -68,6 +68,9 @@ jobs:
           name: Lint Error and String codes
           command: python ./tools/logs_codes.py
       - run:
+          name: Lint functions to replace
+          command: python ./tools/functions_replacement.py
+      - run:
           name: Lint Extension
           command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ lint
 

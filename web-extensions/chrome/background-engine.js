@@ -1,15 +1,16 @@
 /* globals
     BmcMessagingHandler:readable
     BmcSources:readable
+    LOGS:readable
 */
 
 const BACKGROUND_ID = 'BookMyComics/BackgroundScript';
 
 const bmcSources = new BmcSources();
-console.log('BookMyComics: background-script.js: Instanciated BmcSources');
+LOGS.log('S66');
 
 const bmcMessaging = new BmcMessagingHandler();
-console.log('BookMyComics: background-script.js: Instanciated BmcMessagingHandler');
+LOGS.log('S67');
 
 bmcMessaging.addWindowHandler(
     BACKGROUND_ID,
@@ -17,7 +18,7 @@ bmcMessaging.addWindowHandler(
               && evData.module === 'sources'
               && evData.computation === 'URL:Parse:Request',
     evData => { // Don't receive `sender`, as we don't use it.
-        console.log(`BookMyComics: background-engine.js: Handling URL:Parse Request: ${evData}`);
+        LOGS.log('S69', {'evData': evData});
         const answerEv = {
             type: 'computation',
             module: 'sources',
@@ -38,7 +39,7 @@ bmcMessaging.addWindowHandler(
               && evData.module === 'sources'
               && evData.computation === 'URL:Generate:Request',
     evData => { // Don't receive `sender`, as we don't use it.
-        console.log(`BookMyComics: background-engine.js: Handling URL:Generate Request: ${evData}`);
+        LOGS.log('S68', {'evData' :evData});
         const answerEv = {
             type: 'computation',
             module: 'sources',
@@ -51,4 +52,5 @@ bmcMessaging.addWindowHandler(
             }
         };
         return answerEv;
-    });
+    }
+);

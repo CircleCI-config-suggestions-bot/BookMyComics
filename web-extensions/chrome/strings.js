@@ -1,3 +1,7 @@
+/* globals
+    cloneArray
+*/
+
 const INFO = 0;
 const DEBUG = 1;
 const WARNING = 2;
@@ -13,8 +17,7 @@ function () {
     if (arguments.length) {
         var t = typeof arguments[0];
         var key;
-        var args = ('string' === t || 'number' === t) ?
-            Array.prototype.slice.call(arguments) : arguments[0];
+        var args = ('string' === t || 'number' === t) ? cloneArray(arguments) : arguments[0];
 
         for (key in args) {
             str = str.replace(new RegExp('\\{' + key + '\\}', 'gi'), args[key]);
@@ -219,7 +222,31 @@ function Localization(lang = DEFAULT_LANG) {
         },
         'S62': {
             'en': 'Invalid chapter/page information received: {chapter}/{page}',
-        }
+        },
+        'S63': {
+            'en': 'No current comic information available',
+        },
+        'S64': {
+            'en': 'No entry selected, we shouldn\'t be here...',
+        },
+        'S65': {
+            'en': 'Missing information for current comic: {evData}',
+        },
+        'S66': {
+            'en': 'BookMyComics: background-script.js: Instanciated BmcSources',
+        },
+        'S67': {
+            'en': 'BookMyComics: background-script.js: Instanciated BmcMessagingHandler',
+        },
+        'S68': {
+            'en': 'BookMyComics: background-engine.js: Handling URL:Generate Request: {evData}',
+        },
+        'S69': {
+            'en': 'BookMyComics: background-engine.js: Handling URL:Parse Request: {evData}',
+        },
+        'S70': {
+            'en': 'Missing operation in BmcUI.makeNotification',
+        },
     };
 }
 
@@ -261,6 +288,8 @@ function Logs(level = INFO) {
         'E0017': 'S59',
         'E0018': 'S61',
         'E0019': 'S62',
+        'E0020': 'S63',
+        'E0021': 'S65',
     };
 }
 
@@ -269,23 +298,27 @@ Logs.prototype.display = function(e, printer, add) {
 };
 
 Logs.prototype.log = function(e, add) {
+    // eslint-disable-next-line no-console
     this.display(e, console.log, add);
 };
 
 Logs.prototype.debug = function(e, add) {
     if (this.level >= DEBUG) {
+        // eslint-disable-next-line no-console
         this.display(e, console.debug, add);
     }
 };
 
 Logs.prototype.warn = function(e, add) {
     if (this.level >= WARNING) {
+        // eslint-disable-next-line no-console
         this.display(e, console.warn, add);
     }
 };
 
 Logs.prototype.error = function(e, add) {
     if (this.level >= ERROR) {
+        // eslint-disable-next-line no-console
         this.display(e, console.error, add);
     }
 };

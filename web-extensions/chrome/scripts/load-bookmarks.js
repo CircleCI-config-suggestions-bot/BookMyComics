@@ -4,6 +4,7 @@
     BmcUI:readable
     compat:readable
     LOGS:readable
+    cloneArray
 */
 
 const uriParams = document.location.search.split('?')[1].split('&');
@@ -18,26 +19,35 @@ function BmcMangaList() {
     this._node = document.getElementById('manga-list');
 }
 
-// TODO: should be handled somehow
-BmcMangaList.prototype.onAliasClick = function(ev) {
-    const comicLabel = ev.target;
-    LOGS.log('S46', {'label': ev.target.innerText,
-                     'id': ev.target.bmcData.id});
-    const evData = {
-        type: 'action',
-        action: 'alias',
-        id: comicLabel.bmcData.id,
-    };
-    window.top.postMessage(evData, '*');
-};
+function emptyElem(elem) {
+    // NOTE: This method seems to be the most efficient as shown by
+    // https://jsperf.com/innerhtml-vs-removechild/15
+    while (elem.firstChild) {
+        elem.removeChild(elem.firstChild);
+    }
+}
+
+function sendAliasRequest(comicId) {
+    bmcDb.getComic(comicId, (err, comic) => {
+        let label = '<unknown manga>';
+        if (comic !== null) {
+            label = comic.label;
+        }
+        LOGS.log('S46', {'id': comicId, 'label': label});
+        const evData = {
+            type: 'action',
+            action: 'alias',
+            id: comicId,
+        };
+        window.top.postMessage(evData, '*');
+    });
+}
 
 BmcMangaList.prototype.onBrowseClick = function(ev) {
     const target = ev.target;
     const comicDiv = target.parentElement;
     const comicElem = comicDiv.parentElement;
-    // The "Array.prototype.slice.call" call is to prevent chrome very bad handling of DOM
-    // iteration.
-    const nested = Array.prototype.slice.call(comicElem.getElementsByClassName('nested'));
+    const nested = cloneArray(comicElem.getElementsByClassName('nested'));
     for (var i = 0; i < nested.length; ++i) {
         nested[i].classList.toggle('active');
     }
@@ -192,12 +202,7 @@ BmcMangaList.prototype.generate = function() {
 
     // First, remove any child node, to ensure it's clean before we start
     // generating.
-    //
-    // NOTE: This method seems to be the most efficient as shown by
-    // https://jsperf.com/innerhtml-vs-removechild/15
-    while (mangaList.firstChild) {
-        mangaList.removeChild(mangaList.firstChild);
-    }
+    emptyElem(mangaList);
 
     // Now that the parent is a clean slate, let's generate
     bmcDb.list((err, comics) => {
@@ -290,6 +295,10 @@ function addEvents(mangaList) {
     if (addBut) {
         addBut.onclick = showHideSidePanelAdder;
     }
+    var addIntoExistingBut = document.getElementById('add-into-existing');
+    if (addIntoExistingBut) {
+        addIntoExistingBut.onclick = showHideAddIntoExisting;
+    }
     var cancelBut = document.getElementById('add-cancel');
     if (cancelBut) {
         cancelBut.onclick = showHideSidePanelAdder;
@@ -310,6 +319,48 @@ function addEvents(mangaList) {
             };
             window.top.postMessage(evData, '*');
         };
+    }
+    var confirmExistingBut = document.getElementById('add-existing-confirm');
+    if (confirmExistingBut) {
+        confirmExistingBut.onclick = function() {
+            const selected = cloneArray(
+                document.getElementById('existing-entries')
+                    .getElementsByClassName('selected'));
+            if (selected.length === 0) {
+                LOGS.log('S64');
+                return;
+            }
+            // We send the message to add into the DB.
+            sendAliasRequest(selected[0].bmcData.id);
+            // We hide the current panel.
+            showHideAddIntoExisting();
+            // We also hide the "adder" panel.
+            showHideSidePanelAdder();
+        };
+    }
+    var cancelExistingBut = document.getElementById('add-existing-cancel');
+    if (cancelExistingBut) {
+        cancelExistingBut.onclick = function() {
+            // Hide current panel to go back to the "adder" one.
+            showHideAddIntoExisting();
+        };
+    }
+    var filterExistingEntries = document.getElementById('filter-existing');
+    if (filterExistingEntries) {
+        let inputChanges = function() {
+            var entries = cloneArray(document.getElementById('existing-entries').childNodes);
+            for (let i = 0; i < entries.length; ++i) {
+                if (entries[i].innerText.indexOf(this.value) !== -1) {
+                    entries[i].style.display = '';
+                } else {
+                    entries[i].style.display = 'none';
+                }
+            }
+        };
+        filterExistingEntries.onkeyup = inputChanges;
+        filterExistingEntries.onchange = inputChanges;
+        filterExistingEntries.oninput = inputChanges;
+        filterExistingEntries.onpaste = inputChanges;
     }
     var bookmarkName = document.getElementById('bookmark-name');
     if (bookmarkName) {
@@ -338,11 +389,11 @@ function addEvents(mangaList) {
         evData => evData.type === 'action' && evData.action === 'notification' && evData.operation === 'track',
         evData => {
             if (evData.error) {
+                // eslint-disable-next-line no-console
                 console.error(evData.error);
             } else if (evData.comicId === undefined || evData.comicSource === undefined ||
                        evData.comicName === undefined) {
-                // FIXME: use i18n string here instead.
-                console.error('Missing information for current comic', evData);
+                LOGS.error('E0021', {'evData': evData});
             } else {
                 mangaList.isRegistered = true;
                 mangaList.currentComic = {
@@ -515,6 +566,51 @@ function showHideSidePanel() {
     window.top.postMessage(evData, '*');
 }
 
+function switchSelectedEntry() {
+    if (this.classList.contains('selected')) {
+        this.classList.remove('selected');
+        document.getElementById('add-existing-confirm').disabled = true;
+    } else {
+        const nested = cloneArray(this.parentElement.getElementsByClassName('selected'));
+        for (var i = 0; i < nested.length; ++i) {
+            nested[i].classList.remove('selected');
+        }
+        this.classList.add('selected');
+        document.getElementById('add-existing-confirm').disabled = false;
+    }
+}
+
+function showHideAddIntoExisting() {
+    var sidePanelAdder = document.getElementById('side-panel-adder');
+    var sidePanelAddIntoExisting = document.getElementById('side-panel-add-into-existing');
+
+    if (sidePanelAddIntoExisting.style.display !== 'block') {
+        sidePanelAdder.style.display = '';
+        sidePanelAddIntoExisting.style.display = 'block';
+        // Fill list of available entries.
+        var entries = document.getElementById('existing-entries');
+        emptyElem(entries);
+
+        // Now that the parent is a clean slate, let's generate
+        bmcDb.list((err, comics) => {
+            comics.forEach(
+                comic => {
+                    var entry = document.createElement('div');
+                    entry.innerText = comic.label;
+                    entry.bmcData = {
+                        id: comic.id,
+                    };
+                    entry.onclick = switchSelectedEntry;
+                    entries.appendChild(entry);
+                }
+            );
+        });
+    } else {
+        sidePanelAdder.style.display = 'block';
+        sidePanelAddIntoExisting.style.display = '';
+    }
+}
+
 function showHideSidePanelAdder() {
     var sidePanel = document.getElementById('side-panel');
     var sidePanelAdder = document.getElementById('side-panel-adder');
@@ -562,8 +658,7 @@ function showHideSidePanelAdder() {
 
 function showHideSidePanelDeleter() {
     if (!mangaList.currentComic) {
-        // FIXME: change to localization tool
-        console.error('No current comic information available');
+        LOGS.error('E0020');
     }
     mangaList.sourceDelete(mangaList.currentComic.id, mangaList.currentComic.reader,
                            mangaList.currentComic.name);
