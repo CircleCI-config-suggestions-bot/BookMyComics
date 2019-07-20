@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "A WebExtension to track your ongoing Manga/Comics scans",
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "web-ext": "^3.0.0"
+    "eslint": "^6.0.1",
+    "web-ext": "^3.1.1"
   },
   "scripts": {
     "lint": "eslint $(git ls-files | grep '.js$')",
