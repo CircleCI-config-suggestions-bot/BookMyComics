@@ -1,12 +1,16 @@
+import pytest
+from selenium import webdriver
+
 from .func.utils import drivers
 from .func.utils.bmc import BmcController
-
-from selenium import webdriver
+from .func.utils import support
 
 
 def pytest_addoption(parser):
     parser.addoption("--browser", action="append", default=[],
                      help="List of webbrowsers to test (firefox, chrome)")
+    parser.addoption("--reader", action="append", default=[],
+                     help="List of readers to test, see module names in tests/func/utils/support/")
 
 
 def pytest_generate_tests(metafunc):
@@ -18,6 +22,22 @@ def pytest_generate_tests(metafunc):
         controllers = [BmcController(drivers.get_driver(browser))
                        for browser in browsers]
         metafunc.parametrize('controller', controllers, ids=browsers)
+
+    if 'reader_driver' in metafunc.fixturenames:
+        readers = metafunc.config.getoption('reader')
+        if not readers:
+            readers = [driver_name for driver_name in support.drivers]
+        metafunc.parametrize('reader_driver', sorted(set(readers)), ids=sorted(set(readers)), indirect=True)
+
+
+@pytest.fixture
+def reader_driver(controller, request):
+    return support.drivers[request.param](controller.wrapped_driver)
+
+
+def pytest_sessionfinish(session, exitstatus):
+    # Ensure all drivers are exited before we exit py.test
+    drivers.release()
 
 
 def pytest_exception_interact(node, call, report):
@@ -39,8 +59,3 @@ def pytest_exception_interact(node, call, report):
                 print('\n=== CONSOLE LOGS ===')
                 print(s)
                 print('=== END OF CONSOLE LOGS ===')
-
-
-def pytest_sessionfinish(session, exitstatus):
-    # Ensure all drivers are exited before we exit py.test
-    drivers.release()
