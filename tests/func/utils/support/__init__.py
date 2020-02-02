@@ -14,5 +14,8 @@ class SupportBase:
     def next_page(self):
         pass
 
+from .mangaeden import MangaEdenDriver
+
 drivers = {
+    MangaEdenDriver.name: MangaEdenDriver,
 }
