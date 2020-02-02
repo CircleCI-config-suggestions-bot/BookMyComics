@@ -15,7 +15,9 @@ class SupportBase:
         pass
 
 from .mangaeden import MangaEdenDriver
+from .mangahere import MangaHereDriver
 
 drivers = {
     MangaEdenDriver.name: MangaEdenDriver,
+    MangaHereDriver.name: MangaHereDriver,
 }
