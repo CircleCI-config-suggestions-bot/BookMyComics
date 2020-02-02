@@ -21,19 +21,24 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_exception_interact(node, call, report):
-    controller = node.funcargs['controller']
-    if report.failed:
-        controller.driver.save_screenshot('/tmp/test-failed.png')
-    if report.failed and isinstance(controller.driver, webdriver.Chrome):
-        # Retrieve test's browser logs through the webdriver
-        s = '\n'.join([
-            str(line) for line in
-            controller.driver.get_log('browser')
-        ])
-        if len(s) > 0:
-            print('\n=== CONSOLE LOGS ===')
-            print(s)
-            print('=== END OF CONSOLE LOGS ===')
+    if ('Module' in repr(node)):
+        print('\n=== MODULE ERROR ===')
+        print(node.obj)
+        print('=== END OR MODULE ERROR ===')
+    else:
+        controller = node.funcargs['controller']
+        if report.failed:
+            controller.driver.save_screenshot('/tmp/test-failed.png')
+        if report.failed and isinstance(controller.driver, webdriver.Chrome):
+            # Retrieve test's browser logs through the webdriver
+            s = '\n'.join([
+                str(line) for line in
+                controller.driver.get_log('browser')
+            ])
+            if len(s) > 0:
+                print('\n=== CONSOLE LOGS ===')
+                print(s)
+                print('=== END OF CONSOLE LOGS ===')
 
 
 def pytest_sessionfinish(session, exitstatus):
