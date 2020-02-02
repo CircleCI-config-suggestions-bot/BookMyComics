@@ -22,6 +22,8 @@ def pytest_generate_tests(metafunc):
 
 def pytest_exception_interact(node, call, report):
     controller = node.funcargs['controller']
+    if report.failed:
+        controller.driver.save_screenshot('/tmp/test-failed.png')
     if report.failed and isinstance(controller.driver, webdriver.Chrome):
         # Retrieve test's browser logs through the webdriver
         s = '\n'.join([
