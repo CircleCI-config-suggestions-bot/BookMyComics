@@ -17,7 +17,7 @@ def pytest_generate_tests(metafunc):
         browsers = sorted(set(browsers))
         controllers = [BmcController(drivers.get_driver(browser))
                        for browser in browsers]
-        metafunc.parametrize('controller', controllers)
+        metafunc.parametrize('controller', controllers, ids=browsers)
 
 
 def pytest_exception_interact(node, call, report):
