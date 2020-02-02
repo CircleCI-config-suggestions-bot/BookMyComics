@@ -17,9 +17,11 @@ class SupportBase:
 from .mangaeden import MangaEdenDriver
 from .mangahere import MangaHereDriver
 from .mangareader import MangaReaderDriver
+from .mangafox import FanFoxDriver
 
 drivers = {
     MangaEdenDriver.name: MangaEdenDriver,
     MangaHereDriver.name: MangaHereDriver,
     MangaReaderDriver.name: MangaReaderDriver,
+    FanFoxDriver.name: FanFoxDriver,
 }
