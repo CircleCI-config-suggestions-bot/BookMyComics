@@ -20,3 +20,14 @@ class Wrapper(BaseWebdriverWrapper):
         print('Loading addon from "{}"'.format(self._ext.packed_path))
         self._driver.install_addon(self._ext.packed_path, temporary=True)
         print('Driver installed add-on')
+
+    def ensure_click(self, element):
+        """
+            Ensures that the element is clickable (within viewport) then clicks
+            on it.
+        """
+        loc = element.location
+        wsz = self._driver.get_window_size()
+        js_scroll_command = 'window.scrollTo({},{});' .format(loc['x'] - wsz['width']/2,
+                                                              loc['y'] - wsz['height']/2)
+        self._driver.execute_script(js_scroll_command)

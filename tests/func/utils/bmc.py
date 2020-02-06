@@ -65,8 +65,8 @@ class SideBarController:
 
 class BmcController:
 
-    def __init__(self, webdriver):
-        self._driver = webdriver
+    def __init__(self, wrapped_webdriver):
+        self._wrapped_driver = wrapped_webdriver
         self._sidebar = None
 
     @property
@@ -76,7 +76,16 @@ class BmcController:
             This is sometimes easier to go through this rather than wrap all
             calls to "hide"
         """
-        return self._driver
+        return self.wrapped_driver.driver
+
+    @property
+    def wrapped_driver(self):
+        """
+            Access the wrapped webdriver.
+            This enables possible use of common utility methods from the
+            wrapper.
+        """
+        return self._wrapped_driver
 
     @property
     def sidebar(self):
@@ -88,5 +97,5 @@ class BmcController:
             when it's necessary (and supposed to be possible).
         """
         if not self._sidebar:
-            self._sidebar = SideBarController(self._driver)
+            self._sidebar = SideBarController(self.driver)
         return self._sidebar

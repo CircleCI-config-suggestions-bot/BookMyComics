@@ -1,8 +1,9 @@
 class SupportBase:
     name = None
 
-    def __init__(self, driver, *args, **kwargs):
-        self._driver = driver
+    def __init__(self, wrapped_driver, *args, **kwargs):
+        self._wrapper = wrapped_driver
+        self._driver = wrapped_driver.driver
 
     def load_random(self):
         pass

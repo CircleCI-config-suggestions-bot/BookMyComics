@@ -22,4 +22,4 @@ def get_driver(name):
         WD_WRAPPERS[name] = wrappers[name](Extension())
         wrapper = WD_WRAPPERS[name]
 
-    return wrapper.driver
+    return wrapper
