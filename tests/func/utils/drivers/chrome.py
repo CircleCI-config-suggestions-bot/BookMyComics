@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from .base import BaseWebdriverWrapper
@@ -17,3 +18,11 @@ class Wrapper(BaseWebdriverWrapper):
 
         self._driver = webdriver.Chrome(options=options,
                                         desired_capabilities=capabilities)
+
+    def ensure_click(self, element):
+        """
+            Ensures that the element is clickable (within viewport) then clicks
+            on it.
+        """
+        ActionChains(self._driver).move_to_element(element).perform()
+        element.click()

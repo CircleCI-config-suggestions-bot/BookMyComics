@@ -123,6 +123,27 @@ jobs:
           paths:
             - venv/
 
+  test-browser-common:
+    executor: browser-testing
+    working_directory: ~/repo
+    steps:
+      - cached-checkout
+      - attach_workspace:
+          at: /tmp/ws
+
+      # Work-around to define env variables from another, for the subsequent
+      # steps.
+      #  - Useful for firefox driver which relies on packaged extension
+      - run:
+          name: Define Packed Webext path
+          command: |
+            echo 'export WEBEXT_DIR="/tmp/ws/build-${BROWSER}"' >> $BASH_ENV
+      - run:
+          name: Setup manifest
+          command: python3 setup.py ${BROWSER}
+      - run:
+          command: /tmp/ws/venv/bin/pytest -v -s --browser ${BROWSER} tests/func/test_00*
+
   test-browser:
     executor: browser-testing
     working_directory: ~/repo
@@ -142,7 +163,7 @@ jobs:
           name: Setup manifest
           command: python3 setup.py ${BROWSER}
       - run:
-          command: /tmp/ws/venv/bin/pytest -v -s --browser ${BROWSER}
+          command: /tmp/ws/venv/bin/pytest -v -s --browser ${BROWSER} --reader ${READER} --ignore-glob='tests/func/test_00*'
 
 workflows:
   version: 2
@@ -150,19 +171,75 @@ workflows:
     jobs:
       - basic-testing
       - setup-testing
-      - build-ext:
+      - build-ext: &build_ff
           name: build-firefox
           context: BookMyComics-Firefox
           requires:
           - basic-testing
-      - test-browser:
-          name: test-firefox
+      - test-browser-common: &common_ff
+          name: test-firefox-common
           context: BookMyComics-Firefox
           requires:
           - build-firefox
           - setup-testing
       - test-browser:
-          name: test-chrome
+          name: test-firefox-mangaeden
+          context: BookMyComics-Firefox-MangaEden
+          requires: &ff_requirements
+          - test-firefox-common
+      - test-browser-common: &common_chrome
+          name: test-chrome-common
           context: BookMyComics-Chrome
           requires:
           - setup-testing
+      - test-browser:
+          name: test-chrome-mangaeden
+          context: BookMyComics-Chrome-MangaEden
+          requires: &chrome_requirements
+          - test-chrome-common
+  weekly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * 0"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - basic-testing
+      - setup-testing
+      - build-ext: *build_ff
+      - test-browser-common: *common_ff
+      - test-browser:
+          name: test-firefox-mangaeden
+          context: BookMyComics-Firefox-MangaEden
+          requires: *ff_requirements
+      - test-browser:
+          name: test-firefox-mangahere
+          context: BookMyComics-Firefox-MangaHere
+          requires: *ff_requirements
+      - test-browser:
+          name: test-firefox-mangareader
+          context: BookMyComics-Firefox-MangaReader
+          requires: *ff_requirements
+      - test-browser:
+          name: test-firefox-fanfox
+          context: BookMyComics-Firefox-FanFox
+          requires: *ff_requirements
+      - test-browser-common: *common_chrome
+      - test-browser:
+          name: test-chrome-mangaeden
+          context: BookMyComics-Chrome-MangaEden
+          requires: *chrome_requirements
+      - test-browser:
+          name: test-chrome-mangahere
+          context: BookMyComics-Chrome-MangaHere
+          requires: *chrome_requirements
+      - test-browser:
+          name: test-chrome-mangareader
+          context: BookMyComics-Chrome-MangaReader
+          requires: *chrome_requirements
+      - test-browser:
+          name: test-chrome-fanfox
+          context: BookMyComics-Chrome-FanFox
+          requires: *chrome_requirements
