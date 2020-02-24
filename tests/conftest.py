@@ -59,3 +59,6 @@ def pytest_exception_interact(node, call, report):
                 print('\n=== CONSOLE LOGS ===')
                 print(s)
                 print('=== END OF CONSOLE LOGS ===')
+
+
+@pytest.fixture(autouse=True)
