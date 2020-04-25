@@ -1,3 +1,4 @@
+import functools
 import pytest
 
 
@@ -72,3 +73,57 @@ class TestRegister:
             input_field = controller.driver.find_element_by_css_selector(
                 '#side-panel-adder > #bookmark-name')
             assert input_field.text == ""
+
+    @staticmethod
+    def test_eexist(controller, reader_driver):
+        """
+            Validates that attempting to register an existing comic name does
+            not change the listing of registered comics
+        """
+        name = 'sample100-eexist'
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register(name)
+        registered_comic = reader_driver.get_comic_name()
+
+        registered = controller.sidebar.get_registered()
+        assert len(registered) > orig_n_items
+        orig_n_items = len(registered)
+        # Ensure the hard-coded name is part of the list
+        assert functools.reduce(
+            lambda c, r: c+(r.get_name() == name),
+            registered, 0) == 1
+
+        #
+        # Now, attempt to register any other comic under the same name
+        #
+
+        # Some readers can not click on specific elements if we don't hide the
+        # controller.sidebar before loading a random page
+        if not controller.sidebar.hidden:
+            controller.sidebar.toggle()
+
+        reader_driver.load_random(
+            lambda rd: rd.get_comic_name() != registered_comic)
+        controller.refresh()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        controller.register(name)
+
+        #
+        # And finally, check that this attempt failed, by verifying
+        # that nothing was added:
+        #
+
+        registered = controller.sidebar.get_registered()
+        assert len(registered) == orig_n_items
+        # Ensure the hard-coded name is part of the list
+        assert functools.reduce(
+            lambda c, r: c+(r.get_name() == name),
+            registered, 0) == 1

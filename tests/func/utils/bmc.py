@@ -23,14 +23,15 @@ class RegisteredItem:
         SidePanel
     """
 
-    def __init__(self, dom_element):
+    def __init__(self, sidepanel, dom_element):
+        self._panel = sidepanel
         self._dom = dom_element
 
     def get_name(self):
         """ Returns the name displayed for the RegisteredItem """
-        name_label = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
-        import pdb; pdb.set_trace()
-        return name_label.text
+        with self._panel.focus():
+            name_label = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
+            return name_label.text
 
     def list_sources(self):
         """ Returns a list of ItemSource for the RegisteredItem """
@@ -155,7 +156,7 @@ class SideBarController:
                 items = self._driver.find_elements_by_css_selector('#manga-list .mangaListItem')
             except NoSuchElementException:
                 pass
-        return [RegisteredItem(i) for i in items]
+        return [RegisteredItem(self, i) for i in items]
 
 
 class BmcController:
