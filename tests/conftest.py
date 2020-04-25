@@ -14,6 +14,11 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
+    """
+        Generates `controller` and `reader_driver` fixtures, according to the
+        CLI options provided by the user.
+    """
+    print('')  # For logging clarity
     if 'controller' in metafunc.fixturenames:
         browsers = metafunc.config.getoption('browser')
         if not browsers:
@@ -32,6 +37,14 @@ def pytest_generate_tests(metafunc):
 
 @pytest.fixture
 def reader_driver(controller, request):
+    """
+        Definition of the actual reader_driver fixture, controller by the user
+        input (CLI).
+
+        It is called by metafunc.parametrize in `pytest_generate_tests`, using
+        the indirect flag, which explains why it is defined as a function as
+        opposed to the `controller` fixture.
+    """
     return support.drivers[request.param](controller.wrapped_driver)
 
 
