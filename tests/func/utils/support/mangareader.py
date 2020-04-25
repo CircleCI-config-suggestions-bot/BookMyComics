@@ -13,7 +13,7 @@ class MangaReaderDriver(SupportBase):
         super(MangaReaderDriver, self).__init__(*args, **kwargs)
 
     @retry(abort=True)
-    def load_random(self):
+    def load_random(self, predicate=None):
         # First, go to the website
         self._driver.get('https://www.mangareader.net')
 
@@ -30,6 +30,10 @@ class MangaReaderDriver(SupportBase):
         # Need to use the link here, as the click on the element did not work
         # in the timing the script generated.
         self._driver.get(link)
+
+        # Validate predicate if specified
+        if predicate and not predicate(self):
+            raise RetriableError("Selected Comic does not fit predicate requirements")
 
         # Finally, retrieve the page selector to choose a random one, ensuring
         # that we select neither the first nor the last.
@@ -54,3 +58,12 @@ class MangaReaderDriver(SupportBase):
         span = self._driver.find_element(by=By.CLASS_NAME, value='next')
         btn = span.find_element(by=By.TAG_NAME, value='a')
         btn.click()
+
+    def get_comic_name(self):
+        """
+            Extracts the comic name from the current URL
+        """
+        url = self._driver.current_url
+        if 'mangareader.net' not in url:
+            return None
+        return url.split('/')[3]

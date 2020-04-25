@@ -14,14 +14,18 @@ class MangaEdenDriver(SupportBase):
         super(MangaEdenDriver, self).__init__(*args, **kwargs)
 
     @retry(abort=True)
-    def load_random(self):
+    def load_random(self, predicate=None):
         # First, go to the website
         self._driver.get('https://www.mangaeden.com/')
 
         # Retrieve the generated random link, which is generated after loading the page
         btn = self._driver.find_element(by=By.CLASS_NAME, value='randomize')
         href = btn.get_attribute('href')
-        self._driver.get(href);
+        self._driver.get(href)
+
+        # Validate predicate if specified
+        if predicate and not predicate(self):
+            raise RetriableError("Selected Comic does not fit predicate requirements")
 
         # Now select randomly a chapter in the list of chapters
         chapters = self._driver.find_elements(by=By.CLASS_NAME, value='chapterLink')
@@ -53,3 +57,12 @@ class MangaEdenDriver(SupportBase):
     def next_page(self):
         btn = self._driver.find_element(by=By.CLASS_NAME, value='next')
         btn.click()
+
+    def get_comic_name(self):
+        """
+            Extracts the comic name from the current URL
+        """
+        url = self._driver.current_url
+        if 'mangaeden.com' not in url:
+            return None
+        return url.split('/')[5]

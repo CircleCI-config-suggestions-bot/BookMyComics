@@ -28,7 +28,8 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     iframe.style.zIndex = '1000000'; // Some high value
     iframe.style.border = 'none';
     // Etc. Add your own styles if you want to
-    document.documentElement.appendChild(iframe);
+    var body = document.getElementsByTagName('body')[0];
+    body.appendChild(iframe);
     this._messaging.addWindowHandler(
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'HideSidePanel',

@@ -17,9 +17,9 @@ class Wrapper(BaseWebdriverWrapper):
         self._driver = webdriver.Firefox(options=options,
                                          capabilities=capabilities)
 
-        print('Loading addon from "{}"'.format(self._ext.packed_path))
+        print('[Firefox] Loading addon from "{}"'.format(self._ext.packed_path))
+        print('[Firefox] Loading manifest from "{}"'.format(self._ext._manifest_path))
         self._driver.install_addon(self._ext.packed_path, temporary=True)
-        print('Driver installed add-on')
 
     def ensure_click(self, element):
         """
@@ -31,3 +31,14 @@ class Wrapper(BaseWebdriverWrapper):
         js_scroll_command = 'window.scrollTo({},{});' .format(loc['x'] - wsz['width']/2,
                                                               loc['y'] - wsz['height']/2)
         self._driver.execute_script(js_scroll_command)
+
+    def clear_storage(self):
+        """
+            Clears local & session storage from the browser
+        """
+        self._driver.execute_script(
+            "(chrome || window.chrome || browser || window.browser)"
+            ".storage.local.clear().catch(e=>{}).then(()=>{});")
+        self._driver.execute_script(
+            "(chrome || window.chrome || browser || window.browser)"
+            ".storage.sync.clear().catch(e=>{}).then(()=>{});")

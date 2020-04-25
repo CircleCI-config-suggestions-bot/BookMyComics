@@ -98,7 +98,7 @@ class FanFoxDriver(SupportBase):
         self._navbar = FanFoxNavBar(self._wrapper)
 
     @retry(abort=True)
-    def load_random(self):
+    def load_random(self, predicate=None):
         # First, go to the website
         self._driver.get('https://fanfox.net')
 
@@ -110,6 +110,10 @@ class FanFoxDriver(SupportBase):
             .get_attribute('href'))
         if self._driver.current_url == 'https://fanfox.net':
             raise RetriableError('Could not load a random "latest" chapter')
+
+        # Validate predicate if specified
+        if predicate and not predicate(self):
+            raise RetriableError("Selected Comic does not fit predicate requirements")
 
         # Now, select a page which has both "next" and "prev" pages (ie:
         # neither first nor last), but first we need to ensure the DOM has been
@@ -142,3 +146,12 @@ class FanFoxDriver(SupportBase):
             if not self._navbar.next_chapter():
                 print('Already at latest chapter, cannot go to next')
                 return
+
+    def get_comic_name(self):
+        """
+            Extracts the comic name from the current URL
+        """
+        url = self._driver.current_url
+        if 'fanfox.net' not in url:
+            return None
+        return url.split('/')[4]

@@ -68,7 +68,7 @@
             "all_frames": true
         },
         {
-            "matches": ["https://www.mangareader.net/*"],
+            "matches": ["*://www.mangareader.net/*"],
             "js": [
                 "strings.js",
                 "utils.js",

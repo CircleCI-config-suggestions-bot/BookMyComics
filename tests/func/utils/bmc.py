@@ -10,10 +10,11 @@ class FrameFocus:
         self._frame = frame
 
     def __enter__(self):
-        self._driver.switch_to.frame(self._frame)
+        WebDriverWait(self._driver, 30).until(
+            EC.frame_to_be_available_and_switch_to_it(self._frame))
 
     def __exit__(self, type, value, traceback):
-        self._driver.switch_to.default_content()
+        self._driver.switch_to.parent_frame()
 
 
 class RegisteredItem:
@@ -22,14 +23,15 @@ class RegisteredItem:
         SidePanel
     """
 
-    def __init__(self, dom_element):
+    def __init__(self, sidepanel, dom_element):
+        self._panel = sidepanel
         self._dom = dom_element
 
     def get_name(self):
         """ Returns the name displayed for the RegisteredItem """
-        name_label = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
-        import pdb; pdb.set_trace()
-        return name_label.text
+        with self._panel.focus():
+            name_label = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
+            return name_label.text
 
     def list_sources(self):
         """ Returns a list of ItemSource for the RegisteredItem """
@@ -70,8 +72,10 @@ class SideBarController:
 
     def __init__(self, driver):
         self._driver = driver
-        self._frame = self._driver.find_element(
-            by=By.ID, value=self.SIDEPANEL_ID)
+        def finder(driver):
+            return driver.find_element(by=By.ID, value=self.SIDEPANEL_ID)
+        WebDriverWait(self._driver, 10).until(finder)
+        self._frame = finder(self._driver)
 
     @property
     def loaded(self):
@@ -152,7 +156,7 @@ class SideBarController:
                 items = self._driver.find_elements_by_css_selector('#manga-list .mangaListItem')
             except NoSuchElementException:
                 pass
-        return [RegisteredItem(i) for i in items]
+        return [RegisteredItem(self, i) for i in items]
 
 
 class BmcController:
@@ -198,3 +202,22 @@ class BmcController:
             extension.
         """
         self.sidebar.register(display_name)
+
+    def refresh(self):
+        """
+            Allows refreshing the Controller's internal state, to fit a
+            new/refreshed page, and avoid stale WebElements
+        """
+        self._sidebar = None
+
+    def reset(self):
+        """
+            Used by autouse fixtures
+
+            This method forces a reset of the internal state of the controller,
+            as well as the stored data, to ensure no overlap/conflict between
+            functional tests.
+        """
+        with self.sidebar.focus():
+            self._wrapped_driver.clear_storage()
+        self.refresh()

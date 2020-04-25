@@ -247,6 +247,12 @@ function Localization(lang = DEFAULT_LANG) {
         'S70': {
             'en': 'Missing operation in BmcUI.makeNotification',
         },
+        'S71': {
+            'en': 'Got error from scheme.getLabelMap(): {data}',
+        },
+        'S72': {
+            'en': 'Label provided is not unique (it already exists)',
+        },
     };
 }
 
