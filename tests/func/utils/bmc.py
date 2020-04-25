@@ -203,6 +203,13 @@ class BmcController:
         """
         self.sidebar.register(display_name)
 
+    def refresh(self):
+        """
+            Allows refreshing the Controller's internal state, to fit a
+            new/refreshed page, and avoid stale WebElements
+        """
+        self._sidebar = None
+
     def reset(self):
         """
             Used by autouse fixtures
@@ -213,3 +220,4 @@ class BmcController:
         """
         with self.sidebar.focus():
             self._wrapped_driver.clear_storage()
+        self.refresh()

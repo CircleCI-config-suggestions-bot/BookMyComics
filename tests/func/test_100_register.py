@@ -90,6 +90,12 @@ class TestRegister:
         controller.register(name)
         registered_comic = reader_driver.get_comic_name()
 
+        # XXX FIXME XXX
+        # Work-around for #50
+        controller.driver.refresh()
+        controller.refresh()
+        # XXX END OF FIXME XXX
+
         registered = controller.sidebar.get_registered()
         assert len(registered) > orig_n_items
         orig_n_items = len(registered)
@@ -120,6 +126,12 @@ class TestRegister:
         # And finally, check that this attempt failed, by verifying
         # that nothing was added:
         #
+
+        # XXX FIXME XXX
+        # Work-around for #50
+        controller.driver.refresh()
+        controller.refresh()
+        # XXX END OF FIXME XXX
 
         registered = controller.sidebar.get_registered()
         assert len(registered) == orig_n_items
