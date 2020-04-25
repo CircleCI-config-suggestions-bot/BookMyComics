@@ -198,3 +198,14 @@ class BmcController:
             extension.
         """
         self.sidebar.register(display_name)
+
+    def reset(self):
+        """
+            Used by autouse fixtures
+
+            This method forces a reset of the internal state of the controller,
+            as well as the stored data, to ensure no overlap/conflict between
+            functional tests.
+        """
+        with self.sidebar.focus():
+            self._wrapped_driver.clear_storage()

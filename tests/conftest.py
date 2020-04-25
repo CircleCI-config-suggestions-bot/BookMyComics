@@ -48,6 +48,12 @@ def reader_driver(controller, request):
     return support.drivers[request.param](controller.wrapped_driver)
 
 
+@pytest.fixture(autouse=True)
+def before_tests(controller):
+    yield
+    controller.reset()
+
+
 def pytest_sessionfinish(session, exitstatus):
     # Ensure all drivers are exited before we exit py.test
     drivers.release()

@@ -31,3 +31,14 @@ class Wrapper(BaseWebdriverWrapper):
         js_scroll_command = 'window.scrollTo({},{});' .format(loc['x'] - wsz['width']/2,
                                                               loc['y'] - wsz['height']/2)
         self._driver.execute_script(js_scroll_command)
+
+    def clear_storage(self):
+        """
+            Clears local & session storage from the browser
+        """
+        self._driver.execute_script(
+            "(chrome || window.chrome || browser || window.browser)"
+            ".storage.local.clear().catch(e=>{}).then(()=>{});")
+        self._driver.execute_script(
+            "(chrome || window.chrome || browser || window.browser)"
+            ".storage.sync.clear().catch(e=>{}).then(()=>{});")

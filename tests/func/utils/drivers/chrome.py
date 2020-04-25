@@ -28,3 +28,14 @@ class Wrapper(BaseWebdriverWrapper):
         """
         ActionChains(self._driver).move_to_element(element).perform()
         element.click()
+
+    def clear_storage(self):
+        """
+            Clears local & session storage from the browser
+        """
+        self._driver.execute_script(
+            "(chrome || window.chrome || browser || window.browser)"
+            ".storage.local.clear(()=>{});")
+        self._driver.execute_script(
+            "(chrome || window.chrome || browser || window.browser)"
+            ".storage.sync.clear(()=>{});")
