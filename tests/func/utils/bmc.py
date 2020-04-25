@@ -10,10 +10,11 @@ class FrameFocus:
         self._frame = frame
 
     def __enter__(self):
-        self._driver.switch_to.frame(self._frame)
+        WebDriverWait(self._driver, 30).until(
+            EC.frame_to_be_available_and_switch_to_it(self._frame))
 
     def __exit__(self, type, value, traceback):
-        self._driver.switch_to.default_content()
+        self._driver.switch_to.parent_frame()
 
 
 class RegisteredItem:
@@ -70,8 +71,10 @@ class SideBarController:
 
     def __init__(self, driver):
         self._driver = driver
-        self._frame = self._driver.find_element(
-            by=By.ID, value=self.SIDEPANEL_ID)
+        def finder(driver):
+            return driver.find_element(by=By.ID, value=self.SIDEPANEL_ID)
+        WebDriverWait(self._driver, 10).until(finder)
+        self._frame = finder(self._driver)
 
     @property
     def loaded(self):
