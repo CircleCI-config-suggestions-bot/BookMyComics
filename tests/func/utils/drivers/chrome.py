@@ -16,6 +16,8 @@ class Wrapper(BaseWebdriverWrapper):
         options.add_argument('--load-extension={}'.format(self._ext.unpacked_path))
         options.headless = False
 
+        print('[Chrome] Loading addon from "{}"'.format(self._ext.unpacked_path))
+        print('[Chrome] Loading manifest from "{}"'.format(self._ext._manifest_path))
         self._driver = webdriver.Chrome(options=options,
                                         desired_capabilities=capabilities)
 

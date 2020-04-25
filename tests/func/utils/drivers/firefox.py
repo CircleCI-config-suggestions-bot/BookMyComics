@@ -17,9 +17,9 @@ class Wrapper(BaseWebdriverWrapper):
         self._driver = webdriver.Firefox(options=options,
                                          capabilities=capabilities)
 
-        print('Loading addon from "{}"'.format(self._ext.packed_path))
+        print('[Firefox] Loading addon from "{}"'.format(self._ext.packed_path))
+        print('[Firefox] Loading manifest from "{}"'.format(self._ext._manifest_path))
         self._driver.install_addon(self._ext.packed_path, temporary=True)
-        print('Driver installed add-on')
 
     def ensure_click(self, element):
         """
