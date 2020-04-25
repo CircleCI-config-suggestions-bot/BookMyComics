@@ -27,7 +27,7 @@ class MangaHereDriver(SupportBase):
         return None
 
     @retry(abort=True)
-    def load_random(self):
+    def load_random(self, predicate=None):
         # First, go to the website
         self._driver.get('http://mangahere.us')
 
@@ -38,6 +38,10 @@ class MangaHereDriver(SupportBase):
         latest_chapters[random.randrange(len(latest_chapters))].click()
         if self._driver.current_url == 'http://mangahere.us':
             raise RetriableError('Could not load a random "latest" chapter')
+
+        # Validate predicate if specified
+        if predicate and not predicate(self):
+            raise RetriableError("Selected Comic does not fit predicate requirements")
 
         # Now, select a page which has both "next" and "prev" pages (ie:
         # neither first nor last), but first we need to ensure the DOM has been
@@ -77,3 +81,12 @@ class MangaHereDriver(SupportBase):
             btn = self._driver.find_element(by=By.CLASS_NAME, value='RightArrow')
         if btn:
             self._wrapper.ensure_click(btn)
+
+    def get_comic_name(self):
+        """
+            Extracts the comic name from the current URL
+        """
+        url = self._driver.current_url
+        if 'mangahere.us' not in url:
+            return None
+        return '-'.join(url.split('/')[3].split('-')[:-2])
