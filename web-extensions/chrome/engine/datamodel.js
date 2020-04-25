@@ -8,11 +8,12 @@
  * It relies on a persistent "state", stored and retrieved using the Storage
  * class.
  *
- * Currently, three types of data are available:
+ * Currently, four types of data are available:
  * 1. state: internal add-on state, maintained to make operations easier along
  *           the lifecycle of the extension.
  * 2. map: Dictionary of names of Comic that maps to Comic ids
- * 3. comic: Stores all data relevant to a tracked comic:
+ * 3. lmap: Dictionary of unique labels (user-defined) of Comic that maps to Comic ids
+ * 4. comic: Stores all data relevant to a tracked comic:
  *    > id: id of the comic (used to find this object in the storage)
  *    > chapter: Chapter number of the last page read
  *    > page: Page number of the last page read. Can be null (to
@@ -28,6 +29,7 @@ function KeyScheme(storage) {
 
 KeyScheme.prototype.BMC_STATE_KEY = 'BookMyComics.state';
 KeyScheme.prototype.BMC_MAP_KEY = 'BookMyComics.map';
+KeyScheme.prototype.BMC_LMAP_KEY = 'BookMyComics.lmap';
 KeyScheme.prototype.BMC_KEY_PREFIX = 'BookMyComics.comics';
 
 /**
@@ -53,6 +55,32 @@ KeyScheme.prototype.getMap = function(cb) {
             return cb(err, null);
         }
         return cb(null, data[this.BMC_MAP_KEY]);
+    });
+};
+
+/**
+ * @callback KeyScheme~getLabelMapCb
+ * @param {Error} err - Error object returned by the failing layer
+ * @param {Object} map - Label-to-Id mapping object from the storage
+ */
+
+/**
+ * This function retrieves the Label-to-Id mapping from the storage,
+ * in order to allow looking for comic from the label, and update it in an
+ * atomic-like manner within other functions/classes.
+ *
+ * @param {KeyScheme~getLabelMapCb} cb
+ *
+ */
+KeyScheme.prototype.getLabelMap = function(cb) {
+    const keyToGet = {};
+    keyToGet[this.BMC_LMAP_KEY] = {};
+    return this._storage.get(keyToGet, (err, data) => {
+        if (err) {
+            LOGS.log('S71');
+            return cb(err, null);
+        }
+        return cb(null, data[this.BMC_LMAP_KEY]);
     });
 };
 
@@ -508,13 +536,16 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
  * This function registers a Comic into the extension's storage.
  * An unique ID is computed at the registration time, and the registration
  * allows setting a chapter and a page rather than requiring a
- * post-registration update.
+ * post-registration update. Note that the label provided must be unique and
+ * not already present in the stored data.
  *
  * The registration includes:
+ *  - Addition of the label->id mapping into the KeyScheme's lmap
  *  - Addition of the name->id mapping into the KeyScheme's map
  *  - Definition of the tracking payload for the Comic
  *
- * @param {String} label - the display name of the comic provided by the user
+ * @param {String} label - the unique display name of the comic provided by the
+ *                         user
  * @param {String} readerName - Name of the Reader to register as the source
  * @param {Object} comicInfo - Object containing all relevant information
  *                             relevant to a reader and how to read the comic
@@ -531,27 +562,39 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
  *
  */
 BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) {
-    return this._scheme.nextId((err, id) => {
+    return this._scheme.getLabelMap((err, lmap) => {
         if (err) {
-            LOGS.log('S25', {'data': JSON.stringify(err)});
             return cb(err);
         }
-        return this._scheme.getMap((err, map) => {
-            const comic = new BmcComic(label, id, comicInfo.common.chapter, comicInfo.common.page);
-
-            const comicKey = this._scheme.keyFromId(id);
-            const dataset = {};
-            dataset[comicKey] = comic.serialize();
-
-            const readerInfo = Object.assign({}, comicInfo);
-            delete readerInfo.common;
-            const source = new BmcComicSource(comicInfo.common.name, readerName, readerInfo);
-            const sourceKey = this._scheme.computeSourceKey(source);
-            map[sourceKey] = { id, info: readerInfo };
-            dataset[this._scheme.BMC_MAP_KEY] = map;
-
-            return this._data.set(dataset, err => {
+        // Label already exists -> Error (user should add a source instead)
+        if (lmap[label] !== undefined) {
+            LOGS.log('S72', {'data': JSON.stringify(err)});
+            return cb(err);
+        }
+        return this._scheme.nextId((err, id) => {
+            if (err) {
+                LOGS.log('S25', {'data': JSON.stringify(err)});
                 return cb(err);
+            }
+            return this._scheme.getMap((err, map) => {
+                const comic = new BmcComic(label, id, comicInfo.common.chapter, comicInfo.common.page);
+
+                const comicKey = this._scheme.keyFromId(id);
+                const dataset = {};
+                dataset[comicKey] = comic.serialize();
+
+                const readerInfo = Object.assign({}, comicInfo);
+                delete readerInfo.common;
+                const source = new BmcComicSource(comicInfo.common.name, readerName, readerInfo);
+                const sourceKey = this._scheme.computeSourceKey(source);
+                map[sourceKey] = { id, info: readerInfo };
+                dataset[this._scheme.BMC_MAP_KEY] = map;
+                lmap[label] = { id };
+                dataset[this._scheme.BMC_LMAP_KEY] = lmap;
+
+                return this._data.set(dataset, err => {
+                    return cb(err);
+                });
             });
         });
     });
@@ -617,23 +660,37 @@ BmcDataAPI.prototype.aliasComic = function(comicId, readerName, comicInfo, cb) {
  */
 BmcDataAPI.prototype.unregisterComic = function(comicId, cb) {
     // First, delete all links from the map
-    return this._scheme.getMap((err, map) => {
-        Object.keys(map).forEach(key => {
-            if (map[key].id === comicId) {
-                delete map[key];
+    return this._scheme.getLabelMap((err, lmap) => {
+        if (err) {
+            return cb(err);
+        }
+        Object.keys(lmap).forEach(key => {
+            if (lmap[key].id === comicId) {
+                delete lmap[key];
             }
         });
-        const dataset = {};
-        dataset[this._scheme.BMC_MAP_KEY] = map;
-        return this._data.set(dataset, err => {
+        return this._scheme.getMap((err, map) => {
             if (err) {
                 return cb(err);
             }
-            // All links are now cleaned-up, we can remove the comic's
-            // remaining artifact.
-            const comicKey = this._scheme.keyFromId(comicId);
-            return this._data.remove(comicKey, err => {
-                return cb(err);
+            Object.keys(map).forEach(key => {
+                if (map[key].id === comicId) {
+                    delete map[key];
+                }
+            });
+            const dataset = {};
+            dataset[this._scheme.BMC_MAP_KEY] = map;
+            dataset[this._scheme.BMC_LMAP_KEY] = lmap;
+            return this._data.set(dataset, err => {
+                if (err) {
+                    return cb(err);
+                }
+                // All links are now cleaned-up, we can remove the comic's
+                // remaining artifact.
+                const comicKey = this._scheme.keyFromId(comicId);
+                return this._data.remove(comicKey, err => {
+                    return cb(err);
+                });
             });
         });
     });
