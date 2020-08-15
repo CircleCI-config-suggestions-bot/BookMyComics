@@ -207,8 +207,15 @@ BmcMangaList.prototype.generate = function() {
     // Now that the parent is a clean slate, let's generate
     bmcDb.list((err, comics) => {
         comics.forEach(
-            comic => mangaList.appendChild(this.generateComic(comic))
+            comic => { mangaList.appendChild(this.generateComic(comic)); }
         );
+
+        // Insert a last non-visible item, which acts as the "finalization" of the
+        // list loading. It is used by testing to identify when all items have been loaded.
+        var marker = document.createElement('span');
+        marker.id = 'manga-list-end-marker';
+        mangaList.appendChild(marker);
+        console.log(`END OF LIST GENERATION: {count} items`);
     });
 };
 

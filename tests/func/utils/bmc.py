@@ -99,8 +99,14 @@ class SideBarController:
     def hidden(self):
         ret = False
         with FrameFocus(self._driver, self._frame):
+            WebDriverWait(self._driver, 10).until(
+                lambda driver:
+                driver.find_element(by=By.ID, value='side-panel'))
             mode_std = \
                 self._driver.find_element(by=By.ID, value='side-panel')
+            WebDriverWait(self._driver, 10).until(
+                lambda driver:
+                driver.find_element(by=By.ID, value='side-panel-adder'))
             mode_adder = \
                 self._driver.find_element(by=By.ID, value='side-panel-adder')
             ret = not (mode_std.is_displayed() or mode_adder.is_displayed())
@@ -119,7 +125,18 @@ class SideBarController:
     def toggle(self):
         with FrameFocus(self._driver, self._frame):
             togbtn = self._driver.find_element(by=By.ID, value='hide-but')
+            txt = togbtn.text
             togbtn.click()
+            if txt == '>':
+                WebDriverWait(self._driver, 10).until(
+                    lambda driver:
+                    driver.find_element(
+                        by=By.ID, value='hide-but').text == '<')
+            elif txt == '<':
+                WebDriverWait(self._driver, 10).until(
+                    lambda driver:
+                    driver.find_element(
+                        by=By.ID, value='hide-but').text == '>')
 
     def wait_for_text(self, expected_text, elem_id, timeout=10):
         with FrameFocus(self._driver, self._frame):
@@ -138,6 +155,9 @@ class SideBarController:
             add_btn = self._driver.find_element_by_css_selector(
                 '#side-panel > .button-add ')
             add_btn.click()
+            WebDriverWait(self._driver, 10).until(
+                lambda driver: driver.find_element_by_css_selector(
+                    '#side-panel-adder > #bookmark-name').is_displayed())
             input_field = self._driver.find_element_by_css_selector(
                 '#side-panel-adder > #bookmark-name')
             input_field.send_keys(display_name)
@@ -153,7 +173,13 @@ class SideBarController:
         with FrameFocus(self._driver, self._frame):
             items = []
             try:
-                items = self._driver.find_elements_by_css_selector('#manga-list .mangaListItem')
+                # Need to find something to wait on, which ensures that the
+                # list is already populated by the web extension's JS
+                WebDriverWait(self._driver, 10).until(
+                    lambda driver: driver.find_element(
+                        by=By.ID, value='manga-list-end-marker'))
+                items = self._driver.find_elements_by_css_selector(
+                    '#manga-list .mangaListItem')
             except NoSuchElementException:
                 pass
         return [RegisteredItem(self, i) for i in items]

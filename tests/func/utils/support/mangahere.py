@@ -50,7 +50,7 @@ class MangaHereDriver(SupportBase):
 
         # Ensure we properly wait for the page to load
         try:
-            wait_for_next_page(self._drive, prev_url)
+            wait_for_next_page(self._driver, prev_url)
             selector = self._driver.find_element(by=By.ID, value='page_select')
         except NoSuchElementException:
             raise RetriableError('No page selector found in manga chapter')
