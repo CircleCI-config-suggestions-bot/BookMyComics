@@ -12,26 +12,27 @@ LOGS.log('S66');
 const bmcMessaging = new BmcMessagingHandler();
 LOGS.log('S67');
 
-bmcMessaging.addWindowHandler(
-    BACKGROUND_ID,
-    evData => evData.type === 'computation'
-              && evData.module === 'sources'
-              && evData.computation === 'URL:Parse:Request',
-    evData => { // Don't receive `sender`, as we don't use it.
-        LOGS.log('S69', {'evData': evData});
-        const answerEv = {
-            type: 'computation',
-            module: 'sources',
-            computation: 'URL:Parse:Response',
-            resource: {
-                origin: evData.resource.origin,
-                path: evData.resource.path,
-                comic: bmcSources.parseURL(evData.resource.origin,
-                                           evData.resource.path),
-            }
-        };
-        return answerEv;
-    });
+// bmcMessaging.addWindowHandler(
+//     BACKGROUND_ID,
+//     evData => evData.type === 'computation'
+//               && evData.module === 'sources'
+//               && evData.computation === 'URL:Parse:Request',
+//     evData => { // Don't receive `sender`, as we don't use it.
+//         LOGS.log('S69', {'evData': evData});
+//         const answerEv = {
+//             type: 'computation',
+//             module: 'sources',
+//             computation: 'URL:Parse:Response',
+//             resource: {
+//                 origin: evData.resource.origin,
+//                 path: evData.resource.path,
+//                 comic: bmcSources.parseURL(evData.resource.origin,
+//                                            evData.resource.path),
+//             }
+//         };
+//         return answerEv;
+//     }
+// );
 
 bmcMessaging.addWindowHandler(
     BACKGROUND_ID,

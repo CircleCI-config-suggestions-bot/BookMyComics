@@ -1,6 +1,6 @@
 /* globals
     BmcEngine:readable
-    compat:readable
+    BmcSources:readable
     LOGS:readable
 */
 
@@ -20,36 +20,29 @@ if (window.top === window) {
      * First, request the actual URL's manga information from the background page
      * (who has the permissionss to load all supported origin scripts).
      */
-    const ev = {
-        type: 'computation',
-        module: 'sources',
-        computation: 'URL:Parse:Request',
-        resource: {
-            origin: window.location.origin,
-            path: window.location.pathname,
-        },
-    };
     LOGS.log('S39');
-    // Now send the message to the background page
-    compat.sendMessage(ev, (err, response) => {
-        if (err) {
-            LOGS.warn('E0002', {'err': err});
-            return undefined;
+
+    try {
+        var sources = new BmcSources();
+        var comic = sources.getInfos(window.location.host, window.location.pathname, document.body);
+        if (comic) {
+            LOGS.log('S41', {'data': JSON.stringify(comic)});
+            /*
+             * And finally, we can instanciate the engine and let it spawn the UI:
+             *
+             * NOTE: We're defaulting "response.resource.comic" here in case it
+             * could be undefined. This would mean that we're not on a manga
+             * page, but browsing the reader's website.
+             */
+            const engine = new BmcEngine(window.location.origin, window.location.hostname, comic);
+            LOGS.log('S42');
+            engine.setup();
+        } else {
+            console.error("Comic information couldn't be retrieved");
         }
-        LOGS.log('S41', {'data': JSON.stringify(response)});
-        /*
-         * And finally, we can instanciate the engine and let it spawn the UI:
-         *
-         * NOTE: We're defaulting "response.resource.comic" here in case it
-         * could be undefined. This would mean that we're not on a manga
-         * page, but browsing the reader's website.
-         */
-        const engine = new BmcEngine(window.location.origin,
-                                     window.location.hostname,
-                                     response.resource.comic);
-        LOGS.log('S42');
-        engine.setup();
-    });
+    } catch(err) {
+        console.error(err);
+    }
 } else {
     LOGS.warn('E0003', {'iframe': window.location});
 }
