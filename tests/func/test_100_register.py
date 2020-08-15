@@ -22,8 +22,6 @@ class TestRegister:
             assert reg_btn.is_displayed()
 
     @staticmethod
-    @pytest.mark.skip(
-        reason='#50|newly registered entry is not immediately displayed')
     def test_registration(controller, reader_driver):
         """
             Validates that the comic registration goes well, and can be
@@ -81,6 +79,9 @@ class TestRegister:
             not change the listing of registered comics
         """
         name = 'sample100-eexist'
+        #
+        # Setup: Register a random comic
+        #
         reader_driver.load_random()
         assert controller.sidebar.loaded
         if controller.sidebar.hidden:
@@ -90,12 +91,9 @@ class TestRegister:
         controller.register(name)
         registered_comic = reader_driver.get_comic_name()
 
-        # XXX FIXME XXX
-        # Work-around for #50
-        controller.driver.refresh()
-        controller.refresh()
-        # XXX END OF FIXME XXX
-
+        #
+        # Setup: Validate the initally registered comic
+        #
         registered = controller.sidebar.get_registered()
         assert len(registered) > orig_n_items
         orig_n_items = len(registered)
@@ -126,13 +124,6 @@ class TestRegister:
         # And finally, check that this attempt failed, by verifying
         # that nothing was added:
         #
-
-        # XXX FIXME XXX
-        # Work-around for #50
-        controller.driver.refresh()
-        controller.refresh()
-        # XXX END OF FIXME XXX
-
         registered = controller.sidebar.get_registered()
         assert len(registered) == orig_n_items
         # Ensure the hard-coded name is part of the list
