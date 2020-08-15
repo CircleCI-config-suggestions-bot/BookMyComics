@@ -215,7 +215,6 @@ BmcMangaList.prototype.generate = function() {
         var marker = document.createElement('span');
         marker.id = 'manga-list-end-marker';
         mangaList.appendChild(marker);
-        console.log(`END OF LIST GENERATION: {count} items`);
     });
 };
 

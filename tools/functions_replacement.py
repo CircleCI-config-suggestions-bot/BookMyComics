@@ -3,7 +3,7 @@ from utils import get_all_js_files, get_file_content
 
 FUNCTIONS_TO_NOT_CALL = {
     'Array.prototype.slice.call': {
-        'to_ignore': ['web-extensions/chrome/utils.js'],
+        'to_ignore': ['web-extension/utils.js'],
         'replacement': 'arrayClone',
     },
 }
@@ -35,7 +35,7 @@ def check_file(path, errors):
 def main_func():
     errors = []
     print("=> Getting all js files...")
-    all_js_files = get_all_js_files('web-extensions')
+    all_js_files = get_all_js_files('web-extension')
     print("<= Done")
     print("Found {} js files".format(len(all_js_files)))
     print("=> Checking all js files...")

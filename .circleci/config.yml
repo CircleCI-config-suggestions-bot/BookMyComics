@@ -72,7 +72,7 @@ jobs:
           command: python ./tools/functions_replacement.py
       - run:
           name: Lint Extension
-          command: ./node_modules/.bin/web-ext -s web-extensions/chrome/ lint
+          command: ./node_modules/.bin/web-ext -s web-extension/ lint
 
   build-ext:
     executor: node-testing
@@ -87,7 +87,7 @@ jobs:
           command: python3 setup.py ${BROWSER}
       - run:
           name: Package Extension
-          command: /tmp/ws/node_modules/.bin/web-ext -s web-extensions/chrome/ -a ./build-${BROWSER}/ build
+          command: /tmp/ws/node_modules/.bin/web-ext -s web-extension/ -a ./build-${BROWSER}/ build
 
       # Persist packed webext for functional testing
       - persist_to_workspace:

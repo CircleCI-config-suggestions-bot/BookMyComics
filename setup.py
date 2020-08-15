@@ -25,7 +25,7 @@ def switch_manifest(browser):
     if content is None:
         print('aborting...')
         return 3
-    return write_file(content, 'web-extensions/chrome/manifest.json')
+    return write_file(content, 'web-extension/manifest.json')
 
 
 def show_options():
