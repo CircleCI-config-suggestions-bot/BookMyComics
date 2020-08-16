@@ -226,6 +226,14 @@ workflows:
           name: test-firefox-fanfox
           context: BookMyComics-Firefox-FanFox
           requires: *ff_requirements
+      - test-browser:
+          name: test-chrome-mangakakalot
+          context: BookMyComics-Chrome-MangaKakalot
+          requires: *ff_requirements
+      - test-browser:
+          name: test-chrome-manganelo
+          context: BookMyComics-Chrome-MangaNelo
+          requires: *ff_requirements
       - test-browser-common: *common_chrome
       - test-browser:
           name: test-chrome-mangaeden
@@ -242,4 +250,12 @@ workflows:
       - test-browser:
           name: test-chrome-fanfox
           context: BookMyComics-Chrome-FanFox
+          requires: *chrome_requirements
+      - test-browser:
+          name: test-chrome-mangakakalot
+          context: BookMyComics-Chrome-MangaKakalot
+          requires: *chrome_requirements
+      - test-browser:
+          name: test-chrome-manganelo
+          context: BookMyComics-Chrome-MangaNelo
           requires: *chrome_requirements
