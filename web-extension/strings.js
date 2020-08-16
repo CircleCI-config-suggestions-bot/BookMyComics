@@ -151,9 +151,9 @@ function Localization(lang = DEFAULT_LANG) {
         'S39': {
             'en': 'BookMyComics: entrypoint.js: Requesting URL parsing from background script',
         },
-        'S40': {
-            'en': 'BookMyComics: entrypoint.js: sendmessage failed: err={err}',
-        },
+        // 'S40': {
+        //     'en': 'BookMyComics: entrypoint.js: sendmessage failed: err={err}',
+        // },
         'S41': {
             'en': 'BookMyComics: entrypoint.js: sendmessage completed: data={data}',
         },
@@ -241,9 +241,9 @@ function Localization(lang = DEFAULT_LANG) {
         'S68': {
             'en': 'BookMyComics: background-engine.js: Handling URL:Generate Request: {evData}',
         },
-        'S69': {
-            'en': 'BookMyComics: background-engine.js: Handling URL:Parse Request: {evData}',
-        },
+        // 'S69': {
+        //     'en': 'BookMyComics: background-engine.js: Handling URL:Parse Request: {evData}',
+        // },
         'S70': {
             'en': 'Missing operation in BmcUI.makeNotification',
         },
@@ -264,6 +264,15 @@ function Localization(lang = DEFAULT_LANG) {
         },
         'S76': {
             'en': 'Failed to initialize the extension: {error}',
+        },
+        'S77': {
+            'en': 'Cannot get manga title',
+        },
+        'S78': {
+            'en': 'Cannot get manga ID from chapters list',
+        },
+        'S79': {
+            'en': 'Cannot get manga home page nor its name',
         },
     };
 }
@@ -288,7 +297,7 @@ function Logs(level = INFO) {
     this.ERRORS = {
         // 'E0000': 'S1',
         'E0001': 'S2',
-        'E0002': 'S40',
+        // 'E0002': 'S40',
         'E0003': 'S43',
         'E0004': 'S29',
         // 'E0005': 'S6',

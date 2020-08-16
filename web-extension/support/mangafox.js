@@ -1,7 +1,7 @@
 function FanFoxNetPlugin() {
 }
 
-FanFoxNetPlugin.prototype.getInfos = function(url, doc) {
+FanFoxNetPlugin.prototype.getInfos = function(url) {
     var parts = url.split('/').filter(s => s.length !== 0);
 
     if (parts.length < 2) {

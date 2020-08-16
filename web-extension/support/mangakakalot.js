@@ -1,43 +1,44 @@
+/* globals
+    LOGS:readable
+    cloneArray
+*/
+
 function MangaKakalotComPlugin() {
 }
 
 MangaKakalotComPlugin.prototype.getInfos = function(url, doc) {
-    var parts = url.split('/').filter(s => s.length !== 0);
+    let parts = url.split('/').filter(s => s.length !== 0);
 
     if (parts.length < 1) {
         return null;
-    } else if (parts[parts.length - 1].indexOf("chapter_") !== 0) {
+    } else if (parts[parts.length - 1].indexOf('chapter_') !== 0) {
         // manga page
-        var elem = doc.querySelector(".manga-info-top>.manga-info-text>li>h1");
+        let elem = doc.querySelector('.manga-info-top>.manga-info-text>li>h1');
         if (!elem) {
-            // TODO: add log
-            console.log("Cannot get manga title");
+            LOGS.log('S77');
             return null;
         }
-        var name = elem.innerText;
+        let name = elem.innerText;
 
-        elem = doc.querySelector(".chapter-list>.row a");
+        elem = doc.querySelector('.chapter-list>.row a');
         if (!elem) {
-            // TODO: add log
-            console.log("Cannot get manga ID from chapters list");
+            LOGS.log('S78');
             return null;
         }
-        var id = elem.getAttribute("href").split("/chapter/")[0].split("/")[0];
+        let id = elem.getAttribute('href').split('/chapter/')[0].split('/')[0];
         return { common: { name, chapter: null, page: null }, id, homeUrl: url };
     }
     // chapter page
-    var elems = cloneArray(doc.querySelectorAll(".breadcrumb > p > span > a"));
+    let elems = cloneArray(doc.querySelectorAll('.breadcrumb > p > span > a'));
     if (elems.length < 3) {
-        // TODO: add log
-        console.log("Cannot get manga home page nor its name");
+        LOGS.log('S79');
         return null;
     }
-    var name = elems[1].children[0].innerText;
-    var homeUrl = elems[1].getAttribute("href").split("mangakakalot.com")[1];
-    var parts = url.split("/");
-    var chapter = parts[parts.length - 1].split("_");
+    let name = elems[1].children[0].innerText;
+    let homeUrl = elems[1].getAttribute('href').split('mangakakalot.com')[1];
+    let chapter = parts[parts.length - 1].split('_');
     chapter = parseInt(chapter[chapter.length - 1]);
-    var id = parts[parts.length - 2];
+    let id = parts[parts.length - 2];
 
     return { common: { name, chapter, page: null }, id, homeUrl };
 };

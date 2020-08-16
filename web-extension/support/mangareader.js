@@ -1,7 +1,7 @@
 function MangaReaderNetPlugin() {
 }
 
-MangaReaderNetPlugin.prototype.getInfos = function(url, doc) {
+MangaReaderNetPlugin.prototype.getInfos = function(url) {
     var parts = url.split('/').filter(s => s.length !== 0);
     var not_mangas = ['popular', 'search', 'alphabetical', 'latest', 'random'];
 
