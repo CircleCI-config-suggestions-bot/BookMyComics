@@ -27,6 +27,16 @@ function emptyElem(elem) {
     }
 }
 
+function updateErrorDisplay(err) {
+    let disp = document.getElementById('error-display');
+    if (err !== null && err !== undefined && err !== '') {
+        disp.innerText = err.message;
+        disp.style.display = 'block';
+    } else {
+        disp.style.display = '';
+    }
+}
+
 function sendAliasRequest(comicId) {
     bmcDb.getComic(comicId, (err, comic) => {
         let label = '<unknown manga>';
@@ -343,7 +353,8 @@ function addEvents(mangaList) {
             if (label.length < 1) {
                 return;
             }
-            showHideSidePanelAdder();
+            // Disable button for now, Callback will switch back to manga-list view
+            confirmBut.disabled = true;
             // Now do the actual registration.
             const evData = {
                 type: 'action',
@@ -367,8 +378,9 @@ function addEvents(mangaList) {
             sendAliasRequest(selected[0].bmcData.id);
             // We hide the current panel.
             showHideAddIntoExisting();
-            // We also hide the "adder" panel.
-            showHideSidePanelAdder();
+            // Disable confirm button, callback will switch back to manga-list
+            // view
+            confirmBut.disabled = true;
         };
     }
     var cancelExistingBut = document.getElementById('add-existing-cancel');
@@ -398,7 +410,11 @@ function addEvents(mangaList) {
     var bookmarkName = document.getElementById('bookmark-name');
     if (bookmarkName) {
         bookmarkName.oninput = function() {
-            confirmBut.disabled = this.value.trim().length === 0;
+            // Do various validity checks here, which may disable the confirm button:
+            bmcDb.checkLabelAvailability(this.value.trim(), err => { // ignore optional second param
+                updateErrorDisplay(err);
+                confirmBut.disabled = (err !== null) || (this.value.trim().length === 0);
+            });
         };
     }
 
@@ -455,6 +471,12 @@ function addEvents(mangaList) {
                   (evData.operation === 'Alias Comic' || evData.operation === 'Register Comic' ||
                    evData.operation === 'Delete Comic Source' || evData.operation === 'Delete Comic'),
         evData => {
+            if (evData.error) {
+                updateErrorDisplay(evData.error);
+                confirmBut.disabled = true;
+                // Skip acknowledgement, as this was an error.
+                return ;
+            }
             if (evData.operation.startsWith('Delete')) {
                 mangaList.isRegistered = false;
                 mangaList.currentComic = undefined;
@@ -482,6 +504,7 @@ function addEvents(mangaList) {
                     } else { // 'Alias Comic'
                         mangaList.refreshComic(comicDOM);
                     }
+                    showHideSidePanelAdder();
                 });
             }
         });
@@ -671,6 +694,7 @@ function showHideSidePanelAdder() {
         sidePanel.setAttribute('prev', '');
         sidePanelAdder.style.display = '';
         hideBut.style.display = '';
+        updateErrorDisplay(null); // Reset error display and hide it
         if (prev === '') {
             // Force iframe to non full size.
             window.top.postMessage({'type': 'action', 'action': 'IFrameResize'}, '*');

@@ -528,6 +528,34 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
 
 
 /**
+ * @callback BmcDataAPI~checkLabelCb
+ * @param {Error} err - Error object returned by the failing layer
+ * @param {Object} [lmap] - Object containing the mapping of comicLabels to
+ *                          comicIds, if useful for the callback
+ */
+
+/**
+ * This function checks whether a comicLabel is "available" (Does not exist yet
+ * in the storage). It may be used for UI purposes, as well as internal
+ * BmcDataAPI checks.
+ *
+ */
+BmcDataAPI.prototype.checkLabelAvailability = function(label, cb) {
+    return this._scheme.getLabelMap((err, lmap) => {
+        if (err) {
+            return cb(err);
+        }
+        // Label already exists -> Error (user should add a source instead)
+        if (lmap[label] !== undefined) {
+            err = new Error('Comic Label already exists');
+            LOGS.log('S72', {'data': JSON.stringify(err)});
+            return cb(err);
+        }
+        return cb(null, lmap);
+    });
+};
+
+/**
  * @callback BmcDataAPI~registerCb
  * @param {Error} err - Error object returned by the failing layer
  */
@@ -562,14 +590,8 @@ BmcDataAPI.prototype.updateComic = function(comicId, chapter, page, cb) {
  *
  */
 BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) {
-    return this._scheme.getLabelMap((err, lmap) => {
+    return this.checkLabelAvailability(label, (err, lmap) => {
         if (err) {
-            return cb(err);
-        }
-        // Label already exists -> Error (user should add a source instead)
-        if (lmap[label] !== undefined) {
-            err = new Error('Comic Label already exists');
-            LOGS.log('S72', {'data': JSON.stringify(err)});
             return cb(err);
         }
         return this._scheme.nextId((err, id) => {
