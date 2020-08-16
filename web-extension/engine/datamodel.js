@@ -568,6 +568,7 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) 
         }
         // Label already exists -> Error (user should add a source instead)
         if (lmap[label] !== undefined) {
+            err = new Error('Comic Label already exists');
             LOGS.log('S72', {'data': JSON.stringify(err)});
             return cb(err);
         }
