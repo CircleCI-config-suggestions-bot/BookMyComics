@@ -2,7 +2,7 @@ from utils import get_all_js_files, get_file_content
 import sys
 
 
-STRINGS_PATH = 'web-extensions/chrome/strings.js'
+STRINGS_PATH = 'web-extension/strings.js'
 
 
 def check_error_codes(file_path, error_codes, string_codes, errors):
@@ -112,7 +112,7 @@ def main_func():
     print("Found {} error codes".format(len(error_codes)))
     print("Found {} string codes".format(len(string_codes)))
     print("=> Getting all js files...")
-    all_js_files = get_all_js_files('web-extensions', STRINGS_PATH)
+    all_js_files = get_all_js_files('web-extension', STRINGS_PATH)
     print("<= Done")
     print("Found {} js files".format(len(all_js_files)))
     print("=> Checking all js files...")

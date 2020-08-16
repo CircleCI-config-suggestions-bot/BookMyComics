@@ -5,7 +5,7 @@ from os import path
 from . import make_realpath
 
 
-SRC_WEBEXT_PATH = './web-extensions/chrome'
+SRC_WEBEXT_PATH = './web-extension'
 
 
 class Extension:

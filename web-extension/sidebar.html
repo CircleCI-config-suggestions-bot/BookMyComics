@@ -236,6 +236,13 @@ ul, .mangaListItem {
 #existing-entries > div:hover, #existing-entries > div.selected {
   background-color: #bbbbff;
 }
+#error-display {
+  color: red;
+  padding: 5px;
+  text-align: center;
+  width: calc(100% - 10px);
+  display: none;
+}
     </style>
     <script src="strings.js"></script>
     <script src="utils.js"></script>
@@ -257,6 +264,7 @@ ul, .mangaListItem {
       <h3 id="bookmark-add-title">Add a new bookmark</h3>
       <button id="add-into-existing" class="button-add">Add into existing manga</button>
       <input type="text" placeholder="Bookmark name" id="bookmark-name"></input>
+      <span id='error-display'></span>
       <button id="add-confirm" class="button-add">Confirm</button>
       <button id="add-cancel" class="button-add cancel">Cancel</button>
     </div>

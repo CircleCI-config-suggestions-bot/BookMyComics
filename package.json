@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "eslint $(git ls-files | grep '.js$')",
     "test": "python setup.py chrome && pytest -vvv -s",
-    "build": "python setup.py firefox && web-ext -s web-extensions/chrome -a ./build/ build --overwrite-dest && python setup.py chrome"
+    "build": "python setup.py firefox && web-ext -s web-extension/ -a ./build/ build --overwrite-dest && python setup.py chrome"
   },
   "repository": {
     "type": "git",

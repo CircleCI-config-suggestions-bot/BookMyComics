@@ -22,8 +22,6 @@ class TestRegister:
             assert reg_btn.is_displayed()
 
     @staticmethod
-    @pytest.mark.skip(
-        reason='#50|newly registered entry is not immediately displayed')
     def test_registration(controller, reader_driver):
         """
             Validates that the comic registration goes well, and can be
@@ -81,6 +79,9 @@ class TestRegister:
             not change the listing of registered comics
         """
         name = 'sample100-eexist'
+        #
+        # Setup: Register a random comic
+        #
         reader_driver.load_random()
         assert controller.sidebar.loaded
         if controller.sidebar.hidden:
@@ -89,13 +90,7 @@ class TestRegister:
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register(name)
         registered_comic = reader_driver.get_comic_name()
-
-        # XXX FIXME XXX
-        # Work-around for #50
-        controller.driver.refresh()
-        controller.refresh()
-        # XXX END OF FIXME XXX
-
+        # Validate the initally registered comic
         registered = controller.sidebar.get_registered()
         assert len(registered) > orig_n_items
         orig_n_items = len(registered)
@@ -107,7 +102,6 @@ class TestRegister:
         #
         # Now, attempt to register any other comic under the same name
         #
-
         # Some readers can not click on specific elements if we don't hide the
         # controller.sidebar before loading a random page
         if not controller.sidebar.hidden:
@@ -123,17 +117,18 @@ class TestRegister:
         controller.register(name)
 
         #
-        # And finally, check that this attempt failed, by verifying
-        # that nothing was added:
+        # Confirm failure through multiple means:
+        # - Error display message
+        # - manga-list number of items is unchanged
         #
-
-        # XXX FIXME XXX
-        # Work-around for #50
-        controller.driver.refresh()
-        controller.refresh()
-        # XXX END OF FIXME XXX
-
+        controller.sidebar.check_registration_error(do_wait=True)
+        # cancel registration to go back to the side-panels' manga-list
+        with controller.sidebar.focus():
+            cancel_btn = controller.driver.find_element_by_css_selector(
+                '#side-panel-adder > #add-cancel.button-add')
+            cancel_btn.click()
         registered = controller.sidebar.get_registered()
+        # Check the number of manga-list items is unchanged
         assert len(registered) == orig_n_items
         # Ensure the hard-coded name is part of the list
         assert functools.reduce(

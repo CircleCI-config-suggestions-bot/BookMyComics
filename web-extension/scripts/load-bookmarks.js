@@ -27,6 +27,16 @@ function emptyElem(elem) {
     }
 }
 
+function updateErrorDisplay(err) {
+    let disp = document.getElementById('error-display');
+    if (err !== null && err !== undefined && err !== '') {
+        disp.innerText = err.message;
+        disp.style.display = 'block';
+    } else {
+        disp.style.display = '';
+    }
+}
+
 function sendAliasRequest(comicId) {
     bmcDb.getComic(comicId, (err, comic) => {
         let label = '<unknown manga>';
@@ -141,6 +151,29 @@ BmcMangaList.prototype.onEntryDelete = function(ev) {
     window.top.postMessage(evData, '*');
 };
 
+BmcMangaList.prototype.generateSource = function(comic, source) {
+    const elm = document.createElement('div');
+    elm.classList.add('label-container');
+
+    const srcLink = document.createElement('div');
+    srcLink.classList.add('label');
+    srcLink.innerText = source.reader;
+    srcLink.bmcData = {
+        reader: source.reader,
+        name: source.name,
+    };
+    srcLink.onclick = this.onSourceClick.bind(this, comic, source);
+    elm.appendChild(srcLink);
+
+    const deleteSrcIcon = document.createElement('span');
+    deleteSrcIcon.classList.add('fa', 'fa-trash');
+    deleteSrcIcon.setAttribute('aria-hidden', 'true');
+    deleteSrcIcon.onclick = this.onSourceDelete.bind(this);
+    elm.appendChild(deleteSrcIcon);
+
+    return elm;
+};
+
 BmcMangaList.prototype.generateComic = function(comic) {
     const elm = document.createElement('div');
     elm.classList.toggle('mangaListItem');
@@ -149,7 +182,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
     const comicDiv = document.createElement('div');
     comicDiv.classList.add('label-container');
     comicDiv.onclick = this.onEntryClick.bind(this);
-    elm.appendChild(comicDiv);
+    elm.appendChild(comicDiv); // elm.comicDiv(0)
 
     const comicLabel = document.createElement('div');
     comicLabel.classList.add('label', 'rollingArrow');
@@ -157,60 +190,70 @@ BmcMangaList.prototype.generateComic = function(comic) {
     comicLabel.bmcData = {
         id: comic.id,
     };
-    comicDiv.appendChild(comicLabel);
+    comicDiv.appendChild(comicLabel); // elm.comicDiv(0).comicLabel(0)
 
     const deleteIcon = document.createElement('span');
     deleteIcon.classList.add('fa', 'fa-trash');
     deleteIcon.setAttribute('aria-hidden', 'true');
     deleteIcon.onclick = this.onEntryDelete.bind(this);
-    comicDiv.appendChild(deleteIcon);
+    comicDiv.appendChild(deleteIcon); // elm.comicDiv(0).deleteIcon(1)
 
     // Define the list of sources beneath the comic's Label
     const comicSrcList = document.createElement('div');
     comicSrcList.classList.toggle('nested');
-    elm.appendChild(comicSrcList);
+    elm.appendChild(comicSrcList); // elm.comicSrcList(1)
 
     comic.iterSources(source => {
-        const srcElem = document.createElement('div');
-        srcElem.classList.add('label-container');
-
-        const srcLink = document.createElement('div');
-        srcLink.classList.add('label');
-        srcLink.innerText = source.reader;
-        srcLink.bmcData = {
-            reader: source.reader,
-            name: source.name,
-        };
-        srcLink.onclick = this.onSourceClick.bind(this, comic, source);
-        srcElem.appendChild(srcLink);
-
-        const deleteSrcIcon = document.createElement('span');
-        deleteSrcIcon.classList.add('fa', 'fa-trash');
-        deleteSrcIcon.setAttribute('aria-hidden', 'true');
-        deleteSrcIcon.onclick = this.onSourceDelete.bind(this);
-        srcElem.appendChild(deleteSrcIcon);
-
-        comicSrcList.appendChild(srcElem);
+        // elm.comicSrcList(1).Comic(index)
+        comicSrcList.appendChild(this.generateSource(comic, source));
     });
 
     return elm;
 };
 
+// Beware, this function shall only be used to update an existing, complete and
+// displayed BMCMangaList.
+BmcMangaList.prototype.appendComic = function(comicDOM) {
+    this._node.insertBefore(comicDOM, this._node.lastChild);
+};
+
+BmcMangaList.prototype.refreshComic = function(comicDOM) {
+    let origElem = null;
+    for (let i = 0; i < this._node.children.length; ++i) {
+        // mangaList.mangaListItem.comicDiv.comicLabel.bmcData.id
+        if (this._node.children[i].children[0].children[0].bmcData.id
+                      === comicDOM.children[0].children[0].bmcData.id) {
+            // Replace the old comic entry by the new
+            this._node.replaceChild(comicDOM, this._node.children[i]);
+            break ;
+        }
+    }
+    if (origElem === null) {
+        LOGS.error('S73');
+        return ;
+    }
+};
+
 BmcMangaList.prototype.generate = function() {
     LOGS.log('S49');
-    var mangaList = document.getElementById('manga-list');
-
     // First, remove any child node, to ensure it's clean before we start
     // generating.
-    emptyElem(mangaList);
+    emptyElem(this._node);
 
     // Now that the parent is a clean slate, let's generate
     bmcDb.list((err, comics) => {
         comics.forEach(
-            comic => mangaList.appendChild(this.generateComic(comic))
+            comic => { this._node.appendChild(this.generateComic(comic)); }
         );
+
+        // Insert a last non-visible item, which acts as the "finalization" of the
+        // list loading. It is used by testing to identify when all items have been loaded.
+        var marker = document.createElement('span');
+        marker.id = 'manga-list-end-marker';
+        this._node.appendChild(marker);
     });
 };
+
 
 BmcMangaList.prototype.hideEntry = function(entry) {
     entry.style.display = 'none';
@@ -310,7 +353,8 @@ function addEvents(mangaList) {
             if (label.length < 1) {
                 return;
             }
-            showHideSidePanelAdder();
+            // Disable button for now, Callback will switch back to manga-list view
+            confirmBut.disabled = true;
             // Now do the actual registration.
             const evData = {
                 type: 'action',
@@ -334,8 +378,9 @@ function addEvents(mangaList) {
             sendAliasRequest(selected[0].bmcData.id);
             // We hide the current panel.
             showHideAddIntoExisting();
-            // We also hide the "adder" panel.
-            showHideSidePanelAdder();
+            // Disable confirm button, callback will switch back to manga-list
+            // view
+            confirmBut.disabled = true;
         };
     }
     var cancelExistingBut = document.getElementById('add-existing-cancel');
@@ -365,7 +410,11 @@ function addEvents(mangaList) {
     var bookmarkName = document.getElementById('bookmark-name');
     if (bookmarkName) {
         bookmarkName.oninput = function() {
-            confirmBut.disabled = this.value.trim().length === 0;
+            // Do various validity checks here, which may disable the confirm button:
+            bmcDb.checkLabelAvailability(this.value.trim(), err => { // ignore optional second param
+                updateErrorDisplay(err);
+                confirmBut.disabled = (err !== null) || (this.value.trim().length === 0);
+            });
         };
     }
 
@@ -422,6 +471,12 @@ function addEvents(mangaList) {
                   (evData.operation === 'Alias Comic' || evData.operation === 'Register Comic' ||
                    evData.operation === 'Delete Comic Source' || evData.operation === 'Delete Comic'),
         evData => {
+            if (evData.error) {
+                updateErrorDisplay(evData.error);
+                confirmBut.disabled = true;
+                // Skip acknowledgement, as this was an error.
+                return ;
+            }
             if (evData.operation.startsWith('Delete')) {
                 mangaList.isRegistered = false;
                 mangaList.currentComic = undefined;
@@ -436,6 +491,21 @@ function addEvents(mangaList) {
                     'source': evData.comicSource,
                     'name': evData.comicName,
                 };
+
+                bmcDb.getComic(evData.comicId, (err, comic) => {
+                    if (comic === null) {
+                        LOGS.error('S74');
+                        return ;
+                    }
+                    let comicDOM = mangaList.generateComic(comic);
+                    if (evData.operation.startsWith('Register')) { // 'RegisterComic'
+                        // Insert the new entry before the end-of-listing marker // (made for testing purposes)
+                        mangaList.appendComic(comicDOM);
+                    } else { // 'Alias Comic'
+                        mangaList.refreshComic(comicDOM);
+                    }
+                    showHideSidePanelAdder();
+                });
             }
         });
 
@@ -624,6 +694,7 @@ function showHideSidePanelAdder() {
         sidePanel.setAttribute('prev', '');
         sidePanelAdder.style.display = '';
         hideBut.style.display = '';
+        updateErrorDisplay(null); // Reset error display and hide it
         if (prev === '') {
             // Force iframe to non full size.
             window.top.postMessage({'type': 'action', 'action': 'IFrameResize'}, '*');

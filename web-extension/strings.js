@@ -253,6 +253,12 @@ function Localization(lang = DEFAULT_LANG) {
         'S72': {
             'en': 'Label provided is not unique (it already exists)',
         },
+        'S73': {
+            'en': 'Could not find MangaList Item to refresh in the DOM (it was supposed to exist).',
+        },
+        'S74': {
+            'en': 'Could not find Comic from the storage, while it was recently registered/aliased.',
+        },
     };
 }
 
