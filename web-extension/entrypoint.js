@@ -38,10 +38,10 @@ if (window.top === window) {
             LOGS.log('S42');
             engine.setup();
         } else {
-            console.error("Comic information couldn't be retrieved");
+            LOGS.error('E0022');
         }
-    } catch(err) {
-        console.error(err);
+    } catch (err) {
+        LOGS.error('E0023', {'error': err});
     }
 } else {
     LOGS.warn('E0003', {'iframe': window.location});

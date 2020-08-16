@@ -259,6 +259,12 @@ function Localization(lang = DEFAULT_LANG) {
         'S74': {
             'en': 'Could not find Comic from the storage, while it was recently registered/aliased.',
         },
+        'S75': {
+            'en': 'Comic information couldn\'t be retrieved',
+        },
+        'S76': {
+            'en': 'Failed to initialize the extension: {error}',
+        },
     };
 }
 
@@ -302,6 +308,8 @@ function Logs(level = INFO) {
         'E0019': 'S62',
         'E0020': 'S63',
         'E0021': 'S65',
+        'E0022': 'S75',
+        'E0023': 'S76',
     };
 }
 

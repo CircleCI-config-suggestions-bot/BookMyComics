@@ -57,7 +57,11 @@ BmcSources.prototype._load = function(origin) {
     });
 }
 
+// `preventRecurse` argument is optional, its value is `false` by default.
 BmcSources.prototype._fromOrigin = function(origin, preventRecurse) {
+    if (typeof preventRecurse === "undefined") {
+        preventRecurse = false;
+    }
     const readerKey = Object.keys(this._readers).find(key => origin.indexOf(key) !== -1);
     if (!this._readers.hasOwnProperty(readerKey)) {
         this._load(origin);
