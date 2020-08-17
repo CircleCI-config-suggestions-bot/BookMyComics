@@ -63,7 +63,7 @@
             "all_frames": true
         },
         {
-            "matches": ["*://mangahere.us/*"],
+            "matches": ["http://mangahere.us/*"],
             "js": [
                 "strings.js",
                 "utils.js",
