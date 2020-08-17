@@ -22,7 +22,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://www.mangaeden.com/en/en-manga/*"],
+            "matches": ["https://www.mangaeden.com/*"],
             "js": [
                 "strings.js",
                 "utils.js",
@@ -40,7 +40,7 @@
             "all_frames": true
         },
         {
-            "matches": ["*://fanfox.net/manga/*"],
+            "matches": ["*://fanfox.net/*"],
             "js": [
                 "strings.js",
                 "utils.js",
