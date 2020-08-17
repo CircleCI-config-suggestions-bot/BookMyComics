@@ -25,21 +25,23 @@ if (window.top === window) {
     try {
         var sources = new BmcSources();
         var comic = sources.getInfos(window.location.host, window.location.pathname, document.body);
+        // Log about comic info retrieval
         if (comic) {
             LOGS.log('S41', {'data': JSON.stringify(comic)});
-            /*
-             * And finally, we can instanciate the engine and let it spawn the UI:
-             *
-             * NOTE: We're defaulting "response.resource.comic" here in case it
-             * could be undefined. This would mean that we're not on a manga
-             * page, but browsing the reader's website.
-             */
-            const engine = new BmcEngine(window.location.origin, window.location.hostname, comic);
-            LOGS.log('S42');
-            engine.setup();
         } else {
             LOGS.error('E0022');
         }
+        /*
+         * Now, we can instanciate the engine and let it spawn the UI:
+         *
+         * NOTE: Wether we got a comicInfo or not should not prevent spawning
+         * the Engine & UI, as the sidepanel should appear whenever the user
+         * loads a supported website's page. The underlying BmcEngine
+         * constructor defaults `comic` if null.
+         */
+        const engine = new BmcEngine(window.location.origin, window.location.hostname, comic /* may be null */);
+        engine.setup();
+        LOGS.log('S42');
     } catch (err) {
         LOGS.error('E0023', {'error': err});
     }

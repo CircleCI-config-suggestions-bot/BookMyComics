@@ -155,7 +155,7 @@ function Localization(lang = DEFAULT_LANG) {
         //     'en': 'BookMyComics: entrypoint.js: sendmessage failed: err={err}',
         // },
         'S41': {
-            'en': 'BookMyComics: entrypoint.js: sendmessage completed: data={data}',
+            'en': 'BookMyComics: entrypoint.js: retrieved ComicInfo={data}',
         },
         'S42': {
             'en': 'Instanciated BmcEngine',
