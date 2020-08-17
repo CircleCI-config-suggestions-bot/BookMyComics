@@ -75,6 +75,10 @@ jobs:
           command: ./node_modules/.bin/web-ext -s web-extension/ lint
 
   build-ext:
+    parameters:
+      browser:
+        type: string
+        default: firefox
     executor: node-testing
     working_directory: ~/repo
     steps:
@@ -84,10 +88,10 @@ jobs:
 
       - run:
           name: Setup manifest
-          command: python3 setup.py ${BROWSER}
+          command: python3 setup.py << parameters.browser >>
       - run:
           name: Package Extension
-          command: /tmp/ws/node_modules/.bin/web-ext -s web-extension/ -a ./build-${BROWSER}/ build
+          command: /tmp/ws/node_modules/.bin/web-ext -s web-extension/ -a ./build-<< parameters.browser >>/ build
 
       # Persist packed webext for functional testing
       - persist_to_workspace:
@@ -124,6 +128,9 @@ jobs:
             - venv/
 
   test-browser-common:
+    parameters:
+      browser:
+        type: string
     executor: browser-testing
     working_directory: ~/repo
     steps:
@@ -137,14 +144,19 @@ jobs:
       - run:
           name: Define Packed Webext path
           command: |
-            echo 'export WEBEXT_DIR="/tmp/ws/build-${BROWSER}"' >> $BASH_ENV
+            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
       - run:
           name: Setup manifest
-          command: python3 setup.py ${BROWSER}
+          command: python3 setup.py << parameters.browser >>
       - run:
-          command: /tmp/ws/venv/bin/pytest -v -s --browser ${BROWSER} tests/func/test_00*
+          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> tests/func/test_00*
 
   test-browser:
+    parameters:
+      browser:
+        type: string
+      reader:
+        type: string
     executor: browser-testing
     working_directory: ~/repo
     steps:
@@ -158,12 +170,12 @@ jobs:
       - run:
           name: Define Packed Webext path
           command: |
-            echo 'export WEBEXT_DIR="/tmp/ws/build-${BROWSER}"' >> $BASH_ENV
+            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
       - run:
           name: Setup manifest
-          command: python3 setup.py ${BROWSER}
+          command: python3 setup.py << parameters.browser >>
       - run:
-          command: /tmp/ws/venv/bin/pytest -v -s --browser ${BROWSER} --reader ${READER} --ignore-glob='tests/func/test_00*'
+          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> --reader << parameters.reader >> --ignore-glob='tests/func/test_00*'
 
 workflows:
   version: 2
@@ -173,28 +185,29 @@ workflows:
       - setup-testing
       - build-ext: &build_ff
           name: build-firefox
-          context: BookMyComics-Firefox
           requires:
           - basic-testing
       - test-browser-common: &common_ff
           name: test-firefox-common
-          context: BookMyComics-Firefox
+          browser: firefox
           requires:
           - build-firefox
           - setup-testing
       - test-browser:
           name: test-firefox-mangaeden
-          context: BookMyComics-Firefox-MangaEden
+          browser: firefox
+          reader: mangaeden
           requires: &ff_requirements
           - test-firefox-common
       - test-browser-common: &common_chrome
           name: test-chrome-common
-          context: BookMyComics-Chrome
+          browser: chrome
           requires:
           - setup-testing
       - test-browser:
           name: test-chrome-mangaeden
-          context: BookMyComics-Chrome-MangaEden
+          browser: chrome
+          reader: mangaeden
           requires: &chrome_requirements
           - test-chrome-common
   weekly:
@@ -212,50 +225,62 @@ workflows:
       - test-browser-common: *common_ff
       - test-browser:
           name: test-firefox-mangaeden
-          context: BookMyComics-Firefox-MangaEden
+          browser: firefox
+          reader: mangaeden
           requires: *ff_requirements
       - test-browser:
           name: test-firefox-mangahere
-          context: BookMyComics-Firefox-MangaHere
+          browser: firefox
+          reader: mangahere
           requires: *ff_requirements
       - test-browser:
           name: test-firefox-mangareader
-          context: BookMyComics-Firefox-MangaReader
+          browser: firefox
+          reader: mangareader
           requires: *ff_requirements
       - test-browser:
           name: test-firefox-fanfox
-          context: BookMyComics-Firefox-FanFox
+          browser: firefox
+          reader: mangafox
           requires: *ff_requirements
       - test-browser:
-          name: test-chrome-mangakakalot
-          context: BookMyComics-Chrome-MangaKakalot
+          name: test-firefox-mangakakalot
+          browser: firefox
+          reader: mangakakalot
           requires: *ff_requirements
       - test-browser:
-          name: test-chrome-manganelo
-          context: BookMyComics-Chrome-MangaNelo
+          name: test-firefox-manganelo
+          browser: firefox
+          reader: manganelo
           requires: *ff_requirements
       - test-browser-common: *common_chrome
       - test-browser:
           name: test-chrome-mangaeden
-          context: BookMyComics-Chrome-MangaEden
+          browser: chrome
+          reader: mangaeden
           requires: *chrome_requirements
       - test-browser:
           name: test-chrome-mangahere
-          context: BookMyComics-Chrome-MangaHere
+          browser: chrome
+          reader: mangahere
           requires: *chrome_requirements
       - test-browser:
           name: test-chrome-mangareader
-          context: BookMyComics-Chrome-MangaReader
+          browser: chrome
+          reader: mangareader
           requires: *chrome_requirements
       - test-browser:
           name: test-chrome-fanfox
-          context: BookMyComics-Chrome-FanFox
+          browser: chrome
+          reader: mangafox
           requires: *chrome_requirements
       - test-browser:
           name: test-chrome-mangakakalot
-          context: BookMyComics-Chrome-MangaKakalot
+          browser: chrome
+          reader: mangakakalot
           requires: *chrome_requirements
       - test-browser:
           name: test-chrome-manganelo
-          context: BookMyComics-Chrome-MangaNelo
+          browser: chrome
+          reader: manganelo
           requires: *chrome_requirements
