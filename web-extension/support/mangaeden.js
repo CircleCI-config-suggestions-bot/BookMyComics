@@ -1,7 +1,7 @@
 function MangaEdenComPlugin() {
 }
 
-MangaEdenComPlugin.prototype.parseURL = function(url) {
+MangaEdenComPlugin.prototype.getInfos = function(url) {
     var parts = url.split('/').filter(s => s.length !== 0);
 
     if (parts.length < 3) {

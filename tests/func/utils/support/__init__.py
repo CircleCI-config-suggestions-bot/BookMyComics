@@ -18,10 +18,14 @@ from .mangaeden import MangaEdenDriver
 from .mangahere import MangaHereDriver
 from .mangareader import MangaReaderDriver
 from .mangafox import FanFoxDriver
+from .mangakakalot import MangaKakalotDriver
+from .manganelo import MangaNeloDriver
 
 drivers = {
     MangaEdenDriver.name: MangaEdenDriver,
     MangaHereDriver.name: MangaHereDriver,
     MangaReaderDriver.name: MangaReaderDriver,
     FanFoxDriver.name: FanFoxDriver,
+    MangaKakalotDriver.name: MangaKakalotDriver,
+    MangaNeloDriver.name: MangaNeloDriver,
 }

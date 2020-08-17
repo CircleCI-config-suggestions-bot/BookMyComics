@@ -1,7 +1,7 @@
 function MangaHereUsPlugin() {
 }
 
-MangaHereUsPlugin.prototype.parseURL = function(url) {
+MangaHereUsPlugin.prototype.getInfos = function(url) {
     var parts = url.split('/').filter(s => s.length !== 0);
 
     var name = null;

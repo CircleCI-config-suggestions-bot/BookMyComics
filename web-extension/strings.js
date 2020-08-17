@@ -151,11 +151,11 @@ function Localization(lang = DEFAULT_LANG) {
         'S39': {
             'en': 'BookMyComics: entrypoint.js: Requesting URL parsing from background script',
         },
-        'S40': {
-            'en': 'BookMyComics: entrypoint.js: sendmessage failed: err={err}',
-        },
+        // 'S40': {
+        //     'en': 'BookMyComics: entrypoint.js: sendmessage failed: err={err}',
+        // },
         'S41': {
-            'en': 'BookMyComics: entrypoint.js: sendmessage completed: data={data}',
+            'en': 'BookMyComics: entrypoint.js: retrieved ComicInfo={data}',
         },
         'S42': {
             'en': 'Instanciated BmcEngine',
@@ -241,9 +241,9 @@ function Localization(lang = DEFAULT_LANG) {
         'S68': {
             'en': 'BookMyComics: background-engine.js: Handling URL:Generate Request: {evData}',
         },
-        'S69': {
-            'en': 'BookMyComics: background-engine.js: Handling URL:Parse Request: {evData}',
-        },
+        // 'S69': {
+        //     'en': 'BookMyComics: background-engine.js: Handling URL:Parse Request: {evData}',
+        // },
         'S70': {
             'en': 'Missing operation in BmcUI.makeNotification',
         },
@@ -258,6 +258,21 @@ function Localization(lang = DEFAULT_LANG) {
         },
         'S74': {
             'en': 'Could not find Comic from the storage, while it was recently registered/aliased.',
+        },
+        'S75': {
+            'en': 'Comic information couldn\'t be retrieved',
+        },
+        'S76': {
+            'en': 'Failed to initialize the extension: {error}',
+        },
+        'S77': {
+            'en': 'Cannot get manga title',
+        },
+        'S78': {
+            'en': 'Cannot get manga ID from chapters list',
+        },
+        'S79': {
+            'en': 'Cannot get manga home page nor its name',
         },
     };
 }
@@ -282,7 +297,7 @@ function Logs(level = INFO) {
     this.ERRORS = {
         // 'E0000': 'S1',
         'E0001': 'S2',
-        'E0002': 'S40',
+        // 'E0002': 'S40',
         'E0003': 'S43',
         'E0004': 'S29',
         // 'E0005': 'S6',
@@ -302,6 +317,8 @@ function Logs(level = INFO) {
         'E0019': 'S62',
         'E0020': 'S63',
         'E0021': 'S65',
+        'E0022': 'S75',
+        'E0023': 'S76',
     };
 }
 

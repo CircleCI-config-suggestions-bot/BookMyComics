@@ -14,13 +14,15 @@
             "support/mangafox.js",
             "support/mangahere.js",
             "support/mangareader.js",
+            "support/manganelo.js",
+            "support/mangakakalot.js",
             "sources.js",
             "background-engine.js"
         ]
     },
     "content_scripts": [
         {
-            "matches": ["https://www.mangaeden.com/en/en-manga/*"],
+            "matches": ["https://www.mangaeden.com/*"],
             "js": [
                 "strings.js",
                 "utils.js",
@@ -31,12 +33,14 @@
                 "engine/messaging.js",
                 "engine/ui.js",
                 "engine/bookmycomics.js",
+                "sources.js",
+                "support/mangaeden.js",
                 "entrypoint.js"
             ],
             "all_frames": true
         },
         {
-            "matches": ["*://fanfox.net/manga/*"],
+            "matches": ["*://fanfox.net/*"],
             "js": [
                 "strings.js",
                 "utils.js",
@@ -47,12 +51,14 @@
                 "engine/messaging.js",
                 "engine/ui.js",
                 "engine/bookmycomics.js",
+                "sources.js",
+                "support/mangafox.js",
                 "entrypoint.js"
             ],
             "all_frames": true
         },
         {
-            "matches": ["*://mangahere.us/*"],
+            "matches": ["http://mangahere.us/*"],
             "js": [
                 "strings.js",
                 "utils.js",
@@ -63,6 +69,8 @@
                 "engine/messaging.js",
                 "engine/ui.js",
                 "engine/bookmycomics.js",
+                "sources.js",
+                "support/mangahere.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -79,6 +87,44 @@
                 "engine/messaging.js",
                 "engine/ui.js",
                 "engine/bookmycomics.js",
+                "sources.js",
+                "support/mangareader.js",
+                "entrypoint.js"
+            ],
+            "all_frames": true
+        },
+        {
+            "matches": ["*://manganelo.com/*"],
+            "js": [
+                "strings.js",
+                "utils.js",
+                "compat.js",
+                "engine/utils.js",
+                "engine/storage.js",
+                "engine/datamodel.js",
+                "engine/messaging.js",
+                "engine/ui.js",
+                "engine/bookmycomics.js",
+                "sources.js",
+                "support/manganelo.js",
+                "entrypoint.js"
+            ],
+            "all_frames": true
+        },
+        {
+            "matches": ["*://mangakakalot.com/*"],
+            "js": [
+                "strings.js",
+                "utils.js",
+                "compat.js",
+                "engine/utils.js",
+                "engine/storage.js",
+                "engine/datamodel.js",
+                "engine/messaging.js",
+                "engine/ui.js",
+                "engine/bookmycomics.js",
+                "sources.js",
+                "support/mangakakalot.js",
                 "entrypoint.js"
             ],
             "all_frames": true
