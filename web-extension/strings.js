@@ -278,11 +278,11 @@ function Localization(lang = DEFAULT_LANG) {
 }
 
 Localization.prototype.getString = function(s, add) {
-    if (!this.STRINGS.hasOwnProperty(s)) {
+    if (!Object.prototype.hasOwnProperty.call(this.STRINGS, s)) {
         return 'Unknown string: ' + s;
     }
     let lang = this.lang;
-    if (!this.STRINGS[s].hasOwnProperty(lang)) {
+    if (!Object.prototype.hasOwnProperty.call(this.STRINGS[s], lang)) {
         lang = 'en';
     }
     if (add) {
@@ -354,10 +354,10 @@ Logs.prototype.error = function(e, add) {
 
 Logs.prototype.getString = function(e, add) {
     if (e.startsWith('E')) {
-        if (this.ERRORS.hasOwnProperty(e)) {
+        if (Object.prototype.hasOwnProperty.call(this.ERRORS, e)) {
             return `[${e}] ${LOCALIZATION.getString(this.ERRORS[e], add)}`;
         }
-    } else if (LOCALIZATION.STRINGS.hasOwnProperty(e)) {
+    } else if (Object.prototype.hasOwnProperty.call(LOCALIZATION.STRINGS, e)) {
         return LOCALIZATION.getString(e, add);
     }
     return this.getString('E0000', e);

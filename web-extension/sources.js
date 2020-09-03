@@ -65,7 +65,7 @@ BmcSources.prototype._fromOrigin = function(origin, preventRecurse) {
         preventRecurse = false;
     }
     const readerKey = Object.keys(this._readers).find(key => origin.indexOf(key) !== -1);
-    if (!this._readers.hasOwnProperty(readerKey)) {
+    if (!Object.prototype.hasOwnProperty.call(this._readers, readerKey)) {
         this._load(origin);
         if (preventRecurse !== true) {
             return this._fromOrigin(origin, true);
