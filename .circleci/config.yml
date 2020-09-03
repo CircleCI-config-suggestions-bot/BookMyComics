@@ -71,6 +71,9 @@ jobs:
           name: Lint functions to replace
           command: python ./tools/functions_replacement.py
       - run:
+          name: Setup manifest (FF)
+          command: python3 setup.py firefox
+      - run:
           name: Lint Extension
           command: ./node_modules/.bin/web-ext -s web-extension/ lint
 
