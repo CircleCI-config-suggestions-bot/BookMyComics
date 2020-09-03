@@ -1,11 +1,12 @@
 /* globals
     LOCALIZATION:readable
     LOGS:readable
+    BmcStorage:readable
 */
 
 /**
  * This class handles the keyScheme for all data stored by BookMyComics
- * It relies on a persistent "state", stored and retrieved using the Storage
+ * It relies on a persistent "state", stored and retrieved using the BmcStorage
  * class.
  *
  * Currently, four types of data are available:
@@ -21,7 +22,7 @@
  *
  * @class KeyScheme
  *
- * @param {Storage} storage - the storage manager object
+ * @param {BmcStorage} storage - the storage manager object
  */
 function KeyScheme(storage) {
     this._storage = storage;
@@ -124,7 +125,7 @@ KeyScheme.prototype.nextId = function(cb) {
  *
  * @param {Number} comicId - Unique ID of the registered Comic
  *
- * @return {String} Storage key matching the comicId
+ * @return {String} BmcStorage key matching the comicId
  *
  */
 KeyScheme.prototype.keyFromId = function(comicId) {
@@ -412,7 +413,7 @@ BmcComic.prototype.addSource = function(source) {
  * @class BmcDataAPI
  */
 function BmcDataAPI() {
-    this._data = new Storage();
+    this._data = new BmcStorage();
     this._scheme = new KeyScheme(this._data);
 }
 
