@@ -9,9 +9,9 @@
  * It thus handles transparently both standard callback-based asynchronous
  * calls, as well as promises.
  *
- * @class Storage
+ * @class BmcStorage
  */
-function Storage() {
+function BmcStorage() {
     var bro = getBrowser();
     this._area = bro.storage.sync;
     if (!this._area) {
@@ -19,7 +19,7 @@ function Storage() {
     }
 }
 
-Storage.prototype._handleCb = function(cb, err, data) {
+BmcStorage.prototype._handleCb = function(cb, err, data) {
     if (err && (typeof err !== 'object' || Object.keys(err).length > 0)) {
         return cb(err);
     }
@@ -36,7 +36,7 @@ Storage.prototype._handleCb = function(cb, err, data) {
  *
  * @return {undefined}
  */
-Storage.prototype.get = function(keys, cb) {
+BmcStorage.prototype.get = function(keys, cb) {
     return compat.storage.get(
         this._area,
         keys,
@@ -53,7 +53,7 @@ Storage.prototype.get = function(keys, cb) {
  *
  * @return {undefined}
  */
-Storage.prototype.set = function(dataset, cb) {
+BmcStorage.prototype.set = function(dataset, cb) {
     return compat.storage.set(
         this._area,
         dataset,
@@ -71,7 +71,7 @@ Storage.prototype.set = function(dataset, cb) {
  *
  * @return {undefined}
  */
-Storage.prototype.remove = function(keys, cb) {
+BmcStorage.prototype.remove = function(keys, cb) {
     return compat.storage.remove(
         this._area,
         keys,
@@ -87,7 +87,7 @@ Storage.prototype.remove = function(keys, cb) {
  *
  * @return {undefined}
  */
-Storage.prototype.clear = function(cb) {
+BmcStorage.prototype.clear = function(cb) {
     return compat.storage.clear(
         this._area,
         err => this._handleCb(cb, err)
