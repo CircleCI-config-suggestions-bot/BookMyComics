@@ -64,4 +64,4 @@ class MangaKakalotDriver(SupportBase):
         parts = self._driver.find_elements(by=By.CSS_SELECTOR, value=".breadcrumb > p > span > a > span")
         if len(parts) < 2:
             return None
-        return parts[1].inner_text
+        return parts[1].text
