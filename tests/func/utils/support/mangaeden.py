@@ -13,7 +13,7 @@ class MangaEdenDriver(SupportBase):
     def __init__(self, *args, **kwargs):
         super(MangaEdenDriver, self).__init__(*args, **kwargs)
 
-    @retry(abort=True)
+    @retry(abort=True, retries=10)
     def load_random(self, predicate=None):
         # First, go to the website
         self._driver.get('https://www.mangaeden.com/')

@@ -26,7 +26,7 @@ class MangaHereDriver(SupportBase):
                 return btn
         return None
 
-    @retry(abort=True)
+    @retry(abort=True, retries=10)
     def load_random(self, predicate=None):
         base_url = 'http://mangahere.us'
         # First, go to the website
