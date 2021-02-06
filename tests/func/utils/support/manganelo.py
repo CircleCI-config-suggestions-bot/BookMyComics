@@ -70,4 +70,4 @@ class MangaNeloDriver(SupportBase):
             value=".panel-breadcrumb > .a-h")
         if len(parts) < 2:
             return None
-        return parts[1].inner_text
+        return parts[1].text
