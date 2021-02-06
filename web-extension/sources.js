@@ -1,8 +1,6 @@
 /* globals
-    MangaEdenComPlugin:readable
     FanFoxNetPlugin:readable
     MangaHereUsPlugin:readable
-    MangaReaderNetPlugin:readable
     MangaNeloComPlugin:readable
     MangaKakalotComPlugin:readable
 */
@@ -23,20 +21,12 @@ function BmcSources() {
 BmcSources.prototype._load = function(origin) {
     const sourceDescs = [
         {
-            key: 'www.mangaeden.com',
-            makeObj: () => new MangaEdenComPlugin(),
-        },
-        {
             key: 'fanfox.net',
             makeObj: () => new FanFoxNetPlugin(),
         },
         {
             key: 'mangahere.us',
             makeObj: () => new MangaHereUsPlugin(),
-        },
-        {
-            key: 'www.mangareader.net',
-            makeObj: () => new MangaReaderNetPlugin(),
         },
         {
             key: 'manganelo.com',

@@ -10,10 +10,8 @@
             "compat.js",
             "engine/utils.js",
             "engine/messaging.js",
-            "support/mangaeden.js",
             "support/mangafox.js",
             "support/mangahere.js",
-            "support/mangareader.js",
             "support/manganelo.js",
             "support/mangakakalot.js",
             "sources.js",
@@ -22,7 +20,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://www.mangaeden.com/*"],
+            "matches": ["*://manganelo.com/*"],
             "js": [
                 "strings.js",
                 "utils.js",
@@ -34,7 +32,7 @@
                 "engine/ui.js",
                 "engine/bookmycomics.js",
                 "sources.js",
-                "support/mangaeden.js",
+                "support/manganelo.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -71,42 +69,6 @@
                 "engine/bookmycomics.js",
                 "sources.js",
                 "support/mangahere.js",
-                "entrypoint.js"
-            ],
-            "all_frames": true
-        },
-        {
-            "matches": ["*://www.mangareader.net/*"],
-            "js": [
-                "strings.js",
-                "utils.js",
-                "compat.js",
-                "engine/utils.js",
-                "engine/storage.js",
-                "engine/datamodel.js",
-                "engine/messaging.js",
-                "engine/ui.js",
-                "engine/bookmycomics.js",
-                "sources.js",
-                "support/mangareader.js",
-                "entrypoint.js"
-            ],
-            "all_frames": true
-        },
-        {
-            "matches": ["*://manganelo.com/*"],
-            "js": [
-                "strings.js",
-                "utils.js",
-                "compat.js",
-                "engine/utils.js",
-                "engine/storage.js",
-                "engine/datamodel.js",
-                "engine/messaging.js",
-                "engine/ui.js",
-                "engine/bookmycomics.js",
-                "sources.js",
-                "support/manganelo.js",
                 "entrypoint.js"
             ],
             "all_frames": true

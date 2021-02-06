@@ -15,10 +15,8 @@
             "compat.js",
             "engine/utils.js",
             "engine/messaging.js",
-            "support/mangaeden.js",
             "support/mangafox.js",
             "support/mangahere.js",
-            "support/mangareader.js",
             "support/manganelo.js",
             "support/mangakakalot.js",
             "sources.js",
@@ -27,7 +25,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://www.mangaeden.com/*"],
+            "matches": ["*://manganelo.com/*"],
             "js": [
                 "strings.js",
                 "utils.js",
@@ -38,7 +36,7 @@
                 "engine/messaging.js",
                 "engine/ui.js",
                 "engine/bookmycomics.js",
-                "support/mangaeden.js",
+                "support/manganelo.js",
                 "sources.js",
                 "entrypoint.js"
             ],
@@ -75,42 +73,6 @@
                 "engine/ui.js",
                 "engine/bookmycomics.js",
                 "support/mangahere.js",
-                "sources.js",
-                "entrypoint.js"
-            ],
-            "all_frames": true
-        },
-        {
-            "matches": ["*://www.mangareader.net/*"],
-            "js": [
-                "strings.js",
-                "utils.js",
-                "compat.js",
-                "engine/utils.js",
-                "engine/storage.js",
-                "engine/datamodel.js",
-                "engine/messaging.js",
-                "engine/ui.js",
-                "engine/bookmycomics.js",
-                "support/mangareader.js",
-                "sources.js",
-                "entrypoint.js"
-            ],
-            "all_frames": true
-        },
-        {
-            "matches": ["*://manganelo.com/*"],
-            "js": [
-                "strings.js",
-                "utils.js",
-                "compat.js",
-                "engine/utils.js",
-                "engine/storage.js",
-                "engine/datamodel.js",
-                "engine/messaging.js",
-                "engine/ui.js",
-                "engine/bookmycomics.js",
-                "support/manganelo.js",
                 "sources.js",
                 "entrypoint.js"
             ],

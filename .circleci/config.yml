@@ -197,9 +197,9 @@ workflows:
           - build-firefox
           - setup-testing
       - test-browser:
-          name: test-firefox-mangaeden
+          name: test-firefox-manganelo
           browser: firefox
-          reader: mangaeden
+          reader: manganelo
           requires: &ff_requirements
           - test-firefox-common
       - test-browser-common: &common_chrome
@@ -208,9 +208,9 @@ workflows:
           requires:
           - setup-testing
       - test-browser:
-          name: test-chrome-mangaeden
+          name: test-chrome-manganelo
           browser: chrome
-          reader: mangaeden
+          reader: manganelo
           requires: &chrome_requirements
           - test-chrome-common
   weekly:
@@ -224,22 +224,13 @@ workflows:
     jobs:
       - basic-testing
       - setup-testing
+      # Firefox tests
       - build-ext: *build_ff
       - test-browser-common: *common_ff
-      - test-browser:
-          name: test-firefox-mangaeden
-          browser: firefox
-          reader: mangaeden
-          requires: *ff_requirements
       - test-browser:
           name: test-firefox-mangahere
           browser: firefox
           reader: mangahere
-          requires: *ff_requirements
-      - test-browser:
-          name: test-firefox-mangareader
-          browser: firefox
-          reader: mangareader
           requires: *ff_requirements
       - test-browser:
           name: test-firefox-fanfox
@@ -256,21 +247,12 @@ workflows:
           browser: firefox
           reader: manganelo
           requires: *ff_requirements
+      # Chrome tests
       - test-browser-common: *common_chrome
-      - test-browser:
-          name: test-chrome-mangaeden
-          browser: chrome
-          reader: mangaeden
-          requires: *chrome_requirements
       - test-browser:
           name: test-chrome-mangahere
           browser: chrome
           reader: mangahere
-          requires: *chrome_requirements
-      - test-browser:
-          name: test-chrome-mangareader
-          browser: chrome
-          reader: mangareader
           requires: *chrome_requirements
       - test-browser:
           name: test-chrome-fanfox

@@ -26,7 +26,7 @@ class MangaHereDriver(SupportBase):
                 return btn
         return None
 
-    @retry(abort=True)
+    @retry(abort=True, retries=10)
     def load_random(self, predicate=None):
         base_url = 'http://mangahere.us'
         # First, go to the website
@@ -38,6 +38,8 @@ class MangaHereDriver(SupportBase):
 
         # Check that the link is within the current website since this reader
         # is known to redirect us toward another once in a while
+        # Note that such links might also be hidden behind what seems to be a
+        # proper link to a mangahere.us page..
         while len(latest_chapters):
             chapter = latest_chapters.pop(random.randrange(len(latest_chapters)))
             if base_url in chapter.get_attribute('href'):
@@ -57,6 +59,10 @@ class MangaHereDriver(SupportBase):
         # Ensure we've indeed loaded a new page
         if self._driver.current_url == (base_url + "/home"):
             raise RetriableError('Could not load a random "latest" chapter')
+        # So we re-check, as previously mentionned, that we were not redirected
+        # to another website (which would break the principle of this test)
+        if base_url not in self._driver.current_url:
+            raise RetriableError('Could not load a random "latest" chapter: Redirected to other website')
 
         # Validate predicate if specified
         if predicate and not predicate(self):
