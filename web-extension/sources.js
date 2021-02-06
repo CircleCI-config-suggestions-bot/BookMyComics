@@ -3,6 +3,7 @@
     MangaHereUsPlugin:readable
     MangaNeloComPlugin:readable
     MangaKakalotComPlugin:readable
+    IsekaiScansComPlugin:readable
 */
 
 /**
@@ -36,6 +37,10 @@ BmcSources.prototype._load = function(origin) {
             key: 'mangakakalot.com',
             makeObj: () => new MangaKakalotComPlugin(),
         },
+        {
+            key: 'isekaiscan.com',
+            makeObj:() => new IsekaiScansComPlugin(),
+        }
     ];
     sourceDescs.forEach(desc => {
         if (desc.key === origin) {
