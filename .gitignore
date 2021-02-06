@@ -7,3 +7,4 @@ geckodriver.log
 *.pyc
 **.DS_Store
 web-extension/manifest.json
+package-lock.json
