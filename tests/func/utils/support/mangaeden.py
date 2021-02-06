@@ -3,6 +3,9 @@ import random
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 
 from . import SupportBase
 from .. import RetriableError, retry
@@ -19,6 +22,8 @@ class MangaEdenDriver(SupportBase):
         self._driver.get('https://www.mangaeden.com/')
 
         # Retrieve the generated random link, which is generated after loading the page
+        # ...But ensure presence first..
+        WebDriverWait(self._driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'randomize')))
         btn = self._driver.find_element(by=By.CLASS_NAME, value='randomize')
         href = btn.get_attribute('href')
         self._driver.get(href)
