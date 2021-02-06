@@ -237,11 +237,6 @@ workflows:
           reader: mangahere
           requires: *ff_requirements
       - test-browser:
-          name: test-firefox-mangareader
-          browser: firefox
-          reader: mangareader
-          requires: *ff_requirements
-      - test-browser:
           name: test-firefox-fanfox
           browser: firefox
           reader: mangafox
@@ -266,11 +261,6 @@ workflows:
           name: test-chrome-mangahere
           browser: chrome
           reader: mangahere
-          requires: *chrome_requirements
-      - test-browser:
-          name: test-chrome-mangareader
-          browser: chrome
-          reader: mangareader
           requires: *chrome_requirements
       - test-browser:
           name: test-chrome-fanfox

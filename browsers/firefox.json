@@ -18,7 +18,6 @@
             "support/mangaeden.js",
             "support/mangafox.js",
             "support/mangahere.js",
-            "support/mangareader.js",
             "support/manganelo.js",
             "support/mangakakalot.js",
             "sources.js",
@@ -75,24 +74,6 @@
                 "engine/ui.js",
                 "engine/bookmycomics.js",
                 "support/mangahere.js",
-                "sources.js",
-                "entrypoint.js"
-            ],
-            "all_frames": true
-        },
-        {
-            "matches": ["*://www.mangareader.net/*"],
-            "js": [
-                "strings.js",
-                "utils.js",
-                "compat.js",
-                "engine/utils.js",
-                "engine/storage.js",
-                "engine/datamodel.js",
-                "engine/messaging.js",
-                "engine/ui.js",
-                "engine/bookmycomics.js",
-                "support/mangareader.js",
                 "sources.js",
                 "entrypoint.js"
             ],

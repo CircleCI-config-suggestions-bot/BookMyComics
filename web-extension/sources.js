@@ -2,7 +2,6 @@
     MangaEdenComPlugin:readable
     FanFoxNetPlugin:readable
     MangaHereUsPlugin:readable
-    MangaReaderNetPlugin:readable
     MangaNeloComPlugin:readable
     MangaKakalotComPlugin:readable
 */
@@ -33,10 +32,6 @@ BmcSources.prototype._load = function(origin) {
         {
             key: 'mangahere.us',
             makeObj: () => new MangaHereUsPlugin(),
-        },
-        {
-            key: 'www.mangareader.net',
-            makeObj: () => new MangaReaderNetPlugin(),
         },
         {
             key: 'manganelo.com',
