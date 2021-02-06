@@ -14,14 +14,12 @@ class SupportBase:
     def next_page(self):
         pass
 
-from .mangaeden import MangaEdenDriver
 from .mangahere import MangaHereDriver
 from .mangafox import FanFoxDriver
 from .mangakakalot import MangaKakalotDriver
 from .manganelo import MangaNeloDriver
 
 drivers = {
-    MangaEdenDriver.name: MangaEdenDriver,
     MangaHereDriver.name: MangaHereDriver,
     FanFoxDriver.name: FanFoxDriver,
     MangaKakalotDriver.name: MangaKakalotDriver,
