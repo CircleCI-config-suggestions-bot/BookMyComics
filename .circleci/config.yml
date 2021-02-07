@@ -29,7 +29,7 @@ executors:
     docker:
       # Using CIRCLECI's python image with browsers testing baked in
       # (geckodriver & chrome are relevant for us)
-      - image: circleci/python:3.7.3-stretch-browsers
+      - image: circleci/python:3.7-buster-browsers
 
 jobs:
   basic-testing:
