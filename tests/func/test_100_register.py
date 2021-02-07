@@ -134,3 +134,43 @@ class TestRegister:
         assert functools.reduce(
             lambda c, r: c+(r.get_name() == name),
             registered, 0) == 1
+
+    @staticmethod
+    def test_load(controller, reader_driver):
+        """
+            Validates that the registered comic can be properly loaded by
+            clicking on the SidePanel's associated entry.
+        """
+        #
+        # Do the registration first
+        #
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('sample100-load')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        #
+        # With registration confirmed, Record URL/chapter/page
+        # then back to home page
+        #
+        expected_url = controller.driver.current_url
+        expected_name = reader_driver.get_comic_name()
+        expected_chapter = reader_driver.get_chapter()
+        expected_page = reader_driver.get_page()
+        reader_driver.home()
+        # Required, as consequence of going Home
+        controller.refresh()
+
+        #
+        # Click on the SidePanel entry to load the comic, and check
+        # url/chapter/page
+        #
+        controller.sidebar.load('sample100-load')
+        assert controller.driver.current_url == expected_url
+        assert reader_driver.get_comic_name() == expected_name
+        assert reader_driver.get_chapter() == expected_chapter
+        assert reader_driver.get_page() == expected_page
