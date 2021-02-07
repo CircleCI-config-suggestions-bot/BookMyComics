@@ -300,6 +300,7 @@ class BmcController:
             as well as the stored data, to ensure no overlap/conflict between
             functional tests.
         """
+        self.refresh()
         with self.sidebar.focus():
             self._wrapped_driver.clear_storage()
         self.refresh()
