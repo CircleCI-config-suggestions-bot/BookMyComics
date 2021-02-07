@@ -97,10 +97,16 @@ class FanFoxDriver(SupportBase):
         super(FanFoxDriver, self).__init__(*args, **kwargs)
         self._navbar = FanFoxNavBar(self._wrapper)
 
+    def home(self):
+        """
+            Loads the homepage of the reader
+        """
+        self._driver.get('https://fanfox.net')
+
     @retry(abort=True)
     def load_random(self, predicate=None):
         # First, go to the website
-        self._driver.get('https://fanfox.net')
+        self.home()
 
         # Then randomly choose one of the "latest" chapters from the home page
         latest_chapters = self._driver.find_elements_by_css_selector(
@@ -155,3 +161,17 @@ class FanFoxDriver(SupportBase):
         if 'fanfox.net' not in url:
             return None
         return url.split('/')[4]
+
+    def get_chapter(self):
+        """
+            Returns the chapter number of the current loaded page.
+        """
+        parts = [p for p in self._driver.current_url.split('/') if p]
+        return int(parts[2].replace('c', ''))
+
+    def get_page(self):
+        """
+            Returns the page number of the current loaded page.
+        """
+        parts = [p for p in self._driver.current_url.split('/') if p]
+        return int(parts[3].replace('.html', ''))

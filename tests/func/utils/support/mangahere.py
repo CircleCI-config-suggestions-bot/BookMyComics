@@ -26,11 +26,19 @@ class MangaHereDriver(SupportBase):
                 return btn
         return None
 
+    def home(self):
+        """
+            Loads the homepage of the reader
+        """
+        base_url = 'http://mangahere.us'
+        self._driver.get(base_url + "/home")
+
     @retry(abort=True, retries=10)
     def load_random(self, predicate=None):
         base_url = 'http://mangahere.us'
         # First, go to the website
-        self._driver.get(base_url + "/home")
+        self.home()
+        home_url = self._driver.current_url
         # Then randomly choose one of the "latest" chapters from the home page
         latest_chapters = self._driver.find_elements(by=By.CLASS_NAME, value='xanh')
         if not latest_chapters:
@@ -57,7 +65,7 @@ class MangaHereDriver(SupportBase):
         except NoSuchElementException:
             raise RetriableError('No page selector found in manga chapter')
         # Ensure we've indeed loaded a new page
-        if self._driver.current_url == (base_url + "/home"):
+        if self._driver.current_url == home_url:
             raise RetriableError('Could not load a random "latest" chapter')
         # So we re-check, as previously mentionned, that we were not redirected
         # to another website (which would break the principle of this test)
@@ -117,3 +125,16 @@ class MangaHereDriver(SupportBase):
         if 'mangahere.us' not in url:
             return None
         return '-'.join(url.split('/')[3].split('-')[:-2])
+
+    def get_chapter(self):
+        """
+            Returns the chapter number of the current loaded page.
+        """
+        parts = [p for p in self._driver.current_url.split('/') if p]
+        return int(parts[0].split('-chapter-')[1])
+
+    def get_page(self):
+        """
+            Returns the page number of the current loaded page.
+        """
+        return int(self._driver.current_url.split('page=')[1].split('&')[0])
