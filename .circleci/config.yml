@@ -29,7 +29,7 @@ executors:
     docker:
       # Using CIRCLECI's python image with browsers testing baked in
       # (geckodriver & chrome are relevant for us)
-      - image: circleci/python:3.7.3-stretch-browsers
+      - image: circleci/python:3.7-buster-browsers
 
 jobs:
   basic-testing:
@@ -116,17 +116,16 @@ jobs:
             - v2-pydeps-{{ .Branch }}-
             - v2-pydeps-
       - run: pip3 install virtualenv
-      - run: virtualenv venv
-      - run: ./venv/bin/pip3 install -r requirements.txt
-      - run: virtualenv --relocatable ./venv
+      - run: virtualenv /tmp/ws/venv
+      - run: /tmp/ws/venv/bin/pip3 install -r requirements.txt
       - save_cache:
           paths:
-            - venv
+            - /tmp/ws/venv
           key: v2-pydeps-{{ checksum "requirements.txt" }}
 
       # Persist required files for functional testing to the workspace
       - persist_to_workspace:
-          root: .
+          root: /tmp/ws/
           paths:
             - venv/
 

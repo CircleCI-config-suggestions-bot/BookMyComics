@@ -17,6 +17,18 @@ class FrameFocus:
         self._driver.switch_to.parent_frame()
 
 
+class ItemSource:
+    """
+        Represents a registered Comic's source in the DOM.
+        This class provide utilities to manipulate and check sources.
+    """
+    def __init__(self, sidepanel, dom_element):
+        self._panel = sidepanel
+        self._dom = dom_element
+
+    def click(self):
+        self._dom.find_element_by_css_selector('.label').click()
+
 class RegisteredItem:
     """
         Represents and allows to control a registered manga/comic in the
@@ -35,7 +47,10 @@ class RegisteredItem:
 
     def list_sources(self):
         """ Returns a list of ItemSource for the RegisteredItem """
-        pass
+        if self.folded:
+            self.toggle()
+        items = self._dom.find_elements_by_css_selector('.nested > .label-container')
+        return [ItemSource(self._panel, item) for item in items]
 
     def delete(self):
         """
@@ -50,21 +65,16 @@ class RegisteredItem:
             Return a boolean telling whether the RegisteredItem's sources are
             unrolled of rolled-up
         """
-        pass
+        fold_marker = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
+        return "rollingArrow-down" not in fold_marker.get_attribute("class")
 
-    def unfold(self):
+    def toggle(self):
         """
-            Unrolls (unfold) all the sources for the RegisteredItem, effectively
-            showing them.
+            Unrolls (unfold) or Rolls (fold) all the sources for the
+            RegisteredItem, effectively showing/hiding them.
         """
-        pass
-
-    def fold(self):
-        """
-            Rolls-up (fold) all the sources for the RegisteredItem, effectively
-            hiding them.
-        """
-        pass
+        fold_marker = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
+        fold_marker.click()
 
 
 class SideBarController:
@@ -208,6 +218,28 @@ class SideBarController:
                 pass
         return [RegisteredItem(self, i) for i in items]
 
+    def load(self, name):
+        """
+            Searches a registered entry matching `name`, and loads the
+            associated comic by clicking on the element.
+        """
+        with FrameFocus(self._driver, self._frame):
+            # Need to find something to wait on, which ensures that the
+            # list is already populated by the web extension's JS
+            def list_is_visible_and_loaded(driver):
+                elm = driver.find_element(by=By.ID, value='manga-list')
+                marker = driver.find_element(by=By.ID, value='manga-list-end-marker')
+                return elm and elm.value_of_css_property('display') == 'block' and marker
+            WebDriverWait(self._driver, 10).until(list_is_visible_and_loaded)
+            items = self._driver.find_elements_by_css_selector('#manga-list .mangaListItem')
+            # Need to check text at relative xpath: '.label-container .label .inner_text'
+            selected = [i for i in items if i.find_element_by_css_selector('.label-container .label').text == name]
+            assert len(selected) == 1
+            comic = RegisteredItem(self, selected[0])
+            sources = comic.list_sources()
+            assert len(sources) == 1
+            sources[0].click()
+
 
 class BmcController:
 
@@ -268,6 +300,7 @@ class BmcController:
             as well as the stored data, to ensure no overlap/conflict between
             functional tests.
         """
+        self.refresh()
         with self.sidebar.focus():
             self._wrapped_driver.clear_storage()
         self.refresh()

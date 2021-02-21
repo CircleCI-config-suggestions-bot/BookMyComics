@@ -15,9 +15,15 @@ class MangaKakalotDriver(SupportBase):
 
     def _get_mangas(self):
         # First, go to the website
-        self._driver.get('https://mangakakalot.com/')
+        self.home()
         # Retrieve the generated random link, which is generated after loading the page
         return self._driver.find_elements(by=By.CLASS_NAME, value='itemupdate')
+
+    def home(self):
+        """
+            Loads the homepage of the reader
+        """
+        self._driver.get('https://mangakakalot.com/')
 
     @retry(abort=True)
     def load_random(self, predicate=None):
@@ -65,3 +71,19 @@ class MangaKakalotDriver(SupportBase):
         if len(parts) < 2:
             return None
         return parts[1].text
+
+    def get_chapter(self):
+        """
+            Returns the chapter number of the current loaded page.
+        """
+        parts = [p for p in self._driver.current_url.split('/') if p]
+        return int(parts[-1].split('_')[-1])
+
+    @staticmethod
+    def get_page():
+        """
+            Returns the page number of the current loaded page.
+            As MangaKakalot does not offer per-page browsing, we always return
+            None
+        """
+        return None
