@@ -3,7 +3,7 @@
     MangaHereUsPlugin:readable
     MangaNeloComPlugin:readable
     MangaKakalotComPlugin:readable
-    IsekaiScansComPlugin:readable
+    IsekaiScanComPlugin:readable
 */
 
 /**
@@ -39,7 +39,7 @@ BmcSources.prototype._load = function(origin) {
         },
         {
             key: 'isekaiscan.com',
-            makeObj:() => new IsekaiScansComPlugin(),
+            makeObj:() => new IsekaiScanComPlugin(),
         }
     ];
     sourceDescs.forEach(desc => {

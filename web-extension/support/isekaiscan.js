@@ -1,12 +1,11 @@
 /* globals
     LOGS:readable
-    cloneArray
 */
 
 function IsekaiScanComPlugin() {
 }
 
-IsekaiScansComPlugin.prototype.getInfos = function(url, doc) {
+IsekaiScanComPlugin.prototype.getInfos = function(url, doc) {
     let parts = url.split('/').filter(s => s.length !== 0);
 
     if (parts.length < 2) {
@@ -42,7 +41,7 @@ IsekaiScansComPlugin.prototype.getInfos = function(url, doc) {
     return { common: { name, chapter, page: null }, id, homeUrl };
 };
 
-IsekaiScansComPlugin.prototype.computeURL = function(comicInfo) {
+IsekaiScanComPlugin.prototype.computeURL = function(comicInfo) {
     if (comicInfo.common.chapter) {
         return `https://isekaiscan.com/manga/${comicInfo.id}/chapter-${comicInfo.common.chapter}`;
     }
