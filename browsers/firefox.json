@@ -19,6 +19,7 @@
             "support/mangahere.js",
             "support/manganelo.js",
             "support/mangakakalot.js",
+            "support/isekaiscan.js",
             "sources.js",
             "background-engine.js"
         ]
@@ -91,6 +92,24 @@
                 "engine/ui.js",
                 "engine/bookmycomics.js",
                 "support/mangakakalot.js",
+                "sources.js",
+                "entrypoint.js"
+            ],
+            "all_frames": true
+        },
+        {
+            "matches": ["*://isekaiscan.com/*"],
+            "js": [
+                "strings.js",
+                "utils.js",
+                "compat.js",
+                "engine/utils.js",
+                "engine/storage.js",
+                "engine/datamodel.js",
+                "engine/messaging.js",
+                "engine/ui.js",
+                "engine/bookmycomics.js",
+                "support/isekaiscan.js",
                 "sources.js",
                 "entrypoint.js"
             ],

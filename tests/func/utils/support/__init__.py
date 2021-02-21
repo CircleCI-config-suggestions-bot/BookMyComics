@@ -18,10 +18,12 @@ from .mangahere import MangaHereDriver
 from .mangafox import FanFoxDriver
 from .mangakakalot import MangaKakalotDriver
 from .manganelo import MangaNeloDriver
+from .isekaiscan import IsekaiScanDriver
 
 drivers = {
     MangaHereDriver.name: MangaHereDriver,
     FanFoxDriver.name: FanFoxDriver,
     MangaKakalotDriver.name: MangaKakalotDriver,
     MangaNeloDriver.name: MangaNeloDriver,
+    IsekaiScanDriver.name: IsekaiScanDriver,
 }

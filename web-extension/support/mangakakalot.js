@@ -26,7 +26,7 @@ MangaKakalotComPlugin.prototype.getInfos = function(url, doc) {
             return null;
         }
         let id = elem.getAttribute('href').split('/chapter/')[0].split('/')[0];
-        return { common: { name, chapter: null, page: null }, id, homeUrl: url };
+        return { common: { name, chapter: null, page: null }, id, homeUrl: url.split('mangakakalot.com')[1] };
     }
     // chapter page
     let elems = cloneArray(doc.querySelectorAll('.breadcrumb > p > span > a'));
