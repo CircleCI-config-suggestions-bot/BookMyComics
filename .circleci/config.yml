@@ -227,11 +227,6 @@ workflows:
       - build-ext: *build_ff
       - test-browser-common: *common_ff
       - test-browser:
-          name: test-firefox-mangahere
-          browser: firefox
-          reader: mangahere
-          requires: *ff_requirements
-      - test-browser:
           name: test-firefox-fanfox
           browser: firefox
           reader: mangafox
@@ -253,11 +248,6 @@ workflows:
           requires: *ff_requirements
       # Chrome tests
       - test-browser-common: *common_chrome
-      - test-browser:
-          name: test-chrome-mangahere
-          browser: chrome
-          reader: mangahere
-          requires: *chrome_requirements
       - test-browser:
           name: test-chrome-fanfox
           browser: chrome
