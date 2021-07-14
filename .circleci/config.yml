@@ -196,9 +196,9 @@ workflows:
           - build-firefox
           - setup-testing
       - test-browser:
-          name: test-firefox-manganelo
+          name: test-firefox-manganato
           browser: firefox
-          reader: manganelo
+          reader: manganato
           requires: &ff_requirements
           - test-firefox-common
       - test-browser-common: &common_chrome
@@ -207,9 +207,9 @@ workflows:
           requires:
           - setup-testing
       - test-browser:
-          name: test-chrome-manganelo
+          name: test-chrome-manganato
           browser: chrome
-          reader: manganelo
+          reader: manganato
           requires: &chrome_requirements
           - test-chrome-common
   weekly:
@@ -242,9 +242,9 @@ workflows:
           reader: mangakakalot
           requires: *ff_requirements
       - test-browser:
-          name: test-firefox-manganelo
+          name: test-firefox-manganato
           browser: firefox
-          reader: manganelo
+          reader: manganato
           requires: *ff_requirements
       - test-browser:
           name: test-firefox-isekaiscan
@@ -269,9 +269,9 @@ workflows:
           reader: mangakakalot
           requires: *chrome_requirements
       - test-browser:
-          name: test-chrome-manganelo
+          name: test-chrome-manganato
           browser: chrome
-          reader: manganelo
+          reader: manganato
           requires: *chrome_requirements
       - test-browser:
           name: test-chrome-isekaiscan

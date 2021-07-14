@@ -1,7 +1,7 @@
 /* globals
     FanFoxNetPlugin:readable
     MangaHereUsPlugin:readable
-    MangaNeloComPlugin:readable
+    MangaNatoComPlugin:readable
     MangaKakalotComPlugin:readable
     IsekaiScanComPlugin:readable
 */
@@ -30,8 +30,12 @@ BmcSources.prototype._load = function(origin) {
             makeObj: () => new MangaHereUsPlugin(),
         },
         {
-            key: 'manganelo.com',
-            makeObj: () => new MangaNeloComPlugin(),
+            key: 'manganato.com',
+            makeObj: () => new MangaNatoComPlugin(),
+        },
+        {
+            key: 'readmanganato.com',
+            makeObj: () => new MangaNatoComPlugin(),
         },
         {
             key: 'mangakakalot.com',
