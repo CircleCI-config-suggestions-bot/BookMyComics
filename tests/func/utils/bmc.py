@@ -223,6 +223,7 @@ class SideBarController:
             Searches a registered entry matching `name`, and loads the
             associated comic by clicking on the element.
         """
+        prev_url = self._driver.current_url
         with FrameFocus(self._driver, self._frame):
             # Need to find something to wait on, which ensures that the
             # list is already populated by the web extension's JS
@@ -239,6 +240,7 @@ class SideBarController:
             sources = comic.list_sources()
             assert len(sources) == 1
             sources[0].click()
+        WebDriverWait(self._driver, 10).until(EC.url_changes(prev_url))
 
 
 class BmcController:
