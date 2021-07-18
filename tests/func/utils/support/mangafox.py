@@ -102,6 +102,8 @@ class FanFoxDriver(SupportBase):
             Loads the homepage of the reader
         """
         self._driver.get('https://fanfox.net')
+        # Bypass a common popup acting as a layer on top of the page...
+        self._driver.find_element_by_css_selector('.lb-win-con > a > img').click()
 
     @retry(abort=True)
     def load_random(self, predicate=None):
@@ -167,11 +169,14 @@ class FanFoxDriver(SupportBase):
             Returns the chapter number of the current loaded page.
         """
         parts = [p for p in self._driver.current_url.split('/') if p]
-        return int(parts[2].replace('c', ''))
+        return int(parts[4].replace('c', ''))
 
     def get_page(self):
         """
             Returns the page number of the current loaded page.
         """
         parts = [p for p in self._driver.current_url.split('/') if p]
-        return int(parts[3].replace('.html', ''))
+        pparts = parts[5].split('#')
+        if len(pparts):
+            return int(pparts[1].replace('ipg', ''))
+        return int(pparts[0].replace('.html', ''))
