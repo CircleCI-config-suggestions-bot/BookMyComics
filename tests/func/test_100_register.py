@@ -136,6 +136,7 @@ class TestRegister:
             registered, 0) == 1
 
     @staticmethod
+    @pytest.mark.skip(reason='WIP')
     def test_load(controller, reader_driver):
         """
             Validates that the registered comic can be properly loaded by

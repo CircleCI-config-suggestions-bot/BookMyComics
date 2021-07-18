@@ -11,8 +11,7 @@
             "engine/utils.js",
             "engine/messaging.js",
             "support/mangafox.js",
-            "support/mangahere.js",
-            "support/manganelo.js",
+            "support/manganato.js",
             "support/mangakakalot.js",
             "support/isekaiscan.js",
             "sources.js",
@@ -21,7 +20,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["*://manganelo.com/*"],
+            "matches": ["*://manganato.com/*"],
             "js": [
                 "strings.js",
                 "utils.js",
@@ -33,7 +32,25 @@
                 "engine/ui.js",
                 "engine/bookmycomics.js",
                 "sources.js",
-                "support/manganelo.js",
+                "support/manganato.js",
+                "entrypoint.js"
+            ],
+            "all_frames": true
+        },
+        {
+            "matches": ["*://readmanganato.com/*"],
+            "js": [
+                "strings.js",
+                "utils.js",
+                "compat.js",
+                "engine/utils.js",
+                "engine/storage.js",
+                "engine/datamodel.js",
+                "engine/messaging.js",
+                "engine/ui.js",
+                "engine/bookmycomics.js",
+                "sources.js",
+                "support/manganato.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -52,24 +69,6 @@
                 "engine/bookmycomics.js",
                 "sources.js",
                 "support/mangafox.js",
-                "entrypoint.js"
-            ],
-            "all_frames": true
-        },
-        {
-            "matches": ["http://mangahere.us/*"],
-            "js": [
-                "strings.js",
-                "utils.js",
-                "compat.js",
-                "engine/utils.js",
-                "engine/storage.js",
-                "engine/datamodel.js",
-                "engine/messaging.js",
-                "engine/ui.js",
-                "engine/bookmycomics.js",
-                "sources.js",
-                "support/mangahere.js",
                 "entrypoint.js"
             ],
             "all_frames": true

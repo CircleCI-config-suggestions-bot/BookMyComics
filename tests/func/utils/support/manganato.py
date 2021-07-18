@@ -7,11 +7,11 @@ from selenium.webdriver.common.action_chains import ActionChains
 from . import SupportBase
 from .. import RetriableError, retry
 
-class MangaNeloDriver(SupportBase):
-    name = "manganelo"
+class MangaNatoDriver(SupportBase):
+    name = "manganato"
 
     def __init__(self, *args, **kwargs):
-        super(MangaNeloDriver, self).__init__(*args, **kwargs)
+        super(MangaNatoDriver, self).__init__(*args, **kwargs)
 
     def _get_mangas(self):
         # First, go to the website
@@ -23,7 +23,7 @@ class MangaNeloDriver(SupportBase):
         """
             Loads the homepage of the reader
         """
-        self._driver.get('https://manganelo.com/')
+        self._driver.get('https://manganato.com/')
 
     @retry(abort=True)
     def load_random(self, predicate=None):
@@ -36,7 +36,7 @@ class MangaNeloDriver(SupportBase):
             if len(chapters) < 3:
                 continue
             href = chapters[1].get_attribute('href')
-            if '://manganelo.com/' not in href or href in to_ignore:
+            if (('://manganato.com/' not in href and '://readmanganato.com/' not in href) or href in to_ignore):
                 continue
             self._driver.get(href)
             # Validate predicate if specified
@@ -69,7 +69,7 @@ class MangaNeloDriver(SupportBase):
             Extracts the comic name from the current URL
         """
         url = self._driver.current_url
-        if 'manganelo.com' not in url:
+        if 'readmanganato.com' not in url:
             return None
         parts = self._driver.find_elements(
             by=By.CSS_SELECTOR,
@@ -83,13 +83,13 @@ class MangaNeloDriver(SupportBase):
             Returns the chapter number of the current loaded page.
         """
         parts = [p for p in self._driver.current_url.split('/') if p]
-        return int(parts[-1].split('_')[-1])
+        return int(parts[-1].split('-')[-1])
 
     @staticmethod
     def get_page():
         """
             Returns the page number of the current loaded page.
-            As Manganelo does not offer per-page browsing, we always return
+            As Manganato does not offer per-page browsing, we always return
             None
         """
         return None

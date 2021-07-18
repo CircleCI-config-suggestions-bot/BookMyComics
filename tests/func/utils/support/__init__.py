@@ -14,16 +14,14 @@ class SupportBase:
     def next_page(self):
         pass
 
-from .mangahere import MangaHereDriver
 from .mangafox import FanFoxDriver
 from .mangakakalot import MangaKakalotDriver
-from .manganelo import MangaNeloDriver
+from .manganato import MangaNatoDriver
 from .isekaiscan import IsekaiScanDriver
 
 drivers = {
-    MangaHereDriver.name: MangaHereDriver,
     FanFoxDriver.name: FanFoxDriver,
     MangaKakalotDriver.name: MangaKakalotDriver,
-    MangaNeloDriver.name: MangaNeloDriver,
+    MangaNatoDriver.name: MangaNatoDriver,
     IsekaiScanDriver.name: IsekaiScanDriver,
 }

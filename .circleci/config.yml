@@ -196,9 +196,9 @@ workflows:
           - build-firefox
           - setup-testing
       - test-browser:
-          name: test-firefox-manganelo
+          name: test-firefox-manganato
           browser: firefox
-          reader: manganelo
+          reader: manganato
           requires: &ff_requirements
           - test-firefox-common
       - test-browser-common: &common_chrome
@@ -207,9 +207,9 @@ workflows:
           requires:
           - setup-testing
       - test-browser:
-          name: test-chrome-manganelo
+          name: test-chrome-manganato
           browser: chrome
-          reader: manganelo
+          reader: manganato
           requires: &chrome_requirements
           - test-chrome-common
   weekly:
@@ -227,11 +227,6 @@ workflows:
       - build-ext: *build_ff
       - test-browser-common: *common_ff
       - test-browser:
-          name: test-firefox-mangahere
-          browser: firefox
-          reader: mangahere
-          requires: *ff_requirements
-      - test-browser:
           name: test-firefox-fanfox
           browser: firefox
           reader: mangafox
@@ -242,9 +237,9 @@ workflows:
           reader: mangakakalot
           requires: *ff_requirements
       - test-browser:
-          name: test-firefox-manganelo
+          name: test-firefox-manganato
           browser: firefox
-          reader: manganelo
+          reader: manganato
           requires: *ff_requirements
       - test-browser:
           name: test-firefox-isekaiscan
@@ -253,11 +248,6 @@ workflows:
           requires: *ff_requirements
       # Chrome tests
       - test-browser-common: *common_chrome
-      - test-browser:
-          name: test-chrome-mangahere
-          browser: chrome
-          reader: mangahere
-          requires: *chrome_requirements
       - test-browser:
           name: test-chrome-fanfox
           browser: chrome
@@ -269,9 +259,9 @@ workflows:
           reader: mangakakalot
           requires: *chrome_requirements
       - test-browser:
-          name: test-chrome-manganelo
+          name: test-chrome-manganato
           browser: chrome
-          reader: manganelo
+          reader: manganato
           requires: *chrome_requirements
       - test-browser:
           name: test-chrome-isekaiscan
