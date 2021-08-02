@@ -3,18 +3,20 @@ name: Bug report
 about: Report a bug so that we can improve the software
 title: ''
 labels: bug
-assignees: Joacchim
+assignees: ''
 
 ---
 
-**Describe the bug**
+**Environment**
+Browser: Chrome/Firefox/?
+
+**Description**
 A clear and concise description of what the bug is, including the unexpected behavior.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**To Reproduce**
-Steps to reproduce the erroneous behavior:
+**Reproduction scenario**
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -22,17 +24,3 @@ Steps to reproduce the erroneous behavior:
 
 **Screenshots**
 If applicable, add screenshots to help explain and illustrate your problem.
-
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
