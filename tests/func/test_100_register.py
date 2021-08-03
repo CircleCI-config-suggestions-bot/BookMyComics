@@ -174,3 +174,37 @@ class TestRegister:
         assert reader_driver.get_comic_name() == expected_name
         assert reader_driver.get_chapter() == expected_chapter
         assert reader_driver.get_page() == expected_page
+
+    @staticmethod
+    def test_registration_name(controller, reader_driver):
+        """
+            Validates that the comic registration goes well, and that the new
+            comic has its name in the sidebar and not the name of another comic.
+        """
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('sample100')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        first_url = controller.driver.current_url
+        while True:
+            reader_driver.load_random()
+            if first_url != controller.driver.current_url:
+                break
+
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('sample101')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        to_find = {'sample100', 'sample101'}
+        for comic in controller.sidebar.get_registered():
+            to_find.remove(comic.get_name())
+        assert len(to_find) == 0
