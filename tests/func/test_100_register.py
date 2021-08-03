@@ -179,7 +179,8 @@ class TestRegister:
     def test_registration_name(controller, reader_driver):
         """
             Validates that the comic registration goes well, and that the new
-            comic has its name in the sidebar and not the name of another comic.
+            comic has its name in the sidebar and not the name of another
+            comic.
         """
         reader_driver.load_random()
         assert controller.sidebar.loaded
@@ -196,6 +197,7 @@ class TestRegister:
             if first_url != controller.driver.current_url:
                 break
 
+        controller.refresh()
         assert controller.sidebar.loaded
         if controller.sidebar.hidden:
             controller.sidebar.toggle()
@@ -205,6 +207,9 @@ class TestRegister:
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
         to_find = {'sample100', 'sample101'}
+        counts = {}
         for comic in controller.sidebar.get_registered():
-            to_find.remove(comic.get_name())
-        assert len(to_find) == 0
+            counts[comic.get_name()] = counts.get(comic.get_name(), 0) + 1
+        for expected_name in to_find:
+            assert expected_name in counts.keys()
+            assert counts[expected_name] == 1
