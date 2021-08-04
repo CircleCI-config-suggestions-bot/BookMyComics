@@ -161,13 +161,14 @@ BmcEngine.prototype._memoizeComic = function () {
     });
 };
 
-BmcEngine.prototype._forceMemoizeComic = function () {
+BmcEngine.prototype._forceMemoizeComic = function (cb) {
     // If memoization is ongoing, wait for the end of it before forcing a new
     // memoization.
     if (this._comic.memoizing) {
         LOGS.log('S3');
-        this.addEventListener(this.events.load, () => this._forceMemoizeComic(), {once: true});
-        return this._memoizeComic();
+        this.addEventListener(this.events.load, () => this._forceMemoizeComic(cb), {once: true});
+        this._memoizeComic();
+        return ;
     }
 
     LOGS.log('S4');
@@ -177,6 +178,7 @@ BmcEngine.prototype._forceMemoizeComic = function () {
     if (this._comic.name) {
         this.addEventListener(this.events.load, () => {
             LOGS.log('S5');
+            cb();
         }, {once: true});
         this._memoizeComic();
     }
@@ -248,7 +250,8 @@ BmcEngine.prototype.register = function(label, cb) {
     return this._db.registerComic(label, this._comic.reader, this._comic.info, err => {
         LOGS.debug('S11', {'err': err});
         if (!err) {
-            this._forceMemoizeComic();
+            this._forceMemoizeComic(() => cb());
+            return ;
         }
         return cb(err);
     });
@@ -268,7 +271,8 @@ BmcEngine.prototype.alias = function(comicId, cb) {
                      'manga': this._comic.name});
     return this._db.aliasComic(comicId, this._comic.reader, this._comic.info, err => {
         if (!err) {
-            this._forceMemoizeComic();
+            this._forceMemoizeComic(() => cb());
+            return ;
         }
         return cb(err);
     });
@@ -293,7 +297,8 @@ BmcEngine.prototype.delete = function(comicId, reader, name, cb) {
     // removed the Comic/Source matching the current page)
     const completeDelete = err => {
         if (!err) {
-            this._forceMemoizeComic();
+            this._forceMemoizeComic(() => cb());
+            return ;
         }
         return cb(err);
     };
