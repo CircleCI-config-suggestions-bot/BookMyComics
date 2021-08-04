@@ -181,6 +181,7 @@ class SideBarController:
             self.start_registration_nofocus()
             input_field = self._driver.find_element_by_css_selector(
                 '#side-panel-adder > #bookmark-name')
+            input_field.clear()
             input_field.send_keys(display_name)
             cfrm_btn = self._driver.find_element_by_css_selector(
                 '#side-panel-adder > #add-confirm.button-add')

@@ -17,6 +17,7 @@ const bmcDb = new BmcDataAPI();
 
 function BmcMangaList() {
     this._node = document.getElementById('manga-list');
+    this._comic = null;
 }
 
 function emptyElem(elem) {
@@ -292,6 +293,14 @@ BmcMangaList.prototype.filter = function(filterStr) {
     }
 };
 
+BmcMangaList.prototype.askComicInformation = function() {
+    const evData = {
+        type: 'query',
+        action: 'comic information',
+    };
+    window.top.postMessage(evData, '*');
+};
+
 function showDeleteButton() {
     displayButton(document.getElementById('delete-but'));
     document.getElementById('register-but').style.display = '';
@@ -309,6 +318,14 @@ function displayButton(btn) {
     if (panel && btn && panel.style.display !== 'block') {
         btn.style.display = 'block';
     }
+}
+
+function changeConfirmButtonStatus(confirmBut, value) {
+    // Do various validity checks here, which may disable the confirm button:
+    bmcDb.checkLabelAvailability(value.trim(), err => { // ignore optional second param
+        updateErrorDisplay(err);
+        confirmBut.disabled = (err !== null) || (value.trim().length === 0);
+    });
 }
 
 function addEvents(mangaList) {
@@ -412,11 +429,7 @@ function addEvents(mangaList) {
     var bookmarkName = document.getElementById('bookmark-name');
     if (bookmarkName) {
         bookmarkName.oninput = function() {
-            // Do various validity checks here, which may disable the confirm button:
-            bmcDb.checkLabelAvailability(this.value.trim(), err => { // ignore optional second param
-                updateErrorDisplay(err);
-                confirmBut.disabled = (err !== null) || (this.value.trim().length === 0);
-            });
+            changeConfirmButtonStatus(confirmBut, this.value);
         };
         bookmarkName.onkeyup = function(event) {
             // We check if "ENTER" was pressed.
@@ -477,8 +490,11 @@ function addEvents(mangaList) {
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'notification' &&
-                  (evData.operation === 'Alias Comic' || evData.operation === 'Register Comic' ||
-                   evData.operation === 'Delete Comic Source' || evData.operation === 'Delete Comic'),
+                  (evData.operation === 'Alias Comic'
+                    || evData.operation === 'Register Comic'
+                    || evData.operation === 'Delete Comic Source'
+                    || evData.operation === 'Delete Comic'
+                    || evData.operation === 'Comic Information'),
         evData => {
             if (evData.error) {
                 updateErrorDisplay(evData.error);
@@ -486,7 +502,13 @@ function addEvents(mangaList) {
                 // Skip acknowledgement, as this was an error.
                 return ;
             }
-            if (evData.operation.startsWith('Delete')) {
+            if (evData.operation === 'Comic Information') {
+                if (typeof evData.comicName !== 'undefined') {
+                    mangaList._comic = evData.comicName;
+                } else {
+                    mangaList._comic = null;
+                }
+            } else if (evData.operation.startsWith('Delete')) {
                 mangaList.isRegistered = false;
                 mangaList.currentComic = undefined;
                 regBtn.style.display = delBtn.style.display;
@@ -521,6 +543,8 @@ function addEvents(mangaList) {
     // Now that we're ready, we can ask to the UI handler to check if we have to open the sidebar
     // or not.
     window.top.postMessage({'type': 'action', 'action': 'CheckSidebar'}, '*');
+    // Ask for the current comic information.
+    mangaList.askComicInformation();
 }
 
 var mangaList = new BmcMangaList();
@@ -727,9 +751,13 @@ function showHideSidePanelAdder() {
 
         sidePanel.style.display = 'none';
         sidePanelAdder.style.display = 'block';
-        bookmarkName.value = '';
-        bookmarkName.focus();
         confirmBut.disabled = true;
+        bookmarkName.value = '';
+        if (mangaList._comic !== null) {
+            bookmarkName.value = mangaList._comic;
+            changeConfirmButtonStatus(confirmBut, bookmarkName.value);
+        }
+        bookmarkName.focus();
         regBtn.style.display = '';
         delBtn.style.display = '';
         hideBut.style.display = 'none';
