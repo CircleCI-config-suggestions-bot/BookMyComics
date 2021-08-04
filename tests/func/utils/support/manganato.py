@@ -38,6 +38,9 @@ class MangaNatoDriver(SupportBase):
             href = chapters[1].get_attribute('href')
             if (('://manganato.com/' not in href and '://readmanganato.com/' not in href) or href in to_ignore):
                 continue
+            url_parts = [p for p in href.split('/') if p]
+            if len(url_parts[-1].split('-')[-1].split('.')) > 1:
+                continue
             self._driver.get(href)
             # Validate predicate if specified
             if predicate and not predicate(self):
