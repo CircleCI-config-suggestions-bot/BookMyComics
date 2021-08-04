@@ -1,5 +1,6 @@
 import functools
 import pytest
+from selenium.webdriver.common.keys import Keys
 
 
 class TestRegister:
@@ -20,6 +21,27 @@ class TestRegister:
             reg_btn = controller.driver.find_element_by_css_selector(
                 'body > div#register-but')
             assert reg_btn.is_displayed()
+
+    @staticmethod
+    def test_enter_key_bookmark_name_validation(controller, reader_driver):
+        """
+            Validates that pressing the "ENTER" key on the "bookmark-name"
+            input is like clicking on the "confirm" button.
+        """
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        assert len(controller.sidebar.get_registered()) == 0
+        with controller.sidebar.focus():
+            controller.sidebar.start_registration_nofocus()
+            bookmark_input = controller.driver.find_element_by_css_selector(
+                '#bookmark-name')
+            assert bookmark_input.is_displayed()
+            bookmark_input.send_keys('what')
+            bookmark_input.send_keys(Keys.RETURN)
+        assert len(controller.sidebar.get_registered()) != 0
 
     @staticmethod
     def test_registration(controller, reader_driver):
