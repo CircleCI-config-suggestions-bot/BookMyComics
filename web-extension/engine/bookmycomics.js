@@ -88,6 +88,13 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
         evData => {
             window.location.replace(evData.url);
         });
+    // Handle "Comic information query"
+    this._messaging.addWindowHandler(
+        ENGINE_ID,
+        evData => evData.type === 'query' && evData.action === 'comic information',
+        () => {
+            this.sendNotificationWithComicInfo('Comic Information', null);
+        });
 
     // A bit of stateful data, so that we can avoid re-checking the storage
     // everytime (and thus speed-up a bit the logic that spawn the UI bits)
