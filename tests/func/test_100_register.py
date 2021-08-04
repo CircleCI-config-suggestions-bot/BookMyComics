@@ -136,6 +136,47 @@ class TestRegister:
             registered, 0) == 1
 
     @staticmethod
+    def test_manga_list_filter(controller, reader_driver):
+        """
+            Validates that the comic list is correctly filtered when the search
+            input is used.
+        """
+        def check_filtered(controller, msg, nb_visible_expected):
+            with controller.sidebar.focus():
+                filter_input = controller.driver.find_element_by_css_selector(
+                    '#side-panel > #searchbox')
+                filter_input.clear()
+                filter_input.send_keys(msg)
+
+                items = controller.driver.find_elements_by_css_selector(
+                    '#side-panel > #manga-list > .mangaListItem')
+                nb_visible = 0
+                for item in items:
+                    if item.is_displayed():
+                        nb_visible += 1
+                assert nb_visible_expected == nb_visible
+
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('totow')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('zaza')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('bobo')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        check_filtered(controller, 'o', 2)
+        check_filtered(controller, 'a', 1)
+        check_filtered(controller, 'x', 0)
+        check_filtered(controller, 'tw', 1)
+
+    @staticmethod
     def test_load(controller, reader_driver):
         """
             Validates that the registered comic can be properly loaded by

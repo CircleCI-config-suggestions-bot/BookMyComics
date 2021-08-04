@@ -263,11 +263,12 @@ BmcMangaList.prototype.showEntry = function(entry) {
     entry.style.display = '';
 };
 
+// This function checks that all letters from `match` are present in `value` in the same order.
 BmcMangaList.prototype.match = function(value, match) {
-    var lvalue = value.toLowerCase();
-    var lmatch = match.toLowerCase();
-    for (var i = 0; i < lmatch.length; ++i) {
-        var idx = lvalue.indexOf(lmatch[i]);
+    let lvalue = value.toLowerCase();
+    const lmatch = match.toLowerCase();
+    for (let i = 0, len = lmatch.length; i < len; ++i) {
+        let idx = lvalue.indexOf(lmatch[i]);
         if (idx === -1) {
             return false;
         }
@@ -280,14 +281,13 @@ BmcMangaList.prototype.filter = function(filterStr) {
     for (var i = 0; i < this._node.childNodes.length; ++i) {
         const entry = this._node.childNodes[i];
         // Need to dig through layers to reach the label's text
-        const entryLabel = entry    // ul
-            .childNodes[0]          // li
-            .childNodes[0]          // div
-            .childNodes[0];         // span == label
-        if (this.match(entryLabel.innerText, filterStr)) {
-            this.showEntry(entry);
-        } else {
-            this.hideEntry(entry);
+        const entryLabel = cloneArray(entry.getElementsByClassName('label'));
+        if (entryLabel.length > 0) {
+            if (this.match(entryLabel[0].innerText, filterStr)) {
+                this.showEntry(entry);
+            } else {
+                this.hideEntry(entry);
+            }
         }
     }
 };
