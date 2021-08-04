@@ -60,6 +60,27 @@ class TestRegister:
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
     @staticmethod
+    def test_bookmark_name_input_automatic_fill(controller, reader_driver):
+        """
+            Validates that the bookmark input is already filled with the comic
+            name when you are registering a new comic.
+        """
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        assert len(controller.sidebar.get_registered()) == 0
+        # Retrieve out of sidebar focus
+        cur_name = reader_driver.get_comic_name()
+        with controller.sidebar.focus():
+            controller.sidebar.start_registration_nofocus()
+            bookmark_input = controller.driver.find_element_by_css_selector(
+                '#bookmark-name')
+            assert bookmark_input.is_displayed()
+            assert bookmark_input.get_attribute('value') == cur_name
+
+    @staticmethod
     def test_cancelled(controller, reader_driver):
         """
             Validates that cancelling a registration does not register any
