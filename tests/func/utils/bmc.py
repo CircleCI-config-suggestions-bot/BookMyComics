@@ -154,6 +154,21 @@ class SideBarController:
             wait = WebDriverWait(self._driver, timeout)
             wait.until(EC.text_to_be_present_in_element((By.ID, elem_id), expected_text))
 
+    def start_registration_nofocus(self):
+        """
+            This function starts the registration process by clicking on the
+            "+" button, and waiting to ensure that the SideBar is properly
+            displayed with the right mode.
+
+            Must be called within a FrameFocus's context.
+        """
+        add_btn = self._driver.find_element_by_css_selector(
+            '#side-panel > .button-add ')
+        add_btn.click()
+        WebDriverWait(self._driver, 10).until(
+            lambda driver: driver.find_element_by_css_selector(
+                '#side-panel-adder > #bookmark-name').is_displayed())
+
     def register(self, display_name):
         """
             Allows to register the current page under the name `display_name`
@@ -163,12 +178,7 @@ class SideBarController:
             entry.
         """
         with FrameFocus(self._driver, self._frame):
-            add_btn = self._driver.find_element_by_css_selector(
-                '#side-panel > .button-add ')
-            add_btn.click()
-            WebDriverWait(self._driver, 10).until(
-                lambda driver: driver.find_element_by_css_selector(
-                    '#side-panel-adder > #bookmark-name').is_displayed())
+            self.start_registration_nofocus()
             input_field = self._driver.find_element_by_css_selector(
                 '#side-panel-adder > #bookmark-name')
             input_field.send_keys(display_name)

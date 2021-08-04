@@ -324,6 +324,22 @@ function addEvents(mangaList) {
         mangaList.filter(str);
     };
 
+    function confirmBookmark() {
+        const label = document.getElementById('bookmark-name').value.trim();
+        if (label.length < 1) {
+            return;
+        }
+        // Disable button for now, Callback will switch back to manga-list view
+        confirmBut.disabled = true;
+        // Now do the actual registration.
+        const evData = {
+            type: 'action',
+            action: 'register',
+            label,
+        };
+        window.top.postMessage(evData, '*');
+    }
+
     const regBtn = document.getElementById('register-but');
     if (regBtn) {
         regBtn.onclick = showHideSidePanelAdder;
@@ -348,21 +364,7 @@ function addEvents(mangaList) {
     }
     var confirmBut = document.getElementById('add-confirm');
     if (confirmBut) {
-        confirmBut.onclick = function() {
-            const label = document.getElementById('bookmark-name').value.trim();
-            if (label.length < 1) {
-                return;
-            }
-            // Disable button for now, Callback will switch back to manga-list view
-            confirmBut.disabled = true;
-            // Now do the actual registration.
-            const evData = {
-                type: 'action',
-                action: 'register',
-                label,
-            };
-            window.top.postMessage(evData, '*');
-        };
+        confirmBut.onclick = confirmBookmark;
     }
     var confirmExistingBut = document.getElementById('add-existing-confirm');
     if (confirmExistingBut) {
@@ -415,6 +417,13 @@ function addEvents(mangaList) {
                 updateErrorDisplay(err);
                 confirmBut.disabled = (err !== null) || (this.value.trim().length === 0);
             });
+        };
+        bookmarkName.onkeyup = function(event) {
+            // We check if "ENTER" was pressed.
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                confirmBookmark();
+            }
         };
     }
 
