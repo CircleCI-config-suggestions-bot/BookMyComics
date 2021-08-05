@@ -297,3 +297,46 @@ class TestRegister:
         for expected_name in to_find:
             assert expected_name in counts.keys()
             assert counts[expected_name] == 1
+
+    @staticmethod
+    def test_toggle_click(controller, reader_driver):
+        """
+            Validates that when clicking on a comic, it only expand/collapse
+            the given comic.
+        """
+        def check_active_subs(controller, nb):
+            labels = controller.driver.find_elements_by_css_selector(
+                '.label-container > .rollingArrow-down')
+            assert len(labels) == nb
+            sources = controller.driver.find_elements_by_css_selector(
+                '.mangaListItem > .active')
+            assert len(sources) == nb
+
+
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('toto')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('zaza')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        with controller.sidebar.focus():
+            comic = controller.driver.find_element_by_css_selector('.label-container')
+
+            check_active_subs(controller, 0)
+            comic.click()
+            check_active_subs(controller, 1)
+            comic.click()
+            check_active_subs(controller, 0)
+
+            comic = controller.driver.find_element_by_css_selector('.label-container > .label')
+
+            comic.click()
+            check_active_subs(controller, 1)
+            comic.click()
+            check_active_subs(controller, 0)
