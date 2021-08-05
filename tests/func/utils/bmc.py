@@ -162,9 +162,11 @@ class SideBarController:
 
             Must be called within a FrameFocus's context.
         """
-        add_btn = self._driver.find_element_by_css_selector(
-            '#side-panel > .button-add ')
+        add_btn = self._driver.find_element_by_id('register-but')
+        WebDriverWait(self._driver, 10).until(
+            lambda driver: add_btn.is_displayed())
         add_btn.click()
+
         WebDriverWait(self._driver, 10).until(
             lambda driver: driver.find_element_by_css_selector(
                 '#side-panel-adder > #bookmark-name').is_displayed())
