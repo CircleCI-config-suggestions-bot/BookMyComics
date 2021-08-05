@@ -48,6 +48,19 @@ def reader_driver(controller, request):
     return support.drivers[request.param](controller.wrapped_driver)
 
 
+@pytest.fixture
+def unique_reader(controller):
+    """
+        This fixture instanciates a unique reader_driver to drive all the
+        web-extension tests which are not specifically tied to validating a
+        support module.
+
+        This allows selecting (hardcoded here) a single reader as the main test
+        target for generic web-extension features.
+    """
+    return support.drivers['manganato'](controller.wrapped_driver)
+
+
 @pytest.fixture(autouse=True)
 def before_tests(controller):
     yield
