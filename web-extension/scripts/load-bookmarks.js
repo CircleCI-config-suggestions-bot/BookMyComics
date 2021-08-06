@@ -55,10 +55,16 @@ function sendAliasRequest(comicId) {
 }
 
 BmcMangaList.prototype.onBrowseClick = function(ev) {
-    const target = ev.target;
-    const comicDiv = target.parentElement;
-    const comicElem = comicDiv.parentElement;
-    const nested = cloneArray(comicElem.getElementsByClassName('nested'));
+    let target = ev.target;
+    let comicWrapper = target.parentElement;
+    while (!comicWrapper.classList.contains('mangaListItem')) {
+        // It means we clicked on the margin part, making the target the parent element.
+        comicWrapper = comicWrapper.parentElement;
+    }
+    if (target.classList.contains('label-container')) {
+        target = target.children[0];
+    }
+    const nested = cloneArray(comicWrapper.getElementsByClassName('nested'));
     for (var i = 0; i < nested.length; ++i) {
         nested[i].classList.toggle('active');
     }
@@ -131,10 +137,6 @@ BmcMangaList.prototype.sourceDelete = function(comicId, reader, name, comicLabel
     window.top.postMessage(evData, '*');
 };
 
-BmcMangaList.prototype.onEntryClick = function(ev) {
-    this.onBrowseClick(ev);
-};
-
 BmcMangaList.prototype.onEntryDelete = function(ev) {
     const icon = ev.target;
     const comicDiv = icon.parentElement;
@@ -182,7 +184,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
     // Define the content on comic Label's line
     const comicDiv = document.createElement('div');
     comicDiv.classList.add('label-container');
-    comicDiv.onclick = this.onEntryClick.bind(this);
+    comicDiv.onclick = this.onBrowseClick;
     elm.appendChild(comicDiv); // elm.comicDiv(0)
 
     const comicLabel = document.createElement('div');
