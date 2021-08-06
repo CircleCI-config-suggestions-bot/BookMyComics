@@ -1,6 +1,15 @@
 import functools
 import pytest
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+
+
+def load_another_random(controller, reader_driver, ignore_list):
+    while True:
+        reader_driver.load_random()
+        if not controller.driver.current_url in ignore_list:
+            break
+    controller.refresh()
 
 
 class TestRegister:
@@ -41,6 +50,12 @@ class TestRegister:
             assert bookmark_input.is_displayed()
             bookmark_input.send_keys('what')
             bookmark_input.send_keys(Keys.RETURN)
+
+            # Now we wait for the sidebar to be back.
+            WebDriverWait(controller.driver, 10).until(
+                    lambda driver:
+                    driver.find_element_by_id('side-panel').is_displayed())
+
         assert len(controller.sidebar.get_registered()) != 0
 
     @staticmethod
@@ -96,7 +111,7 @@ class TestRegister:
         # Fake an attempt to register, end it with a cancel
         with controller.sidebar.focus():
             add_btn = controller.driver.find_element_by_css_selector(
-                '#side-panel > .button-add ')
+                'body > div#register-but')
             add_btn.click()
             input_field = controller.driver.find_element_by_css_selector(
                 '#side-panel-adder > #bookmark-name')
@@ -109,7 +124,7 @@ class TestRegister:
         # Check the side-panel-adder again, ensure that the input is now empty
         with controller.sidebar.focus():
             add_btn = controller.driver.find_element_by_css_selector(
-                '#side-panel > .button-add ')
+                'body > div#register-but')
             add_btn.click()
             input_field = controller.driver.find_element_by_css_selector(
                 '#side-panel-adder > #bookmark-name')
@@ -199,6 +214,7 @@ class TestRegister:
                         nb_visible += 1
                 assert nb_visible_expected == nb_visible
 
+        to_ignore = []
         reader_driver.load_random()
         assert controller.sidebar.loaded
         if controller.sidebar.hidden:
@@ -207,9 +223,17 @@ class TestRegister:
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('totow')
         assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        to_ignore.append(controller.driver.current_url)
+        load_another_random(controller, reader_driver, to_ignore)
+
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('zaza')
         assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        to_ignore.append(controller.driver.current_url)
+        load_another_random(controller, reader_driver, to_ignore)
+
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('bobo')
         assert len(controller.sidebar.get_registered()) != orig_n_items
@@ -275,13 +299,8 @@ class TestRegister:
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
-        first_url = controller.driver.current_url
-        while True:
-            reader_driver.load_random()
-            if first_url != controller.driver.current_url:
-                break
+        load_another_random(controller, reader_driver, [controller.driver.current_url])
 
-        controller.refresh()
         assert controller.sidebar.loaded
         if controller.sidebar.hidden:
             controller.sidebar.toggle()

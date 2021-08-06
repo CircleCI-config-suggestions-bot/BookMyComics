@@ -306,13 +306,11 @@ BmcMangaList.prototype.askComicInformation = function() {
 function showDeleteButton() {
     displayButton(document.getElementById('delete-but'));
     document.getElementById('register-but').style.display = '';
-    document.getElementById('side-adder').disabled = true;
 }
 
 function showRegisterButton() {
     displayButton(document.getElementById('register-but'));
     document.getElementById('delete-but').style.display = '';
-    document.getElementById('side-adder').disabled = false;
 }
 
 function displayButton(btn) {
@@ -380,6 +378,7 @@ function addEvents() {
         window.top.postMessage(evData, '*');
     }
 
+    // On button-add click, Trigger a new comic registration
     const regBtn = document.getElementById('register-but');
     if (regBtn) {
         regBtn.onclick = showHideSidePanelAdder;
@@ -389,11 +388,6 @@ function addEvents() {
         delBtn.onclick = showHideSidePanelDeleter;
     }
 
-    // On button-add click, Trigger a new comic registration
-    var addBut = document.getElementById('side-adder');
-    if (addBut) {
-        addBut.onclick = showHideSidePanelAdder;
-    }
     var addIntoExistingBut = document.getElementById('add-into-existing');
     if (addIntoExistingBut) {
         addIntoExistingBut.onclick = showHideAddIntoExisting;
@@ -535,11 +529,11 @@ function addEvents() {
             } else if (evData.operation.startsWith('Delete')) {
                 mangaList.isRegistered = false;
                 mangaList.currentComic = undefined;
-                regBtn.style.display = delBtn.style.display;
+                regBtn.style.display = 'block';
                 delBtn.style.display = '';
             } else {
                 mangaList.isRegistered = true;
-                delBtn.style.display = regBtn.style.display;
+                delBtn.style.display = 'block';
                 regBtn.style.display = '';
                 mangaList.currentComic = {
                     'id': evData.comicId,
@@ -676,20 +670,15 @@ function showHideSidePanel() {
         panel.style.display = 'block';
         togBtn.innerText = '<';
         shiftButtonRight(togBtn);
-        delBtn.style.display = '';
-        regBtn.style.display = '';
-        togBtn.style.top = '100px';
+        shiftButtonRight(regBtn);
+        shiftButtonRight(delBtn);
     } else {
         evData.action = 'HideSidePanel';
         panel.style.display = '';
         togBtn.innerText = '>';
         shiftButtonLeft(togBtn);
-        if (mangaList.isRegistered === true) {
-            delBtn.style.display = 'block';
-        } else if (mangaList.isRegistered === false) {
-            regBtn.style.display = 'block';
-        }
-        togBtn.style.top = '';
+        shiftButtonLeft(regBtn);
+        shiftButtonLeft(delBtn);
     }
     // Notify top window of the SidePanel action
     window.top.postMessage(evData, '*');
@@ -757,14 +746,16 @@ function showHideSidePanelAdder() {
         if (prev === '') {
             // Force iframe to non full size.
             window.top.postMessage({'type': 'action', 'action': 'IFrameResize'}, '*');
-            if (mangaList.isRegistered === true) {
-                delBtn.style.display = 'block';
-            } else if (mangaList.isRegistered === false) {
-                regBtn.style.display = 'block';
-            }
         } else {
             // Show sidebar.
             window.top.postMessage({'type': 'action', 'action': 'ShowSidePanel'}, '*');
+        }
+        if (mangaList.isRegistered === true) {
+            delBtn.style.display = 'block';
+            regBtn.style.display = '';
+        } else if (mangaList.isRegistered === false) {
+            regBtn.style.display = 'block';
+            delBtn.style.display = '';
         }
     } else {
         var bookmarkName = document.getElementById('bookmark-name');

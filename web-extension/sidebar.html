@@ -71,6 +71,7 @@
   left: 0;
 }
 #hide-but.right {
+  top: 100px;
   right: 0;
 }
 #hide-but.right:hover {
@@ -111,24 +112,37 @@
   background-color: #3fbf3f;
   color: #fff;
   font-size: 16px;
-  left: -6px;
   width: 18px;
   text-align: center;
   border: 1px solid #ccc;
   border-radius: 14px;
   cursor: pointer;
-  transition: left .3s;
+  transition: left .3s, right .3s;
   display: none;
 }
 #delete-but {
   background-color: #e00;
 }
-#register-but:hover, #delete-but:hover {
+#delete-but:hover {
+  background-color: red;
+}
+#register-but.left, #delete-but.left {
+  left: -6px;
+}
+#register-but.left:hover {
   background-color: #00ff00;
   left: 0;
 }
-#delete-but:hover {
-  background-color: red;
+#delete-but.left:hover {
+  background-color: #ff0000;
+  left: 0;
+}
+#register-but.right, #delete-but.right {
+  top: 72px;
+  right: 0;
+}
+#register-but.right:hover, #delete-but.right:hover {
+  right: 4px;
 }
 #manga-list > ul, #manga-list > ul > div {
   padding: 0;
@@ -259,7 +273,6 @@ ul, .mangaListItem {
   </head>
   <body>
     <div id="side-panel">
-      <button id="side-adder" class="button-add" disabled>+</button>
       <input type="text" placeholder="Search..." id="searchbox"></input>
       <div id="manga-list"></div>
     </div>
@@ -278,8 +291,8 @@ ul, .mangaListItem {
       <button id="add-existing-confirm" class="button-add" disabled>Confirm</button>
       <button id="add-existing-cancel" class="button-add cancel">Cancel</button>
     </div>
-    <div id="register-but">+</div>
-    <div id="delete-but"><span class="fa fa-trash"></span></div>
+    <div id="register-but" class="left">+</div>
+    <div id="delete-but" class="left"><span class="fa fa-trash"></span></div>
     <div id="hide-but" class="left">&gt;</div>
   </body>
   <script src="scripts/load-bookmarks.js" crossorigin="anonymous"></script>
