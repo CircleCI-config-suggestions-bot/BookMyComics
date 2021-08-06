@@ -340,3 +340,30 @@ class TestRegister:
             check_active_subs(controller, 1)
             comic.click()
             check_active_subs(controller, 0)
+
+    @staticmethod
+    def test_current_comic_source(controller, reader_driver):
+        """
+            Validates that the comic registration goes well, and that the new
+            comic has its name in the sidebar and not the name of another
+            comic.
+        """
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('sample100')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        with controller.sidebar.focus():
+            labels = controller.driver.find_elements_by_css_selector('.label-container.current')
+            assert len(labels) == 2
+
+        # We now check if it's correctly applied when reloading the page.
+        controller.refresh()
+        assert controller.sidebar.loaded
+        with controller.sidebar.focus():
+            labels = controller.driver.find_elements_by_css_selector('.label-container.current')
+            assert len(labels) == 2
