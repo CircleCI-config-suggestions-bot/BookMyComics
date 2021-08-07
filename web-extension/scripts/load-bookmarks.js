@@ -456,6 +456,16 @@ function addEvents() {
             }
         };
     }
+    document.body.addEventListener('keyup', function(event) {
+        if (document.getElementById('side-panel-adder').style.display === 'block') {
+            // Check if "ESCAPE" is pressed.
+            if (event.keyCode === 27) {
+                // We hide the sidepanel adder.
+                showHideSidePanelAdder();
+                event.preventDefault();
+            }
+        }
+    });
 
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
