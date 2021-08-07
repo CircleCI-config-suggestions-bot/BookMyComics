@@ -59,6 +59,27 @@ class TestRegister:
         assert len(controller.sidebar.get_registered()) != 0
 
     @staticmethod
+    def test_escape_key_handling(controller, reader_driver):
+        """
+            Validates that pressing the "ESCAPE" key on the "adder menu"
+            discards it.
+        """
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        assert len(controller.sidebar.get_registered()) == 0
+        with controller.sidebar.focus():
+            controller.sidebar.start_registration_nofocus()
+            body = controller.driver.find_element_by_tag_name('body')
+            body.send_keys(Keys.ESCAPE)
+
+            sidepanel_adder = controller.driver.find_element_by_id(
+                'side-panel-adder')
+            assert not sidepanel_adder.is_displayed()
+
+    @staticmethod
     def test_registration(controller, reader_driver):
         """
             Validates that the comic registration goes well, and can be
@@ -340,6 +361,8 @@ class TestRegister:
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('toto')
         assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        load_another_random(controller, reader_driver, [controller.driver.current_url])
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('zaza')
         assert len(controller.sidebar.get_registered()) != orig_n_items
