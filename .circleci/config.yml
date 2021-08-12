@@ -129,7 +129,7 @@ jobs:
           paths:
             - venv/
 
-  test-browser-common:
+  test-common-basics:
     parameters:
       browser:
         type: string
@@ -151,9 +151,33 @@ jobs:
           name: Setup manifest
           command: python3 setup.py << parameters.browser >>
       - run:
-          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> tests/func/test_00*
+          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> tests/func/test_load.py tests/func/test_sidebar_display.py
 
-  test-browser:
+  test-common-advanced:
+    parameters:
+      browser:
+        type: string
+    executor: browser-testing
+    working_directory: ~/repo
+    steps:
+      - cached-checkout
+      - attach_workspace:
+          at: /tmp/ws
+
+      # Work-around to define env variables from another, for the subsequent
+      # steps.
+      #  - Useful for firefox driver which relies on packaged extension
+      - run:
+          name: Define Packed Webext path
+          command: |
+            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
+      - run:
+          name: Setup manifest
+          command: python3 setup.py << parameters.browser >>
+      - run:
+          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> tests/func/test_register.py
+
+  test-reader:
     parameters:
       browser:
         type: string
@@ -177,7 +201,7 @@ jobs:
           name: Setup manifest
           command: python3 setup.py << parameters.browser >>
       - run:
-          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> --reader << parameters.reader >> --ignore-glob='tests/func/test_00*'
+          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> --reader << parameters.reader >> tests/func/test_reader.py
 
 workflows:
   version: 2
@@ -189,29 +213,41 @@ workflows:
           name: build-firefox
           requires:
           - basic-testing
-      - test-browser-common: &common_ff
-          name: test-firefox-common
+      - test-common-basics: &basics_ff
+          name: test-firefox-basics
           browser: firefox
           requires:
           - build-firefox
           - setup-testing
-      - test-browser:
+      - test-reader:
           name: test-firefox-manganato
           browser: firefox
           reader: manganato
           requires: &ff_requirements
-          - test-firefox-common
-      - test-browser-common: &common_chrome
-          name: test-chrome-common
+          - test-firefox-basics
+      - test-common-advanced:
+          name: test-firefox-advanced
+          browser: firefox
+          requires:
+            - test-firefox-basics
+            - test-firefox-manganato
+      - test-common-basics: &basics_chrome
+          name: test-chrome-basics
           browser: chrome
           requires:
           - setup-testing
-      - test-browser:
+      - test-reader:
           name: test-chrome-manganato
           browser: chrome
           reader: manganato
           requires: &chrome_requirements
-          - test-chrome-common
+          - test-chrome-basics
+      - test-common-advanced:
+          name: test-chrome-advanced
+          browser: chrome
+          requires:
+            - test-chrome-basics
+            - test-chrome-manganato
   weekly:
     triggers:
       - schedule:
@@ -225,45 +261,45 @@ workflows:
       - setup-testing
       # Firefox tests
       - build-ext: *build_ff
-      - test-browser-common: *common_ff
-      - test-browser:
+      - test-common-basics: *basics_ff
+      - test-reader:
           name: test-firefox-fanfox
           browser: firefox
           reader: mangafox
           requires: *ff_requirements
-      - test-browser:
+      - test-reader:
           name: test-firefox-mangakakalot
           browser: firefox
           reader: mangakakalot
           requires: *ff_requirements
-      - test-browser:
+      - test-reader:
           name: test-firefox-manganato
           browser: firefox
           reader: manganato
           requires: *ff_requirements
-      - test-browser:
+      - test-reader:
           name: test-firefox-isekaiscan
           browser: firefox
           reader: isekaiscan
           requires: *ff_requirements
       # Chrome tests
-      - test-browser-common: *common_chrome
-      - test-browser:
+      - test-common-basics: *basics_chrome
+      - test-reader:
           name: test-chrome-fanfox
           browser: chrome
           reader: mangafox
           requires: *chrome_requirements
-      - test-browser:
+      - test-reader:
           name: test-chrome-mangakakalot
           browser: chrome
           reader: mangakakalot
           requires: *chrome_requirements
-      - test-browser:
+      - test-reader:
           name: test-chrome-manganato
           browser: chrome
           reader: manganato
           requires: *chrome_requirements
-      - test-browser:
+      - test-reader:
           name: test-chrome-isekaiscan
           browser: chrome
           reader: isekaiscan
