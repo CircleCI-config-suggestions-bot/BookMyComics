@@ -229,9 +229,6 @@ function Localization(lang = DEFAULT_LANG) {
         'S64': {
             'en': 'No entry selected, we shouldn\'t be here...',
         },
-        'S65': {
-            'en': 'Missing information for current comic: {evData}',
-        },
         'S66': {
             'en': 'BookMyComics: background-script.js: Instanciated BmcSources',
         },
@@ -316,7 +313,6 @@ function Logs(level = INFO) {
         'E0018': 'S61',
         'E0019': 'S62',
         'E0020': 'S63',
-        'E0021': 'S65',
         'E0022': 'S75',
         'E0023': 'S76',
     };

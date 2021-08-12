@@ -484,27 +484,6 @@ function addEvents() {
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
-        evData => evData.type === 'action' && evData.action === 'notification' && evData.operation === 'track',
-        evData => {
-            if (evData.error) {
-                // eslint-disable-next-line no-console
-                console.error(evData.error);
-            } else if (evData.comicId === undefined || evData.comicSource === undefined ||
-                       evData.comicName === undefined) {
-                LOGS.error('E0021', {'evData': evData});
-            } else {
-                mangaList.isRegistered = true;
-                mangaList.currentComic = {
-                    'id': evData.comicId,
-                    'source': evData.comicSource,
-                    'name': evData.comicName,
-                };
-                showDeleteButton();
-                setActiveComic();
-            }
-        });
-    bmcMessaging.addWindowHandler(
-        BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'toggle' && evData.module === 'sidebar',
         () => {
             showHideSidePanel();
@@ -522,7 +501,8 @@ function addEvents() {
                     || evData.operation === 'Register Comic'
                     || evData.operation === 'Delete Comic Source'
                     || evData.operation === 'Delete Comic'
-                    || evData.operation === 'Comic Information'),
+                    || evData.operation === 'Comic Information'
+                    || evData.operation === 'track'),
         evData => {
             if (evData.error) {
                 updateErrorDisplay(evData.error);
@@ -539,12 +519,10 @@ function addEvents() {
             } else if (evData.operation.startsWith('Delete')) {
                 mangaList.isRegistered = false;
                 mangaList.currentComic = undefined;
-                regBtn.style.display = 'block';
-                delBtn.style.display = '';
+                showRegisterButton();
             } else {
                 mangaList.isRegistered = true;
-                delBtn.style.display = 'block';
-                regBtn.style.display = '';
+                showDeleteButton();
                 mangaList.currentComic = {
                     'id': evData.comicId,
                     'source': evData.comicSource,
@@ -563,7 +541,9 @@ function addEvents() {
                     } else { // 'Alias Comic'
                         mangaList.refreshComic(comicDOM);
                     }
-                    showHideSidePanelAdder();
+                    if (evData.operation !== 'track' && evData.operation !== 'Comic Information') {
+                        showHideSidePanelAdder();
+                    }
                     setActiveComic();
                 });
             }
