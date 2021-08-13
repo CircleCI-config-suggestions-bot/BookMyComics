@@ -320,3 +320,12 @@ class BmcController:
         with self.sidebar.focus():
             self._wrapped_driver.clear_storage()
         self.refresh()
+
+
+def init_sidebar(reader_driver, controller, load_random=True):
+    if load_random is True:
+        reader_driver.load_random()
+    assert controller.sidebar.loaded
+    if controller.sidebar.hidden:
+        controller.sidebar.toggle()
+    assert controller.sidebar.hidden is False

@@ -12,6 +12,7 @@ def load_another_random(controller, reader_driver, ignore_list):
             break
     controller.refresh()
 
+from .utils.bmc import init_sidebar
 from .utils.support import drivers as reader_drivers
 
 
@@ -24,11 +25,7 @@ class TestRegister:
             Validates that pressing the "ENTER" key on the "bookmark-name"
             input is like clicking on the "confirm" button.
         """
-        unique_reader.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(unique_reader, controller)
         assert len(controller.sidebar.get_registered()) == 0
         with controller.sidebar.focus():
             controller.sidebar.start_registration_nofocus()
@@ -51,11 +48,7 @@ class TestRegister:
             Validates that pressing the "ESCAPE" key on the "adder menu"
             discards it.
         """
-        unique_reader.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(unique_reader, controller)
         assert len(controller.sidebar.get_registered()) == 0
         with controller.sidebar.focus():
             controller.sidebar.start_registration_nofocus()
@@ -72,11 +65,7 @@ class TestRegister:
             Validates that cancelling a registration does not register any
             entry
         """
-        unique_reader.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(unique_reader, controller)
         orig_n_items = len(controller.sidebar.get_registered())
 
         # Fake an attempt to register, end it with a cancel
@@ -111,11 +100,7 @@ class TestRegister:
         #
         # Setup: Register a random comic
         #
-        unique_reader.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(unique_reader, controller)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register(name)
         registered_comic = unique_reader.get_comic_name()
@@ -185,12 +170,8 @@ class TestRegister:
                         nb_visible += 1
                 assert nb_visible_expected == nb_visible
 
+        init_sidebar(unique_reader, controller)
         to_ignore = []
-        unique_reader.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('totow')
         assert len(controller.sidebar.get_registered()) != orig_n_items
@@ -221,21 +202,14 @@ class TestRegister:
             comic has its name in the sidebar and not the name of another
             comic.
         """
-        unique_reader.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(unique_reader, controller)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
         load_another_random(controller, unique_reader, [controller.driver.current_url])
 
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(unique_reader, controller, load_random=False)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('sample101')
         assert len(controller.sidebar.get_registered()) != orig_n_items
@@ -263,16 +237,13 @@ class TestRegister:
             assert len(sources) == nb
 
 
-        unique_reader.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(unique_reader, controller)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('toto')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
         load_another_random(controller, unique_reader, [controller.driver.current_url])
+        init_sidebar(unique_reader, controller, load_random=False)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('zaza')
         assert len(controller.sidebar.get_registered()) != orig_n_items
@@ -300,11 +271,7 @@ class TestRegister:
             comic has its name in the sidebar and not the name of another
             comic.
         """
-        unique_reader.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(unique_reader, controller)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items
