@@ -231,7 +231,7 @@ class SideBarController:
                 pass
         return [RegisteredItem(self, i) for i in items]
 
-    def load(self, name):
+    def load(self, name, wait_for_url_change=True):
         """
             Searches a registered entry matching `name`, and loads the
             associated comic by clicking on the element.
@@ -253,7 +253,8 @@ class SideBarController:
             sources = comic.list_sources()
             assert len(sources) == 1
             sources[0].click()
-        WebDriverWait(self._driver, 10).until(EC.url_changes(prev_url))
+        if wait_for_url_change:
+            WebDriverWait(self._driver, 10).until(EC.url_changes(prev_url))
 
 
 class BmcController:

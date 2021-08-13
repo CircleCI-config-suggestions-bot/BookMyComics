@@ -121,3 +121,71 @@ class TestNavigate:
         assert reader_driver.get_comic_name() == expected_name
         assert reader_driver.get_chapter() == expected_chapter
         assert reader_driver.get_page() == expected_page
+
+    @staticmethod
+    def test_tracking(controller, reader_driver):
+        """
+            Validates that the reader is able to update its internal
+            information about a comic when browsed towards the end
+        """
+        #
+        # Do the registration first
+        #
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('sample100')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        #
+        # With registration confirmed, Record URL/chapter/page
+        # then back to home page
+        #
+        prev_url = controller.driver.current_url
+
+        # Now, browse to the next page
+        reader_driver.next_page()
+
+        # Check that the registered page was updated
+        # -> We need to access the latest link from sidebar to check if the
+        # generated URL changed.
+        controller.refresh()
+        controller.sidebar.load('sample100', wait_for_url_change=False)
+        assert controller.driver.current_url != prev_url
+
+    @staticmethod
+    def test_backwards_tracking(controller, reader_driver):
+        """
+            Validates that the reader does not update its internal
+            information about a comic when browsed towards the beginning
+        """
+        #
+        # Do the registration first
+        #
+        reader_driver.load_random()
+        assert controller.sidebar.loaded
+        if controller.sidebar.hidden:
+            controller.sidebar.toggle()
+        assert controller.sidebar.hidden is False
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('sample100')
+        assert len(controller.sidebar.get_registered()) != orig_n_items
+
+        #
+        # With registration confirmed, Record URL/chapter/page
+        # then back to home page
+        #
+        expected_url = controller.driver.current_url
+
+        # Now, browse to the prev page
+        reader_driver.prev_page()
+
+        # Check that the registered page was updated
+        # -> We need to access the latest link from sidebar to check if the
+        # generated URL changed.
+        controller.refresh()
+        controller.sidebar.load('sample100')
+        assert controller.driver.current_url == expected_url
