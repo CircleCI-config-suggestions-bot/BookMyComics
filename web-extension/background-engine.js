@@ -45,6 +45,8 @@ const BACKGROUND_ID = 'BookMyComics/BackgroundScript';
 const bmcSources = new BmcSources();
 LOGS.log('S66');
 
+const bmcData = new BmcDataAPI();
+
 const bmcMessaging = new BmcMessagingHandler();
 LOGS.log('S67');
 
@@ -53,19 +55,29 @@ bmcMessaging.addWindowHandler(
     evData => evData.type === 'computation'
               && evData.module === 'sources'
               && evData.computation === 'URL:Generate:Request',
-    evData => { // Don't receive `sender`, as we don't use it.
+    (evData, sender, sendResponse) => {  // Sender is unused, but we need `sendResponse`
         LOGS.log('S68', {'evData' :evData});
-        const answerEv = {
-            type: 'computation',
-            module: 'sources',
-            computation: 'URL:Generate:Response',
-            resource: {
-                reader: evData.resource.reader,
-                comic: evData.resource.comic,
-                url: bmcSources.computeURL(evData.resource.reader,
-                                           evData.resource.comic),
+        bmcData.getComic(evData.resource.id, (err, comic) => {
+            let answerEv = {
+                type: 'computation',
+                module: 'sources',
+                computation: 'URL:Generate:Response',
+                resource: {
+                    err: false,
+                    url: null,
+                },
+            };
+            if (err) {
+                answerEv.err = LOGS.getString('S1');
+                return sendResponse(answerEv);
             }
-        };
-        return answerEv;
+            const comicInfo = comic.toInfo(evData.resource.reader);
+            answerEv.resource.url = bmcSources.computeURL(evData.resource.reader, comicInfo);
+            if (!answerEv.resource.url) {
+                answerEv.err = LOGS.getString('S40', {'comicInfo': comicInfo});
+                return sendResponse(answerEv);
+            }
+            return sendResponse(answerEv);
+        });
     }
 );

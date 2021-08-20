@@ -152,8 +152,9 @@ class TestNavigate:
         # Check that the registered page was updated
         # -> We need to access the latest link from sidebar to check if the
         # generated URL changed.
+        reader_driver.home()
         controller.refresh()
-        controller.sidebar.load('sample100', wait_for_url_change=False)
+        controller.sidebar.load('sample100')
         assert controller.driver.current_url != prev_url
 
     @staticmethod
@@ -186,6 +187,7 @@ class TestNavigate:
         # Check that the registered page was updated
         # -> We need to access the latest link from sidebar to check if the
         # generated URL changed.
+        reader_driver.home()
         controller.refresh()
         controller.sidebar.load('sample100')
         assert controller.driver.current_url == expected_url

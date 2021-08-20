@@ -137,22 +137,35 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
         }
     });
 
-    // Now, setup communication between background script & inserted frames
+    // Now, setup communication between background script & inserted frames:
+    // `runtime.onMessage()` had a extension-wide range of messaging
     getBrowser().runtime.onMessage.addListener((event, sender, sendResponse) => {
         LOGS.log('S28', {'msg': JSON.stringify(event)});
         if (typeof(event) !== 'object') {
             LOGS.warn('E0004');
             return ;
         }
-        let msg = null;
+        let answered = false;
         BmcWindowHandlers.forEach(handler => {
             if (handler.select(event)) {
-                msg = handler.handle(event, sender);
+                handler.handle(event, sender, msg => {
+                    compat.sendResponse(sendResponse, msg);
+                });
+                answered = true;
             }
         });
 
         // Force the closing of the sendResponse Channel
-        return compat.sendResponse(sendResponse, msg);
+        if (!answered) {
+            compat.sendResponse(sendResponse, null);
+            // We just synchronously answered since no handler were selected,
+            // so force `sendResponse()` to have a synchronous behavior (CHROME
+            // ONLY)
+            return false;
+        }
+        // Otherwise, it means a handler sent a response, so request the usage
+        // of asynchronous mode for `sendResponse()`
+        return true;
     });
     this._setup = true;
 };
