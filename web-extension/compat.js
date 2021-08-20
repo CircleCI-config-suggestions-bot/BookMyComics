@@ -187,7 +187,7 @@ CompatibilityLayer.prototype.sendMessage = function(ev, cb) {
             .then(response => cb(null, response));
     case this.MODE_CALLBACK:
     default:
-        return bro.runtime.sendMessage(ev, response => cb(null, response));
+        return bro.runtime.sendMessage(ev, response => cb(bro.runtime.lastError, response));
     }
 };
 

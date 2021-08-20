@@ -1,4 +1,5 @@
 /* globals
+    BmcDataAPI: readable
     BmcMessagingHandler:readable
     BmcSources:readable
     LOGS:readable
