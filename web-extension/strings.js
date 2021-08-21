@@ -31,9 +31,9 @@ function Localization(lang = DEFAULT_LANG) {
     this.lang = lang;
 
     this.STRINGS = {
-        // 'S1': {
-        //     'en': 'Unknown string/error code',
-        // },
+        'S1': {
+            'en': 'Failed to get Comic data from storage',
+        },
         'S2': {
             'en': 'BmcEngine._memoizeComic: unknown comic name.',
         },
@@ -151,9 +151,9 @@ function Localization(lang = DEFAULT_LANG) {
         'S39': {
             'en': 'BookMyComics: entrypoint.js: Requesting URL parsing from background script',
         },
-        // 'S40': {
-        //     'en': 'BookMyComics: entrypoint.js: sendmessage failed: err={err}',
-        // },
+        'S40': {
+            'en': 'Could not resolve URL from comic {comicInfo}'
+        },
         'S41': {
             'en': 'BookMyComics: entrypoint.js: retrieved ComicInfo={data}',
         },
@@ -175,15 +175,15 @@ function Localization(lang = DEFAULT_LANG) {
         'S47': {
             'en': 'BookMyComics: load-bookmark.js: sendmessage failed: err={err}',
         },
-        // 'S48': {
-        //     'en': 'clickedOnManga!, mode={mode}, event: {event}',
-        // },
+        'S48': {
+            'en': 'BookMyComics: background-engine.js: failed to load url: {err}',
+        },
         'S49': {
             'en': 'generating bookmark list',
         },
-        // 'S50': {
-        //     'en': 'BmcSidePanel: BmcMangaList: Unknown MODE "{mode}"',
-        // },
+        'S50': {
+            'en': 'Messaging: Wrong number of handlers for event: {count} instead of 1',
+        },
         'S51': {
             'en': 'Input of searchbox changed: filtering bookmarks list',
         },
@@ -292,7 +292,7 @@ function Logs(level = INFO) {
     this.level = level;
 
     this.ERRORS = {
-        // 'E0000': 'S1',
+        'E0000': 'S50',
         'E0001': 'S2',
         // 'E0002': 'S40',
         'E0003': 'S43',
@@ -306,7 +306,7 @@ function Logs(level = INFO) {
         'E0011': 'S13',
         'E0012': 'S38',
         'E0013': 'S47',
-        // 'E0014': 'S50',
+        'E0014': 'S48',
         'E0015': 'S55',
         'E0016': 'S56',
         'E0017': 'S59',

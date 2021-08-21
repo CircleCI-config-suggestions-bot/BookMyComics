@@ -269,6 +269,34 @@ function BmcComic(label, id, chapter, page, sources) {
 }
 
 /**
+ * This method transforms a BmcComic object into the input required for
+ * generating the URL to a comic chapter/page for a given reader.
+ *
+ * @method
+ *
+ * @param {string} reader - the name of the reader to look for in the comic's
+ *                          sources
+ *
+ * @return {object} the re-arranged data for the support module's `computeURL`
+ *                  method.
+ */
+BmcComic.prototype.toInfo = function(reader) {
+    const source = this.getSource(reader);
+    if (source === null) {
+        return null;
+    }
+    const info = Object.assign({
+        id: this.id,
+        common: {
+            name: source.name,
+            chapter: this.chapter,
+            page: this.page,
+        },
+    }, source.info);
+    return info;
+};
+
+/**
  * This method serializes the object into a basic object fit for writing into
  * the storage.
  *

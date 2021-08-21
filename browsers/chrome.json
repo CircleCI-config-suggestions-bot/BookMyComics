@@ -9,6 +9,8 @@
             "utils.js",
             "compat.js",
             "engine/utils.js",
+            "engine/storage.js",
+            "engine/datamodel.js",
             "engine/messaging.js",
             "support/mangafox.js",
             "support/manganato.js",

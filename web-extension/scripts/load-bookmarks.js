@@ -78,19 +78,45 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
         computation: 'URL:Generate:Request',
         resource: {
             origin: window.location.origin,
+            id: comic.id,
             reader: source.reader,
-            comic: Object.assign({
-                common: {
-                    name: source.name,
-                    chapter: comic.chapter,
-                    page: comic.page,
-                },
-            }, source.info),
         },
     };
+    /*
+     * Here, we send a message to the extension script (background page), in
+     * order to have it generate the final link from the `(comicId, reader)`
+     * tuple that we provide. This will guarantee that we always generate the
+     * link to the last registered chapter/page, as opposed to saving link/data
+     * in the DOM.
+     *   Then, a message is sent to the top frame (ie: "Host page") to trigger
+     * the change or URL and load the requested page.
+     *
+     * Note that this approach has multiple reasons/causes:
+     * - We do not want to load all "support" scripts in the sidebar or host
+     *   pages, to keep the manifest as concise as possible
+     * - We do not want to allow changing the URL from the extension script,
+     *   as it would require wider privileges that we want to keep minimal
+     * - Sidebar is unable, since it's related to the extension exclusively, to
+     *   change the host page's URL, and thus must delegate this to the script
+     *   injected into the host page.
+     *
+     * As a summary, this means in terms of exchange that the following happens:
+     * 1. Sidebar sends a `URL:Generate` request to Extension
+     * 2. Extension generates the URL and sends it back as a `URL:Generate`
+     *    response
+     * 3. Sidebar receives the `URL:Generate` responses and forwards the URL to
+     *    the host page as an `urlopen` action
+     * 4. Host page received the `urlopen` action request and changes the URL
+     *    to load the requested one.
+     *
+     */
     compat.sendMessage(ev, (err, response) => {
-        if (err) {
+        if (err || !response) {
             LOGS.warn('E0013', {'err': err});
+            return undefined;
+        }
+        if (response.err) {
+            LOGS.warn('E0014', {'err': response.err});
             return undefined;
         }
         let localEv = {
@@ -469,13 +495,6 @@ function addEvents() {
 
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
-        evData => evData.type === 'action' && evData.action === 'notification',
-        evData => {
-            LOGS.log('S53', {'op': evData.operation, 'error': evData.error});
-            notifyResult(evData.operation, evData.error);
-        });
-    bmcMessaging.addWindowHandler(
-        BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'setup' && evData.operation === 'register',
         () => {
             mangaList.isRegistered = false;
@@ -496,13 +515,19 @@ function addEvents() {
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'notification',
+        evData => {
+            LOGS.log('S53', {'op': evData.operation, 'error': evData.error});
+            notifyResult(evData.operation, evData.error);
+        });
+    bmcMessaging.addWindowHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'notification' &&
                   (evData.operation === 'Alias Comic'
                     || evData.operation === 'Register Comic'
                     || evData.operation === 'Delete Comic Source'
                     || evData.operation === 'Delete Comic'
-                    || evData.operation === 'Comic Information'
-                    || evData.operation === 'track'),
+                    || evData.operation === 'Comic Information'),
         evData => {
             if (evData.error) {
                 updateErrorDisplay(evData.error);
@@ -541,7 +566,7 @@ function addEvents() {
                     } else { // 'Alias Comic'
                         mangaList.refreshComic(comicDOM);
                     }
-                    if (evData.operation !== 'track' && evData.operation !== 'Comic Information') {
+                    if (evData.operation !== 'Comic Information') {
                         showHideSidePanelAdder();
                     }
                     setActiveComic();

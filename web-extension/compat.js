@@ -187,29 +187,73 @@ CompatibilityLayer.prototype.sendMessage = function(ev, cb) {
             .then(response => cb(null, response));
     case this.MODE_CALLBACK:
     default:
-        return bro.runtime.sendMessage(ev, response => cb(null, response));
+        return bro.runtime.sendMessage(ev, response => cb(bro.runtime.lastError, response));
     }
 };
 
 /**
- * This function provides a unified API to send a Message between background
- * page and loaded pieces of BookMyComics.
+ * This function wraps a simple message handler in order to provide a unified
+ * way to handle Extension-wide messages. The complexity of the original API is
+ * multifold:
+ * 1. Extension-wide handlers (which are setup through
+ *    `getBrowser().runtime.onMessage.addListener()`) can be either processed as
+ *    synchronous or asynchronous.
+ * 2. Firefox and Chrome APIs have the same handling for answering
+ *    synchronously to the message (through the `sendResponse` argument)
+ * 3. Firefox and Chrome APIs have vastly different ways of handling the
+ *    asynchronous answering to this API:
+ *    a. Firefox: User is required to return a Promise synchronously, which
+ *       will be resolved asynchronously
+ *    b. Chrome: User is required to return "true" synchronously, letting the
+ *       browser keep the connection open until the `sendResponse` callback is
+ *       called to answer.
  *
- * @param {Function} sendResponse - function object provided to the callback of
- *                                  the sendMessage API
- * @param {Object} data - The event data to send
+ * To solve these inconsistencies, we wrap the handler in order to ensure that
+ * we return the appropriate type of value to the listener engine, depending on
+ * what the handler returned:
+ *  - Non-Callable: Handler does not require asynchronous handling. The wrapper
+ *                   calls the `sendResponse` callback.and returns `false` to
+ *                   use the synchronous mode
+ *  - Callable: Handler expects an asynchronous resolution. The wrapper
+ *              Will enter its "compatibility mode" and either:
+ *    a. Firefox: creates a promise which will be resolved asynchronously,
+ *                and returns it immediately
+ *    b. Chrome: return true synchronously, and call the compatibility layer
+ *               when the handler provides its message to its callback.
  *
- * @return undefined
+ * FIXME NOTE FIXME
+ * Initially, we wanted this function to allow using promises with Firefox, but
+ * were unable to make it work, while the chrome-compatibility provided by
+ * firefox (ie: `sendResponse()` callback) worked out of the box, using the
+ * same code as for chrome. As such, this "compatibility" layer is summarized
+ * to a layer that offers compatibility between synchronous and asynchronous
+ * code seamlessly.
+ * FIXME NOTE FIXME
+ *
+ * @param {Function(event, sender, cb(msg))} handler -
+ *
+ * @return {Function} the appropriately wrapped handler to handle compatibility
  */
-CompatibilityLayer.prototype.sendResponse = function(sendResponse, data) {
-    switch(this._mode) {
-    case this.MODE_PROMISE:
-        return Promise.resolve(data);
-    case this.MODE_CALLBACK:
-    default:
+CompatibilityLayer.prototype.extensionMessageWrapper = function(handler) {
+    return (event, sender, sendResponse) => {
+        let data = undefined;
+        data = handler(event, sender);
+        // Check for asynchronous mode first
+        if (typeof data === 'function') {
+            switch(this._mode) {
+            case this.MODE_PROMISE:
+            case this.MODE_CALLBACK:
+            default:
+                data(msg => {
+                    sendResponse(msg);
+                });
+                return true;
+            }
+        }
+        // Simply send the response:
         sendResponse(data);
         return false;
-    }
+    };
 };
 
 /* eslint-disable-next-line no-unused-vars */
