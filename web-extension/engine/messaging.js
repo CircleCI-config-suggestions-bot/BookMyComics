@@ -6,13 +6,43 @@
 
 /**
  * This global object is an array containing the various BmcMessageHandler
- * objects used by the page to handle its internal communication events.
+ * objects used by the window to handle its internal communication events.
+ *
+ * The reason why it's separate from `BmcExtensionHandlers` is that the API to
+ * resolve both differs greatly:
+ * - window message handling does not expect "answers" and thus requires no
+ *   specific handling for asynchronous handlers.
+ * - extension-wide messaging handling can be answered to, and by design, our
+ *   web-extension may require to handle asynchronous handling to interact with
+ *   various components before answering.
+ *
  * This object should never be accessed directly, but accessed through a
  * BmcMessagingHandlers object.
  *
  * @global
  */
 var BmcWindowHandlers = [];
+
+/**
+ * This global object is an array containing the various BmcMessageHandler
+ * objects used by any piece of the web-extension to communicate globally with
+ * other pieces of the web-extension. Note that this is mostly useful for
+ * communications between a window and the background page.
+ *
+ * The reason why it's separate from `BmcWindowHandlers` is that the API to
+ * resolve both differs greatly:
+ * - window message handling does not expect "answers" and thus requires no
+ *   specific handling for asynchronous handlers.
+ * - extension-wide messaging handling can be answered to, and by design, our
+ *   web-extension may require to handle asynchronous handling to interact with
+ *   various components before answering.
+ *
+ * This object should never be accessed directly, but accessed through a
+ * BmcMessagingHandlers object.
+ *
+ * @global
+ */
+var BmcExtensionHandlers = [];
 
 
 /**
@@ -145,27 +175,20 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
             LOGS.warn('E0004');
             return ;
         }
-        let answered = false;
-        BmcWindowHandlers.forEach(handler => {
-            if (handler.select(event)) {
-                handler.handle(event, sender, msg => {
-                    compat.sendResponse(sendResponse, msg);
-                });
-                answered = true;
-            }
-        });
-
-        // Force the closing of the sendResponse Channel
-        if (!answered) {
-            compat.sendResponse(sendResponse, null);
-            // We just synchronously answered since no handler were selected,
-            // so force `sendResponse()` to have a synchronous behavior (CHROME
-            // ONLY)
+        let selected = BmcExtensionHandlers.filter(handler => handler.select(event));
+        // Leave a trace if some handlers may not have been executed, for debugging
+        if (selected.length < 1) {
+            LOGS.error('E0000', {count: selected.length});
+            sendResponse(null);
             return false;
         }
-        // Otherwise, it means a handler sent a response, so request the usage
-        // of asynchronous mode for `sendResponse()`
-        return true;
+        if (selected.length > 1) {
+            LOGS.warn('E0000', {count: selected.length});
+        }
+        // We only expect one response for this channel, so we only execute the
+        // first handler found: Note: the proper return depending on async/sync
+        // is ensured by `compat.extensionMessageWrapper()`.
+        return selected[0].handle(event, sender, sendResponse);
     });
     this._setup = true;
 };
@@ -205,4 +228,42 @@ BmcMessagingHandler.prototype.addWindowHandler = function(tag, selector, handler
  */
 BmcMessagingHandler.prototype.removeWindowHandlers = function(tag) {
     BmcWindowHandlers = BmcWindowHandlers.filter(handler => handler.tag !== tag);
+};
+
+
+/**
+ * This function registers a handler in the messaging system according to the
+ * provided handler settings.
+ *
+ * @method
+ *
+ * @params {string} tag - a tag to identify a group of Handlers with for
+ *                        grouped removal
+ * @params {BmcMessageHandler~SelectorFunction} selector - a function to tell
+ *                        whether the handler wants to be called for the
+ *                        handled event.
+ * @params {BmcMessageHandler~HandlerFunction} handler - the function to apply
+ *                        to the event if the selector for this handler
+ *                        returned true
+ */
+BmcMessagingHandler.prototype.addExtensionHandler = function(tag, selector, handler) {
+    BmcExtensionHandlers.push(new BmcMessageHandler(tag, selector, compat.extensionMessageWrapper(handler)));
+    if (this._setup === false) {
+        this.setupMessaging();
+    }
+};
+
+
+/**
+ * This function removes all handlers which tag match the parameter provided.
+ * It is useful to "unregister" a specific component (thus by removing all
+ * related listeners, identified by a chosen tag).
+ *
+ * @method
+ *
+ * @params {string} tag - a name to identify the groups of handlers to be
+ *                        removed from the messaging framework
+ */
+BmcMessagingHandler.prototype.removeExtensionHandlers = function(tag) {
+    BmcExtensionHandlers = BmcExtensionHandlers.filter(handler => handler.tag !== tag);
 };

@@ -181,9 +181,9 @@ function Localization(lang = DEFAULT_LANG) {
         'S49': {
             'en': 'generating bookmark list',
         },
-        // 'S50': {
-        //     'en': 'BmcSidePanel: BmcMangaList: Unknown MODE "{mode}"',
-        // },
+        'S50': {
+            'en': 'Messaging: Wrong number of handlers for event: {count} instead of 1',
+        },
         'S51': {
             'en': 'Input of searchbox changed: filtering bookmarks list',
         },
@@ -292,7 +292,7 @@ function Logs(level = INFO) {
     this.level = level;
 
     this.ERRORS = {
-        // 'E0000': 'S1',
+        'E0000': 'S50',
         'E0001': 'S2',
         // 'E0002': 'S40',
         'E0003': 'S43',

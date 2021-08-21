@@ -50,34 +50,36 @@ const bmcData = new BmcDataAPI();
 const bmcMessaging = new BmcMessagingHandler();
 LOGS.log('S67');
 
-bmcMessaging.addWindowHandler(
+bmcMessaging.addExtensionHandler(
     BACKGROUND_ID,
     evData => evData.type === 'computation'
               && evData.module === 'sources'
               && evData.computation === 'URL:Generate:Request',
-    (evData, sender, sendResponse) => {  // Sender is unused, but we need `sendResponse`
+    evData => {
         LOGS.log('S68', {'evData' :evData});
-        bmcData.getComic(evData.resource.id, (err, comic) => {
-            let answerEv = {
-                type: 'computation',
-                module: 'sources',
-                computation: 'URL:Generate:Response',
-                resource: {
-                    err: false,
-                    url: null,
-                },
-            };
-            if (err) {
-                answerEv.err = LOGS.getString('S1');
+        return sendResponse => {
+            bmcData.getComic(evData.resource.id, (err, comic) => {
+                let answerEv = {
+                    type: 'computation',
+                    module: 'sources',
+                    computation: 'URL:Generate:Response',
+                    resource: {
+                        err: false,
+                        url: null,
+                    },
+                };
+                if (err) {
+                    answerEv.err = LOGS.getString('S1');
+                    return sendResponse(answerEv);
+                }
+                const comicInfo = comic.toInfo(evData.resource.reader);
+                answerEv.resource.url = bmcSources.computeURL(evData.resource.reader, comicInfo);
+                if (!answerEv.resource.url) {
+                    answerEv.err = LOGS.getString('S40', {'comicInfo': comicInfo});
+                    return sendResponse(answerEv);
+                }
                 return sendResponse(answerEv);
-            }
-            const comicInfo = comic.toInfo(evData.resource.reader);
-            answerEv.resource.url = bmcSources.computeURL(evData.resource.reader, comicInfo);
-            if (!answerEv.resource.url) {
-                answerEv.err = LOGS.getString('S40', {'comicInfo': comicInfo});
-                return sendResponse(answerEv);
-            }
-            return sendResponse(answerEv);
-        });
+            });
+        };
     }
 );

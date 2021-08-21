@@ -111,7 +111,7 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
      *
      */
     compat.sendMessage(ev, (err, response) => {
-        if (err) {
+        if (err || !response) {
             LOGS.warn('E0013', {'err': err});
             return undefined;
         }
@@ -495,13 +495,6 @@ function addEvents() {
 
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
-        evData => evData.type === 'action' && evData.action === 'notification',
-        evData => {
-            LOGS.log('S53', {'op': evData.operation, 'error': evData.error});
-            notifyResult(evData.operation, evData.error);
-        });
-    bmcMessaging.addWindowHandler(
-        BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'setup' && evData.operation === 'register',
         () => {
             mangaList.isRegistered = false;
@@ -519,6 +512,13 @@ function addEvents() {
         evData => evData.type === 'action' && evData.action === 'refresh' && evData.module === 'sidebar',
         () => {
             mangaList.generate();
+        });
+    bmcMessaging.addWindowHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'notification',
+        evData => {
+            LOGS.log('S53', {'op': evData.operation, 'error': evData.error});
+            notifyResult(evData.operation, evData.error);
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
