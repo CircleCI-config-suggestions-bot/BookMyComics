@@ -5,6 +5,9 @@ class SupportBase:
         self._wrapper = wrapped_driver
         self._driver = wrapped_driver.driver
 
+    def home(self):
+        pass
+
     def load_random(self):
         pass
 
@@ -12,6 +15,15 @@ class SupportBase:
         pass
 
     def next_page(self):
+        pass
+
+    def get_comic_name(self):
+        pass
+
+    def get_page(self):
+        pass
+
+    def get_chapter(self):
         pass
 
 from .mangafox import FanFoxDriver
