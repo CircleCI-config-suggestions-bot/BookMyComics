@@ -3,6 +3,8 @@ import pytest
 
 from selenium.webdriver.common.keys import Keys
 
+from .utils.bmc import init_sidebar
+
 
 @pytest.mark.order(after='test_sidebar_display.py')
 class TestUtilities:
@@ -48,11 +50,7 @@ class TestRegister:
             Validates that the bookmark input is already filled with the comic
             name when you are registering a new comic.
         """
-        reader_driver.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(reader_driver, controller)
         assert len(controller.sidebar.get_registered()) == 0
         # Retrieve out of sidebar focus
         cur_name = reader_driver.get_comic_name()
@@ -70,11 +68,7 @@ class TestRegister:
             confirmed by the user: the new comic is visible in the SidePanel's
             MangaList immediately after registration
         """
-        reader_driver.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(reader_driver, controller)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items
@@ -91,11 +85,7 @@ class TestNavigate:
         #
         # Do the registration first
         #
-        reader_driver.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(reader_driver, controller)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('sample100-load')
         assert len(controller.sidebar.get_registered()) != orig_n_items
@@ -131,11 +121,7 @@ class TestNavigate:
         #
         # Do the registration first
         #
-        reader_driver.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(reader_driver, controller)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items
@@ -166,11 +152,7 @@ class TestNavigate:
         #
         # Do the registration first
         #
-        reader_driver.load_random()
-        assert controller.sidebar.loaded
-        if controller.sidebar.hidden:
-            controller.sidebar.toggle()
-        assert controller.sidebar.hidden is False
+        init_sidebar(reader_driver, controller)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items
