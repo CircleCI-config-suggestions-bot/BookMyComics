@@ -13,6 +13,11 @@ def pytest_addoption(parser):
                      help="List of readers to test, see module names in tests/func/utils/support/")
 
 
+def exit_with_error(err):
+    print(err)
+    exit(1)
+
+
 def pytest_generate_tests(metafunc):
     """
         Generates `controller` and `reader_driver` fixtures, according to the
@@ -30,8 +35,13 @@ def pytest_generate_tests(metafunc):
 
     if 'reader_driver' in metafunc.fixturenames:
         readers = metafunc.config.getoption('reader')
+        default_readers = [driver_name for driver_name in support.drivers]
         if not readers:
-            readers = [driver_name for driver_name in support.drivers]
+            readers = default_readers
+        else:
+            for reader in readers:
+                if reader not in default_readers:
+                    exit_with_error("Unknown reader `{}`. Aborting.".format(reader))
         metafunc.parametrize('reader_driver', sorted(set(readers)), ids=sorted(set(readers)), indirect=True)
 
 
@@ -77,7 +87,7 @@ def pytest_exception_interact(node, call, report):
         print('\n=== MODULE ERROR ===')
         print(node.obj)
         print('=== END OR MODULE ERROR ===')
-    else:
+    elif hasattr(node, "funcargs"):
         controller = node.funcargs['controller']
         if report.failed:
             controller.driver.save_screenshot('/tmp/test-failed.png')
@@ -91,3 +101,5 @@ def pytest_exception_interact(node, call, report):
                 print('\n=== CONSOLE LOGS ===')
                 print(s)
                 print('=== END OF CONSOLE LOGS ===')
+    else:
+        print(call)
