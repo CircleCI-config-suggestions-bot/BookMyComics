@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 from . import SupportBase
-from .. import RetriableError, retry
+from .. import RetriableError, retry, check_predicate
 
 class MangaKakalotDriver(SupportBase):
     name = "mangakakalot"
@@ -26,7 +26,8 @@ class MangaKakalotDriver(SupportBase):
         self._driver.get('https://mangakakalot.com/')
 
     @retry(abort=True)
-    def load_random(self, predicate=None):
+    @check_predicate(RetriableError)
+    def load_random(self):
         to_ignore = []
 
         mangas = self._get_mangas()
@@ -39,20 +40,25 @@ class MangaKakalotDriver(SupportBase):
             if '://mangakakalot.com/' not in href or href in to_ignore:
                 continue
             self._driver.get(href)
-            # Validate predicate if specified
-            if predicate and not predicate(self):
-                to_ignore.append(href)
-                mangas = self._get_mangas()
-                continue
             return
 
         raise "No manga with enough chapters nor with link on mangakakalot"
+
+    def has_prev_page(self):
+        if self._driver.find_elements(by=By.CSS_SELECTOR, value='.btn-navigation-chap>.next'):
+            return True
+        return False
 
     def prev_page(self):
         # In case you wonder, yes, button with "next" class is actually to go to the previous
         # chapter, because why not!
         btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.btn-navigation-chap>.next')
         btn.click()
+
+    def has_next_page(self):
+        if self._driver.find_elements(by=By.CSS_SELECTOR, value='.btn-navigation-chap>.back'):
+            return True
+        return False
 
     def next_page(self):
         # In case you wonder, yes, button with "back" class is actually to go to the next

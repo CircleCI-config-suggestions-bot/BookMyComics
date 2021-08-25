@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 from . import SupportBase
-from .. import RetriableError, retry
+from .. import RetriableError, retry, check_predicate
 
 class IsekaiScanDriver(SupportBase):
     name = "isekaiscan"
@@ -31,7 +31,8 @@ class IsekaiScanDriver(SupportBase):
         return 'ch-' if '/ch-' in url else 'chapter-'
 
     @retry(abort=True)
-    def load_random(self, predicate=None):
+    @check_predicate(RetriableError)
+    def load_random(self):
         to_ignore = []
 
         mangas = self._get_mangas()
@@ -58,9 +59,19 @@ class IsekaiScanDriver(SupportBase):
 
         raise "No manga with enough chapters nor with link on isekaiscan"
 
+    def has_prev_page(self):
+        if self._driver.find_elements(by=By.CSS_SELECTOR, value='.nav-previous>.prev_page'):
+            return True
+        return False
+
     def prev_page(self):
         btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.nav-previous>.prev_page')
         btn.click()
+
+    def has_next_page(self):
+        if self._driver.find_elements(by=By.CSS_SELECTOR, value='.nav-next>.next_page'):
+            return True
+        return False
 
     def next_page(self):
         btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.nav-next>.next_page')

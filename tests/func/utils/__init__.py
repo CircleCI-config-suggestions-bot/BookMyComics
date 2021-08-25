@@ -39,6 +39,18 @@ def retry(retries=5, abort=True):
     return decorator
 
 
+def check_predicate(errorType):
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            predicate = kwargs.pop('predicate', None)
+            ret = func(self, *args, **kwargs)
+            if predicate and not predicate(self):
+                raise errorType()
+            return ret
+        return wrapper
+    return decorator
+
+
 def wait_for_next_page(driver, prev_url):
     wait = WebDriverWait(driver, 10)
     wait.until(lambda driver: (driver.current_url != prev_url

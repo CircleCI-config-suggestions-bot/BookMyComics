@@ -4,7 +4,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 from . import SupportBase
-from .. import RetriableError, retry
+from .. import RetriableError, retry, check_predicate
 
 
 class FanFoxNavBar:
@@ -65,11 +65,17 @@ class FanFoxNavBar:
         self._wrapper.ensure_click(self._pages[1])
         return self.update()
 
+    def has_prev_page(self):
+        return self._chapter_prev is not None
+
     def prev_page(self):
         if not self._pages or self._pageIdx <= 0:
             return False
         self._wrapper.ensure_click(self._pages[0]) # Click on the "<" button
         return self.update()
+
+    def has_next_page(self):
+        return self._chapter_next is not None
 
     def next_page(self):
         if not self._pages or self._pageIdx == (len(self._pages) - 1):
@@ -106,7 +112,8 @@ class FanFoxDriver(SupportBase):
         self._driver.find_element_by_css_selector('.lb-win-con > a > img').click()
 
     @retry(abort=True)
-    def load_random(self, predicate=None):
+    @check_predicate(RetriableError)
+    def load_random(self):
         # First, go to the website
         self.home()
 
@@ -118,10 +125,6 @@ class FanFoxDriver(SupportBase):
             .get_attribute('href'))
         if self._driver.current_url == 'https://fanfox.net':
             raise RetriableError('Could not load a random "latest" chapter')
-
-        # Validate predicate if specified
-        if predicate and not predicate(self):
-            raise RetriableError("Selected Comic does not fit predicate requirements")
 
         # Now, select a page which has both "next" and "prev" pages (ie:
         # neither first nor last), but first we need to ensure the DOM has been
@@ -142,12 +145,18 @@ class FanFoxDriver(SupportBase):
         self._wrapper.ensure_click(pages[random.randrange(1, len(pages) - 1)])
         self._navbar.update()
 
+    def has_prev_page(self):
+        return self._navbar.has_prev_page()
+
     def prev_page(self):
         if not self._navbar.prev_page():
             if self._navbar.prev_chapter():
                 if not self._navbar.last_page():
                     print('Already at earliest page, cannot go to previous')
                     return
+
+    def has_next_page(self):
+        return self._navbar.has_next_page()
 
     def next_page(self):
         if not self._navbar.next_page():

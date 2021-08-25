@@ -322,9 +322,9 @@ class BmcController:
         self.refresh()
 
 
-def init_sidebar(reader_driver, controller, load_random=True):
+def init_sidebar(reader_driver, controller, load_random=True, predicate=None):
     if load_random is True:
-        reader_driver.load_random()
+        reader_driver.load_random(predicate=predicate)
     assert controller.sidebar.loaded
     if controller.sidebar.hidden:
         controller.sidebar.toggle()

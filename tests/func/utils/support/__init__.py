@@ -11,7 +11,13 @@ class SupportBase:
     def load_random(self):
         pass
 
+    def has_prev_page(self):
+        pass
+
     def prev_page(self):
+        pass
+
+    def has_next_page(self):
         pass
 
     def next_page(self):

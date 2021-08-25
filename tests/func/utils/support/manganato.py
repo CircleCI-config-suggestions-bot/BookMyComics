@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 from . import SupportBase
-from .. import RetriableError, retry
+from .. import RetriableError, retry, check_predicate
 
 class MangaNatoDriver(SupportBase):
     name = "manganato"
@@ -26,7 +26,8 @@ class MangaNatoDriver(SupportBase):
         self._driver.get('https://manganato.com/')
 
     @retry(abort=True)
-    def load_random(self, predicate=None):
+    @check_predicate(RetriableError)
+    def load_random(self):
         to_ignore = []
 
         mangas = self._get_mangas()
@@ -42,14 +43,16 @@ class MangaNatoDriver(SupportBase):
             if len(url_parts[-1].split('-')[-1].split('.')) > 1:
                 continue
             self._driver.get(href)
-            # Validate predicate if specified
-            if predicate and not predicate(self):
-                to_ignore.append(href)
-                mangas = self._get_mangas()
-                continue
             return
 
         raise "No manga with enough chapters nor with link on manganelo"
+
+    def has_prev_page(self):
+        if self._driver.find_elements(
+                by=By.CSS_SELECTOR,
+                value='.navi-change-chapter-btn>.navi-change-chapter-btn-prev'):
+            return True
+        return False
 
     def prev_page(self):
         # In case you wonder, yes, button with "next" class is actually to go to the previous
@@ -58,6 +61,13 @@ class MangaNatoDriver(SupportBase):
             by=By.CSS_SELECTOR,
             value='.navi-change-chapter-btn>.navi-change-chapter-btn-prev')
         btn.click()
+
+    def has_next_page(self):
+        if self._driver.find_elements(
+                by=By.CSS_SELECTOR,
+                value='.navi-change-chapter-btn>.navi-change-chapter-btn-next'):
+            return True
+        return False
 
     def next_page(self):
         # In case you wonder, yes, button with "back" class is actually to go to the next
