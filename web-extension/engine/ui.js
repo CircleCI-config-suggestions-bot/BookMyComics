@@ -66,6 +66,16 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
             });
             setupTracker();
         });
+    this._messaging.addWindowHandler(
+        this.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'Refresh',
+        () => this.refreshSidePanel()
+    );
+    this._messaging.addWindowHandler(
+        this.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'Notify',
+        evData => this.makeNotification(evData.operation, evData.err, evData.extra)
+    );
 };
 
 BmcUI.prototype.fullSize = function(showSidebar) {

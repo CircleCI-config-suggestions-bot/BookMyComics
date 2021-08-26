@@ -182,13 +182,14 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
             sendResponse(null);
             return false;
         }
-        if (selected.length > 1) {
-            LOGS.warn('E0000', {count: selected.length});
+        let ret;
+        for (var i = selected.length - 1; i >= 0; i--) {
+            ret = selected[i].handle(event, sender, sendResponse);
         }
         // We only expect one response for this channel, so we only execute the
         // first handler found: Note: the proper return depending on async/sync
         // is ensured by `compat.extensionMessageWrapper()`.
-        return selected[0].handle(event, sender, sendResponse);
+        return ret;
     });
     this._setup = true;
 };

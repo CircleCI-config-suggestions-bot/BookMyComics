@@ -180,13 +180,11 @@ CompatibilityLayer.prototype.MODE_PROMISE = 1;
  */
 CompatibilityLayer.prototype.sendMessage = function(ev, cb) {
     let bro = getBrowser();
-    switch(this._mode) {
-    case this.MODE_PROMISE:
+    if (this._mode === this.MODE_PROMISE) {
         return bro.runtime.sendMessage(ev)
             .catch(err => cb(err))
             .then(response => cb(null, response));
-    case this.MODE_CALLBACK:
-    default:
+    } else {
         return bro.runtime.sendMessage(ev, response => cb(bro.runtime.lastError, response));
     }
 };

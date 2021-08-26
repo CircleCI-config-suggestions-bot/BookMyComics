@@ -37,15 +37,15 @@ function Localization(lang = DEFAULT_LANG) {
         'S2': {
             'en': 'BmcEngine._memoizeComic: unknown comic name.',
         },
-        'S3': {
-            'en': 'BmcEngine: Resetting ID memoization after end of ongoing memoization',
-        },
-        'S4': {
-            'en': 'BmcEngine: Resetting ID memoization',
-        },
-        'S5': {
-            'en': 'Memoization reset complete',
-        },
+        // 'S3': {
+        //     'en': 'BmcEngine: Resetting ID memoization after end of ongoing memoization',
+        // },
+        // 'S4': {
+        //     'en': 'BmcEngine: Resetting ID memoization',
+        // },
+        // 'S5': {
+        //     'en': 'Memoization reset complete',
+        // },
         'S6': {
             'en': 'BmcEngine.track: Nothing to track',
         },
@@ -67,15 +67,15 @@ function Localization(lang = DEFAULT_LANG) {
         'S12': {
             'en': 'BookMyComic: bmcEngine.alias: id={comicId} reader={reader} manga={manga}',
         },
-        'S13': {
-            'en': 'Could not alias current page to comicId {id}: {err}',
-        },
+        // 'S13': {
+        //     'en': 'Could not alias current page to comicId {id}: {err}',
+        // },
         'S14': {
             'en': 'Instanciated {elem}',
         },
-        'S15': {
-            'en': 'Could not register Comic {label}: {err}',
-        },
+        // 'S15': {
+        //     'en': 'Could not register Comic {label}: {err}',
+        // },
         'S16': {
             'en': 'Scheme could not retrieve Comic map',
         },
@@ -302,8 +302,8 @@ function Logs(level = INFO) {
         'E0007': 'S8',
         'E0008': 'S27',
         'E0009': 'S17',
-        'E0010': 'S15',
-        'E0011': 'S13',
+        // 'E0010': 'S15',
+        // 'E0011': 'S13',
         'E0012': 'S38',
         'E0013': 'S47',
         'E0014': 'S48',

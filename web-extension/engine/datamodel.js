@@ -626,18 +626,17 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) 
         return this._scheme.nextId((err, id) => {
             if (err) {
                 LOGS.log('S25', {'data': JSON.stringify(err)});
-                return cb(err);
+                return cb(err, id);
             }
             return this._scheme.getMap((err, map) => {
-                const comic = new BmcComic(label, id, comicInfo.common.chapter, comicInfo.common.page);
+                const comic = new BmcComic(label, id, comicInfo.chapter, comicInfo.page);
 
                 const comicKey = this._scheme.keyFromId(id);
                 const dataset = {};
                 dataset[comicKey] = comic.serialize();
 
-                const readerInfo = Object.assign({}, comicInfo);
-                delete readerInfo.common;
-                const source = new BmcComicSource(comicInfo.common.name, readerName, readerInfo);
+                const readerInfo = JSON.parse(JSON.stringify(comicInfo));
+                const source = new BmcComicSource(comicInfo.name, readerName, readerInfo);
                 const sourceKey = this._scheme.computeSourceKey(source);
                 map[sourceKey] = { id, info: readerInfo };
                 dataset[this._scheme.BMC_MAP_KEY] = map;
@@ -645,7 +644,7 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) 
                 dataset[this._scheme.BMC_LMAP_KEY] = lmap;
 
                 return this._data.set(dataset, err => {
-                    return cb(err);
+                    return cb(err, id);
                 });
             });
         });
@@ -679,9 +678,8 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) 
  */
 BmcDataAPI.prototype.aliasComic = function(comicId, readerName, comicInfo, cb) {
     return this._scheme.getMap((err, map) => {
-        const readerInfo = Object.assign({}, comicInfo);
-        delete readerInfo.common;
-        const source = new BmcComicSource(comicInfo.common.name, readerName, readerInfo);
+        const readerInfo = JSON.parse(JSON.stringify(comicInfo));
+        const source = new BmcComicSource(comicInfo.name, readerName, readerInfo);
         const sourceKey = this._scheme.computeSourceKey(source);
         map[sourceKey] = { id: comicId, info: readerInfo };
         const dataset = {};
