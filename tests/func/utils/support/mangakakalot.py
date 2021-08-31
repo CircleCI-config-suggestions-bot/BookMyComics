@@ -28,21 +28,22 @@ class MangaKakalotDriver(SupportBase):
     @retry(abort=True)
     @check_predicate(RetriableError)
     def load_random(self):
-        to_ignore = []
+        chapters_lists = [manga.find_elements(by=By.CSS_SELECTOR, value='li>span>a')
+                          for manga in self._get_mangas()]
 
-        mangas = self._get_mangas()
-        while len(mangas) > 0:
-            manga = mangas.pop(random.randrange(len(mangas)))
-            chapters = manga.find_elements(by=By.CSS_SELECTOR, value='li>span>a')
-            if len(chapters) < 3:
+        def testable(cs):
+            return len(cs) >= 3 and '.' not in cs[1].get_attribute('href').split('/')[-1]
+
+        candidates = [chapters[1].get_attribute('href')
+                      for chapters in chapters_lists if testable(chapters)]
+        while len(candidates) > 0:
+            candidate = candidates.pop(random.randrange(len(candidates)))
+            if '://mangakakalot.com/' not in candidate:
                 continue
-            href = chapters[1].get_attribute('href')
-            if '://mangakakalot.com/' not in href or href in to_ignore:
-                continue
-            self._driver.get(href)
+            self._driver.get(candidate)
             return
 
-        raise "No manga with enough chapters nor with link on mangakakalot"
+        raise RuntimeError("No manga with enough chapters nor with link on mangakakalot")
 
     def has_prev_page(self):
         if self._driver.find_elements(by=By.CSS_SELECTOR, value='.btn-navigation-chap>.next'):
