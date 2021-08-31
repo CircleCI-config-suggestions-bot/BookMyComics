@@ -89,7 +89,7 @@ class IsekaiScanDriver(SupportBase):
 
     def get_chapter(self):
         sep = self._get_sep(self._driver.current_url)
-        return int(self._driver.current_url.split('/')[-2].split(sep)[1])
+        return self._driver.current_url.split('/')[-2].split(sep)[1]
 
     def get_page(self):
         return None

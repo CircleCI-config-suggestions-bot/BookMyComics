@@ -96,7 +96,7 @@ class MangaNatoDriver(SupportBase):
             Returns the chapter number of the current loaded page.
         """
         parts = [p for p in self._driver.current_url.split('/') if p]
-        return int(parts[-1].split('-')[-1])
+        return parts[-1].split('-')[-1]
 
     @staticmethod
     def get_page():

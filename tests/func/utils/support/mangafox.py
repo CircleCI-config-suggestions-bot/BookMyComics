@@ -178,14 +178,11 @@ class FanFoxDriver(SupportBase):
             Returns the chapter number of the current loaded page.
         """
         parts = [p for p in self._driver.current_url.split('/') if p]
-        return int(parts[4].replace('c', ''))
+        return parts[4].replace('c', '')
 
     def get_page(self):
         """
             Returns the page number of the current loaded page.
         """
         parts = [p for p in self._driver.current_url.split('/') if p]
-        pparts = parts[5].split('#')
-        if len(pparts):
-            return int(pparts[1].replace('ipg', ''))
-        return int(pparts[0].replace('.html', ''))
+        return parts[5]
