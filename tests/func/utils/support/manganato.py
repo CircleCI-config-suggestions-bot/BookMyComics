@@ -45,14 +45,12 @@ class MangaNatoDriver(SupportBase):
             self._driver.get(href)
             return
 
-        raise "No manga with enough chapters nor with link on manganelo"
+        raise RuntimeError("No manga with enough chapters nor with link on manganelo")
 
     def has_prev_page(self):
-        if self._driver.find_elements(
-                by=By.CSS_SELECTOR,
-                value='.navi-change-chapter-btn>.navi-change-chapter-btn-prev'):
-            return True
-        return False
+        return bool(self._driver.find_elements(
+            by=By.CSS_SELECTOR,
+            value='.navi-change-chapter-btn>.navi-change-chapter-btn-prev'))
 
     def prev_page(self):
         # In case you wonder, yes, button with "next" class is actually to go to the previous
@@ -63,11 +61,9 @@ class MangaNatoDriver(SupportBase):
         btn.click()
 
     def has_next_page(self):
-        if self._driver.find_elements(
-                by=By.CSS_SELECTOR,
-                value='.navi-change-chapter-btn>.navi-change-chapter-btn-next'):
-            return True
-        return False
+        return bool(self._driver.find_elements(
+            by=By.CSS_SELECTOR,
+            value='.navi-change-chapter-btn>.navi-change-chapter-btn-next'))
 
     def next_page(self):
         # In case you wonder, yes, button with "back" class is actually to go to the next
