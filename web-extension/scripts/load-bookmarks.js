@@ -515,7 +515,8 @@ function addEvents() {
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
-        evData => evData.type === 'action' && evData.action === 'notification',
+        evData => evData.type === 'action' && evData.action === 'notification' &&
+                  evData.operation !== 'Comic Information',
         evData => {
             LOGS.log('S53', {'op': evData.operation, 'error': evData.error});
             notifyResult(evData.operation, evData.error);

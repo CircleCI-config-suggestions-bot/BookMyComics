@@ -256,6 +256,30 @@ class SideBarController:
         if wait_for_url_change:
             WebDriverWait(self._driver, 10).until(EC.url_changes(prev_url))
 
+    def wait_notification(self):
+        """
+            Waits until the hide button contains the 'notif-transform' class,
+            which shows that a change occurred to notify the user.
+            -> ie: Can be a Storage operation that completed (alias, delete,
+                   register, etc)
+        """
+        with FrameFocus(self._driver, self._frame):
+            def toggle_but_is_notif(driver):
+                but = driver.find_element(by=By.ID, value='hide-but')
+                return 'notif-transform' in but.get_attribute('class')
+            WebDriverWait(self._driver, 10).until(toggle_but_is_notif)
+
+    def reset_notification(self):
+        """
+            Waits until the hide button contains the 'notif-transform' class,
+            which shows that a change occurred to notify the user.
+            -> ie: Can be a Storage operation that completed (alias, delete,
+                   register, etc)
+        """
+        with FrameFocus(self._driver, self._frame):
+            if self._driver.find_element(by=By.CLASS_NAME, value='notif-transform'):
+                self._driver.execute_script('document.querySelector(".notif-transform").classList.remove("notif-transform")')
+
 
 class BmcController:
 

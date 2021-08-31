@@ -135,7 +135,10 @@ class TestNavigate:
         prev_url = controller.driver.current_url
 
         # Now, browse to the next page
+        controller.sidebar.reset_notification()
         reader_driver.next_page()
+        controller.refresh()
+        controller.sidebar.wait_notification()
 
         # Check that the registered page was updated
         # -> We need to access the latest link from sidebar to check if the
