@@ -1,10 +1,12 @@
 /* globals
     BmcDataAPI:readable
     BmcMessagingHandler:readable
+    BmcSources:readable
     BmcUI:readable
     LOGS:readable
 */
 
+const sources = new BmcSources();
 const ENGINE_ID = 'BookMyComics::Engine';
 
 /**
@@ -14,7 +16,7 @@ const ENGINE_ID = 'BookMyComics::Engine';
  *
  * @class BmcEngine
  */
-function BmcEngine(hostOrigin, readerName, comicInfo) {
+function BmcEngine(hostOrigin) {
     this._hostOrigin = hostOrigin;
     this._db = new BmcDataAPI();
     LOGS.log('S14', {'elem': 'BmcDataAPI'});
@@ -95,26 +97,41 @@ function BmcEngine(hostOrigin, readerName, comicInfo) {
         () => {
             this.sendNotificationWithComicInfo('Comic Information', null);
         });
+}
 
-    // A bit of stateful data, so that we can avoid re-checking the storage
-    // everytime (and thus speed-up a bit the logic that spawn the UI bits)
-    let sanitizedInfo = comicInfo || { common: {} };
+BmcEngine.prototype.refresh_comic = function(cb) {
+    const readerName = window.location.hostname;
+    // The `href.slice()` is used to ensure we include the hash part in the provided URL
+    const loc = window.location;
+    var comic = sources.getInfos(loc.host, loc.href.slice(loc.origin.length), document.body);
+    // Log about comic info retrieval
+    if (comic) {
+        LOGS.log('S41', {'data': JSON.stringify(comic)});
+    } else {
+        LOGS.error('E0022');
+    }
+    let sanitizedInfo = comic || { common: {} };
+
+    // Reuse this._comic if already set
     this._comic = {
         reader: readerName,
         info: sanitizedInfo,
         name: sanitizedInfo.common.name,
         chapter: sanitizedInfo.common.chapter,
         page: sanitizedInfo.common.page,
-        id: undefined,
+        id: (this._comic || {}).id || undefined,
         memoizing: false,
     };
     // Only when relevant, setup the listeners for internal events,
     // and launch the asynchronous necessary loads
     if (this._comic.name) {
         // utility that will remember the comic ID and serve as a cache
-        this._memoizeComic();
+        if (cb) {
+            return this._forceMemoizeComic(cb);
+        }
+        return this._memoizeComic();
     }
-}
+};
 
 /*
  * Dicts of constants (names) for the various events available through
@@ -199,6 +216,18 @@ BmcEngine.prototype._forceMemoizeComic = function (cb) {
  *
  */
 BmcEngine.prototype.setup = function() {
+    // Detect AJAX-driven URL/hash changes in order to trigger tracking on AJAX
+    // browsing
+    window.addEventListener('hashchange', () => {
+        this.refresh_comic(() => {
+            this.track();
+        });
+    });
+
+    // A bit of stateful data, so that we can avoid re-checking the storage
+    // everytime (and thus speed-up a bit the logic that spawn the UI bits)
+    this.refresh_comic();
+
     return this._ui.makeSidePanel(
         () => this.track(),
         this._hostOrigin);

@@ -1,6 +1,5 @@
 /* globals
     BmcEngine:readable
-    BmcSources:readable
     LOGS:readable
 */
 
@@ -23,14 +22,6 @@ if (window.top === window) {
     LOGS.log('S39');
 
     try {
-        var sources = new BmcSources();
-        var comic = sources.getInfos(window.location.host, window.location.pathname, document.body);
-        // Log about comic info retrieval
-        if (comic) {
-            LOGS.log('S41', {'data': JSON.stringify(comic)});
-        } else {
-            LOGS.error('E0022');
-        }
         /*
          * Now, we can instanciate the engine and let it spawn the UI:
          *
@@ -39,7 +30,7 @@ if (window.top === window) {
          * loads a supported website's page. The underlying BmcEngine
          * constructor defaults `comic` if null.
          */
-        const engine = new BmcEngine(window.location.origin, window.location.hostname, comic /* may be null */);
+        const engine = new BmcEngine(window.location.origin);
         engine.setup();
         LOGS.log('S42');
     } catch (err) {
