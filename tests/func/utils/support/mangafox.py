@@ -109,7 +109,11 @@ class FanFoxDriver(SupportBase):
         """
         self._driver.get('https://fanfox.net')
         # Bypass a common popup acting as a layer on top of the page...
-        self._driver.find_element_by_css_selector('.lb-win-con > a > img').click()
+        try:
+            self._driver.find_element_by_css_selector('.lb-win-con > a > img').click()
+        except NoSuchElementException:
+            # fine, we only need to handle it once
+            pass
 
     @retry(abort=True)
     @check_predicate(RetriableError)
