@@ -41,5 +41,5 @@ drivers = {
     FanFoxDriver.name: FanFoxDriver,
     MangaKakalotDriver.name: MangaKakalotDriver,
     MangaNatoDriver.name: MangaNatoDriver,
-    IsekaiScanDriver.name: IsekaiScanDriver,
+#    IsekaiScanDriver.name: IsekaiScanDriver,
 }
