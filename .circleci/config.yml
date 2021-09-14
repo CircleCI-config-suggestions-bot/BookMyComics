@@ -277,11 +277,11 @@ workflows:
           browser: firefox
           reader: manganato
           requires: *ff_requirements
-      - test-reader:
-          name: test-firefox-isekaiscan
-          browser: firefox
-          reader: isekaiscan
-          requires: *ff_requirements
+      # - test-reader:
+      #     name: test-firefox-isekaiscan
+      #     browser: firefox
+      #     reader: isekaiscan
+      #     requires: *ff_requirements
       # Chrome tests
       - test-common-basics: *basics_chrome
       - test-reader:
@@ -299,8 +299,8 @@ workflows:
           browser: chrome
           reader: manganato
           requires: *chrome_requirements
-      - test-reader:
-          name: test-chrome-isekaiscan
-          browser: chrome
-          reader: isekaiscan
-          requires: *chrome_requirements
+      # - test-reader:
+      #     name: test-chrome-isekaiscan
+      #     browser: chrome
+      #     reader: isekaiscan
+      #     requires: *chrome_requirements

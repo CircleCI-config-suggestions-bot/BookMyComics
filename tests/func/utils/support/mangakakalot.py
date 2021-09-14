@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 from . import SupportBase
-from .. import RetriableError, retry
+from .. import RetriableError, retry, check_predicate
 
 class MangaKakalotDriver(SupportBase):
     name = "mangakakalot"
@@ -26,33 +26,40 @@ class MangaKakalotDriver(SupportBase):
         self._driver.get('https://mangakakalot.com/')
 
     @retry(abort=True)
-    def load_random(self, predicate=None):
-        to_ignore = []
+    @check_predicate(RetriableError)
+    def load_random(self):
+        chapters_lists = [manga.find_elements(by=By.CSS_SELECTOR, value='li>span>a')
+                          for manga in self._get_mangas()]
 
-        mangas = self._get_mangas()
-        while len(mangas) > 0:
-            manga = mangas.pop(random.randrange(len(mangas)))
-            chapters = manga.find_elements(by=By.CSS_SELECTOR, value='li>span>a')
-            if len(chapters) < 3:
+        def testable(cs):
+            return len(cs) >= 3 and '.' not in cs[1].get_attribute('href').split('/')[-1]
+
+        candidates = [chapters[1].get_attribute('href')
+                      for chapters in chapters_lists if testable(chapters)]
+        while len(candidates) > 0:
+            candidate = candidates.pop(random.randrange(len(candidates)))
+            if '://mangakakalot.com/' not in candidate:
                 continue
-            href = chapters[1].get_attribute('href')
-            if '://mangakakalot.com/' not in href or href in to_ignore:
-                continue
-            self._driver.get(href)
-            # Validate predicate if specified
-            if predicate and not predicate(self):
-                to_ignore.append(href)
-                mangas = self._get_mangas()
-                continue
+            self._driver.get(candidate)
             return
 
-        raise "No manga with enough chapters nor with link on mangakakalot"
+        raise RuntimeError("No manga with enough chapters nor with link on mangakakalot")
+
+    def has_prev_page(self):
+        if self._driver.find_elements(by=By.CSS_SELECTOR, value='.btn-navigation-chap>.next'):
+            return True
+        return False
 
     def prev_page(self):
         # In case you wonder, yes, button with "next" class is actually to go to the previous
         # chapter, because why not!
         btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.btn-navigation-chap>.next')
         btn.click()
+
+    def has_next_page(self):
+        if self._driver.find_elements(by=By.CSS_SELECTOR, value='.btn-navigation-chap>.back'):
+            return True
+        return False
 
     def next_page(self):
         # In case you wonder, yes, button with "back" class is actually to go to the next
@@ -77,7 +84,7 @@ class MangaKakalotDriver(SupportBase):
             Returns the chapter number of the current loaded page.
         """
         parts = [p for p in self._driver.current_url.split('/') if p]
-        return int(parts[-1].split('_')[-1])
+        return parts[-1].split('_')[-1]
 
     @staticmethod
     def get_page():

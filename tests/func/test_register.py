@@ -122,7 +122,7 @@ class TestRegister:
             controller.sidebar.toggle()
 
         unique_reader.load_random(
-            lambda rd: rd.get_comic_name() != registered_comic)
+            predicate=lambda rd: rd.get_comic_name() != registered_comic)
         controller.refresh()
         assert controller.sidebar.loaded
         if controller.sidebar.hidden:

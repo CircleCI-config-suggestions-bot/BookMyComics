@@ -52,6 +52,9 @@ FanFoxNetPlugin.prototype.computeURL = function(comicInfo) {
     let url = `https://fanfox.net/manga/${comicInfo.id}`;
     if (comicInfo.common.chapter) {
         url += `/c${comicInfo.common.chapter.toString().padStart(3, '0')}/${comicInfo.common.page}.html`;
+        if (comicInfo.common.page !== '1') {
+            url = `${url}#ipg${comicInfo.common.page}`;
+        }
     }
     return url;
 };

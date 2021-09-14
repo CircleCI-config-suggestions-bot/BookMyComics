@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 from . import SupportBase
-from .. import RetriableError, retry
+from .. import RetriableError, retry, check_predicate
 
 class IsekaiScanDriver(SupportBase):
     name = "isekaiscan"
@@ -31,39 +31,59 @@ class IsekaiScanDriver(SupportBase):
         return 'ch-' if '/ch-' in url else 'chapter-'
 
     @retry(abort=True)
-    def load_random(self, predicate=None):
-        to_ignore = []
-
+    @check_predicate(RetriableError)
+    def load_random(self):
         mangas = self._get_mangas()
+        print(f'checking {len(mangas)} mangas...')
+        candidates = []
         while len(mangas) > 0:
             manga = mangas.pop(random.randrange(len(mangas)))
             chapters = manga.find_elements(by=By.CSS_SELECTOR, value='.chapter>a')
+            # Cannot check here that there's 3 chapters since they only display 2
             if len(chapters) < 2:
                 continue
-            href = chapters[1].get_attribute('href')
+            candidates.append(chapters[1].get_attribute('href'))
+
+        candidates = candidates[:5]
+        print(f'checking {len(candidates)} candidates...')
+        while len(candidates) > 0:
+            candidate = candidates.pop(random.randrange(len(candidates)))
+            print(f'checking {candidate} ...')
             # do not test cases where chapter numbering is "broken" and cannot
             # be unified (ex: `chapter-0-2`)
-            sep = self._get_sep(href)
-            if len(href.split('/')[-2].split(sep)[1].split('-')) > 1:
-                to_ignore.append(href)
-            if href in to_ignore:
+            sep = self._get_sep(candidate)
+            if len(candidate.split('/')[-2].split(sep)[1].split('-')) > 1:
+                print(f'Skip: sub-numbering -> {candidate}')
                 continue
-            self._driver.get(href)
+            self._driver.get(candidate)
             # pass RPGD cookie/tracking agreement button if any, since only
             # necessary on the first load during a testing session.
             cookie_ack_btn = self._driver.find_elements(by=By.CSS_SELECTOR, value='#qc-cmp2-ui > div.qc-cmp2-footer.qc-cmp2-footer-overlay.qc-cmp2-footer-scrolled > div > button.sc-ifAKCX.ljEJIv')
             if cookie_ack_btn:
                 cookie_ack_btn[0].click()
-            return
 
-        raise "No manga with enough chapters nor with link on isekaiscan"
+            # Success -> return
+            if self.has_next_page() and self.has_prev_page():
+                return
+
+        raise RuntimeError("No manga with enough chapters nor with link on isekaiscan")
+
+    def has_prev_page(self):
+        if self._driver.find_elements(by=By.CSS_SELECTOR, value='.nav-previous > .prev_page'):
+            return True
+        return False
 
     def prev_page(self):
-        btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.nav-previous>.prev_page')
+        btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.nav-previous > .prev_page')
         btn.click()
 
+    def has_next_page(self):
+        if self._driver.find_elements(by=By.CSS_SELECTOR, value='.nav-next > .next_page'):
+            return True
+        return False
+
     def next_page(self):
-        btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.nav-next>.next_page')
+        btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.nav-next > .next_page')
         btn.click()
 
     def get_comic_name(self):
@@ -78,7 +98,7 @@ class IsekaiScanDriver(SupportBase):
 
     def get_chapter(self):
         sep = self._get_sep(self._driver.current_url)
-        return int(self._driver.current_url.split('/')[-2].split(sep)[1])
+        return self._driver.current_url.split('/')[-2].split(sep)[1]
 
     def get_page(self):
         return None

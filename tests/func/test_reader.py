@@ -4,6 +4,7 @@ import pytest
 from selenium.webdriver.common.keys import Keys
 
 from .utils.bmc import init_sidebar
+from .utils import predicates
 
 
 @pytest.mark.order(after='test_sidebar_display.py')
@@ -121,7 +122,8 @@ class TestNavigate:
         #
         # Do the registration first
         #
-        init_sidebar(reader_driver, controller)
+        init_sidebar(reader_driver, controller,
+                     predicate=predicates.with_next_page)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items
@@ -133,7 +135,10 @@ class TestNavigate:
         prev_url = controller.driver.current_url
 
         # Now, browse to the next page
+        controller.sidebar.reset_notification()
         reader_driver.next_page()
+        controller.refresh()
+        controller.sidebar.wait_notification()
 
         # Check that the registered page was updated
         # -> We need to access the latest link from sidebar to check if the
@@ -152,7 +157,8 @@ class TestNavigate:
         #
         # Do the registration first
         #
-        init_sidebar(reader_driver, controller)
+        init_sidebar(reader_driver, controller,
+                     predicate=predicates.with_prev_page)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items

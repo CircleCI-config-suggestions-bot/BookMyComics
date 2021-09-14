@@ -37,9 +37,9 @@
                 "engine/datamodel.js",
                 "engine/messaging.js",
                 "engine/ui.js",
+                "sources.js",
                 "engine/bookmycomics.js",
                 "support/manganato.js",
-                "sources.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -55,9 +55,9 @@
                 "engine/datamodel.js",
                 "engine/messaging.js",
                 "engine/ui.js",
+                "sources.js",
                 "engine/bookmycomics.js",
                 "support/manganato.js",
-                "sources.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -73,9 +73,9 @@
                 "engine/datamodel.js",
                 "engine/messaging.js",
                 "engine/ui.js",
+                "sources.js",
                 "engine/bookmycomics.js",
                 "support/mangafox.js",
-                "sources.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -91,9 +91,9 @@
                 "engine/datamodel.js",
                 "engine/messaging.js",
                 "engine/ui.js",
+                "sources.js",
                 "engine/bookmycomics.js",
                 "support/mangakakalot.js",
-                "sources.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -109,9 +109,9 @@
                 "engine/datamodel.js",
                 "engine/messaging.js",
                 "engine/ui.js",
+                "sources.js",
                 "engine/bookmycomics.js",
                 "support/isekaiscan.js",
-                "sources.js",
                 "entrypoint.js"
             ],
             "all_frames": true
@@ -127,6 +127,7 @@
         "engine/datamodel.js",
         "engine/messaging.js",
         "engine/ui.js",
+        "sources.js",
         "engine/bookmycomics.js",
         "scripts/*",
         "support/*"
