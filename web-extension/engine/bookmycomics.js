@@ -48,7 +48,7 @@ function BmcEngine(hostOrigin) {
         });
 }
 
-BmcEngine.prototype.refresh_comic = function(cb) {
+BmcEngine.prototype.refresh_comic = function() {
     const readerName = window.location.hostname;
     // The `href.slice()` is used to ensure we include the hash part in the provided URL
     const loc = window.location;
@@ -71,15 +71,6 @@ BmcEngine.prototype.refresh_comic = function(cb) {
         id: (this._comic || {}).id || undefined,
         memoizing: false,
     };
-    // Only when relevant, setup the listeners for internal events,
-    // and launch the asynchronous necessary loads
-    if (this._comic.name) {
-        // utility that will remember the comic ID and serve as a cache
-        if (cb) {
-            return this._forceMemoizeComic(cb);
-        }
-        return this._memoizeComic();
-    }
 };
 
 /*
@@ -143,17 +134,16 @@ BmcEngine.prototype._memoizeComic = function () {
  *
  */
 BmcEngine.prototype.setup = function() {
-    // Detect AJAX-driven URL/hash changes in order to trigger tracking on AJAX
-    // browsing
-    window.addEventListener('hashchange', () => {
-        this.refresh_comic(() => {
-            this.track();
-        });
-    });
-
     // A bit of stateful data, so that we can avoid re-checking the storage
     // everytime (and thus speed-up a bit the logic that spawn the UI bits)
     this.refresh_comic();
+
+    // Detect AJAX-driven URL/hash changes in order to trigger tracking on AJAX
+    // browsing
+    window.addEventListener('hashchange', () => {
+        this.refresh_comic();
+        this.track();
+    });
 
     return this._ui.makeSidePanel(
         () => this.track(),
