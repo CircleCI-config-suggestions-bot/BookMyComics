@@ -343,7 +343,7 @@ BmcMangaList.prototype.filter = function(filterStr) {
 BmcMangaList.prototype.askComicInformation = function() {
     const evData = {
         type: 'query',
-        action: 'comic information',
+        action: 'Comic Information',
     };
     window.top.postMessage(evData, '*');
 };

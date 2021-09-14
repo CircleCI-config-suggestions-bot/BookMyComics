@@ -42,7 +42,7 @@ function BmcEngine(hostOrigin) {
     // Handle "Comic information query"
     this._messaging.addWindowHandler(
         ENGINE_ID,
-        evData => evData.type === 'query' && evData.action === 'comic information',
+        evData => evData.type === 'query' && evData.action === 'Comic Information',
         () => {
             this.sendNotificationWithComicInfo('Comic Information', null);
         });
