@@ -527,7 +527,7 @@ function addEvents() {
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'notification' &&
-                  evData.operation !== 'Comic Information',
+                  evData.operation === 'Comic Information',
         evData => {
             if (evData.error) {
                 updateErrorDisplay(evData.error);
