@@ -114,13 +114,10 @@ bmcMessaging.addExtensionHandler(
                 let retErr = null;
                 if (err) {
                     retErr = new Error(
-                        LOGS.getString(
-                            'E0010',
-                            {
-                                'label': evData.label,
-                                'err': err.message,
-                            }
-                        )
+                        LOGS.getString('E0010', {
+                            'label': evData.label,
+                            'err': err.message,
+                        })
                     );
                 }
                 evData.comic.id = id;
@@ -141,10 +138,10 @@ bmcMessaging.addExtensionHandler(
             err => {
                 let retErr = null;
                 if (err) {
-                    retErr = new Error(LOGS.getString(
-                        'E0011',
-                        {'id': evData.comic.id, 'err': err.message}
-                    ));
+                    retErr = new Error(LOGS.getString('E0011', {
+                        'id': evData.comic.id,
+                        'err': err.message
+                    }));
                 }
                 sendNotificationWithComicInfo('Alias Comic', comic, source, retErr);
             });

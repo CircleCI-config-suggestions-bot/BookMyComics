@@ -29,8 +29,6 @@ def check_error_codes(file_path, error_codes, string_codes, errors):
                         errors.append('[{}:{}]: Unknown string code "{}" used in error code "{}"'
                                       .format(file_path, index + 1, error_codes[code]['string'],
                                               code))
-                    else:
-                        string_codes[error_codes[code]['string']]['usage'] += 1
             elif code.startswith('S'):
                 if code not in string_codes:
                     errors.append('[{}:{}]: Unknown string code "{}"'.format(file_path, index + 1,
@@ -67,6 +65,9 @@ def get_all_defined_strings_and_error_codes(errors):
                                       error_codes[error_code]['line']))
                 continue
             error_codes[error_code] = {'line': index + 1, 'string': string_code, 'usage': 0}
+            entry = string_codes.setdefault(string_code, {'usage': 0})
+            entry['usage'] += 1
+            string_codes[string_code] = entry
         elif is_in_errors is True:
             is_reading_errors = line.startswith('this.ERRORS = {')
         elif line.startswith('function Logs('):
@@ -87,7 +88,9 @@ def get_all_defined_strings_and_error_codes(errors):
                               .format(STRINGS_PATH, index + 1, string_code,
                                       string_codes[string_code]['line']))
                 continue
-            string_codes[string_code] = {'line': index + 1, 'usage': 0}
+            entry = string_codes.setdefault(string_code, {'usage': 0})
+            entry.update({'line': index + 1, 'usage': entry['usage'] + 1})
+            string_codes[string_code] = entry
         elif is_in_logs is True:
             is_reading_logs = line.startswith('this.STRINGS = {')
         elif line.startswith('function Localization('):
