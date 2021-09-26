@@ -1,4 +1,6 @@
 /* globals
+    BmcComicSource:readable
+    BmcComic:readable
     LOGS:readable
 */
 
@@ -6,7 +8,9 @@ function IsekaiScanComPlugin() {
 }
 
 IsekaiScanComPlugin.prototype.getInfos = function(url, doc) {
-    let parts = url.split('/').filter(s => s.length !== 0);
+    const comic = new BmcComic(null, null, null, null, null);
+    let source = null;
+    const parts = url.split('/').filter(s => s.length !== 0);
     let chapter_prefix = null;
 
     if (url.indexOf('chapter-') !== -1) {
@@ -33,32 +37,35 @@ IsekaiScanComPlugin.prototype.getInfos = function(url, doc) {
             return null;
         }
         let id = elem.getAttribute('href').split('/manga/')[1].split('/')[0];
-        return { common: { name, chapter: null, page: null },
-                 id, homeUrl: url, prefixes: {chapter: null}};
+        source = new BmcComicSource(name, 'isekaiscan.com', {id, homeUrl: url, prefixes: {chapter: null}});
+        comic.addSource(source);
+    } else {
+        // chapter page
+        let elem = doc.querySelector('#manga-reading-nav-head .breadcrumb > li:nth-child(2) > a');
+        if (!elem) {
+            LOGS.log('S79');
+            return null;
+        }
+        let name = elem.innerText;
+        let homeUrl = elem.getAttribute('href');
+        // XXX BUG XXX:
+        // Found some chapters numbered `chapter-0-2` (2nd version of chapter 0 ?)
+        // As such, and to provide an uniform reading experience throughout the
+        // supported readers, we'll only keep the first number...
+        // -> We acknowledge this may lead to a non-functional link later on
+        let chapter = parseInt(url.split('/')[3].split('-')[1]);
+        let id = homeUrl.split('/manga/')[1].split('/')[0];
+        source = new BmcComicSource(name, 'isekaiscan.com', {id, homeUrl, prefixes: {chapter: chapter_prefix}});
+        comic.addSource(source);
+        comic.chapter = chapter;
     }
-    // chapter page
-    let elem = doc.querySelector('#manga-reading-nav-head .breadcrumb > li:nth-child(2) > a');
-    if (!elem) {
-        LOGS.log('S79');
-        return null;
-    }
-    let name = elem.innerText;
-    let homeUrl = elem.getAttribute('href');
-    // XXX BUG XXX:
-    // Found some chapters numbered `chapter-0-2` (2nd version of chapter 0 ?)
-    // As such, and to provide an uniform reading experience throughout the
-    // supported readers, we'll only keep the first number...
-    // -> We acknowledge this may lead to a non-functional link later on
-    let chapter = parseInt(url.split('/')[3].split('-')[1]);
-    let id = homeUrl.split('/manga/')[1].split('/')[0];
 
-    return { common: { name, chapter, page: null },
-             id, homeUrl, prefixes: {chapter: chapter_prefix}};
+    return comic;
 };
 
-IsekaiScanComPlugin.prototype.computeURL = function(comicInfo) {
-    if (comicInfo.common.chapter !== null) {
-        return `https://isekaiscan.com/manga/${comicInfo.id}/${comicInfo.prefixes.chapter}-${comicInfo.common.chapter}`;
+IsekaiScanComPlugin.prototype.computeURL = function(comic, source) {
+    if (comic.chapter !== null) {
+        return `https://isekaiscan.com/manga/${source.info.id}/${source.info.prefixes.chapter}-${comic.chapter}`;
     }
-    return comicInfo.homeUrl;
+    return comic.homeUrl;
 };

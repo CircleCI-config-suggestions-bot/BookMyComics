@@ -54,23 +54,28 @@ BmcEngine.prototype.refresh_comic = function() {
     const loc = window.location;
     var comic = sources.getInfos(loc.host, loc.href.slice(loc.origin.length), document.body);
     // Log about comic info retrieval
-    if (comic) {
-        LOGS.log('S41', {'data': JSON.stringify(comic)});
+    if (comic !== null) {
+        LOGS.log('S41', {'data': JSON.stringify({
+            comic: comic.serialize(),
+            source: comic.getSource(readerName).toDict(),
+        })});
     } else {
         LOGS.error('E0022');
     }
-    let sanitizedInfo = comic || { common: {} };
+    let sanitizedInfo = comic || null;
 
     // Reuse this._comic if already set
-    this._comic = {
-        reader: readerName,
-        info: sanitizedInfo,
-        name: sanitizedInfo.common.name,
-        chapter: sanitizedInfo.common.chapter,
-        page: sanitizedInfo.common.page,
-        id: (this._comic || {}).id || undefined,
-        memoizing: false,
-    };
+    if (this._comic) { // Update comic chapter/page without overriding tracking info
+        this._comic.chapter = comic.chapter;
+        this._comic.page = comic.page;
+    } else { // Initial setup
+        this._comic = sanitizedInfo;
+        if (this._comic) {
+            comic.id = undefined; // Set unresolved-marker value until we could resolved the id
+        }
+        this._reader = readerName;
+        this._memoizing = false;
+    }
 };
 
 /*
@@ -100,10 +105,8 @@ BmcEngine.prototype._dispatchLoad = function () {
  *
  */
 BmcEngine.prototype._memoizeComic = function () {
-    if (this._comic.name === undefined
-        || this._comic.name === null
-        || typeof this._comic.name !== 'string'
-        || this._comic.name === '') {
+    const source = this._comic ? this._comic.getSource(this._reader) : null;
+    if (!source) {
         LOGS.warn('E0001');
         return;
     }
@@ -112,15 +115,15 @@ BmcEngine.prototype._memoizeComic = function () {
         this._dispatchLoad();
         return ;
     }
-    if (this._comic.memoizing) {
+    if (this._memoizing) {
         // console.log('BmcEngine._memoizeComic: Memoize request already pending.');
         return ;
     }
-    this._comic.memoizing = true;
-    this._db.findComic(this._comic.reader, this._comic.name, (err, comicId) => {
+    this._memoizing = true;
+    this._db.findComic(source.reader, source.name, (err, comicId) => {
         // console.log('BmcEngine._memoizeComic: memoized id=', comicId);
         this._comic.id = comicId;
-        this._comic.memoizing = false;
+        this._memoizing = false;
         this._dispatchLoad();
         this.sendNotificationWithComicInfo();
     });
@@ -129,7 +132,7 @@ BmcEngine.prototype._memoizeComic = function () {
 /*
  * This function is the main window's entry point to setup the add-on's
  * necessary utilities (UI, background process, etc.)
- * It requires the current page's comis info, for any UI that might need to be
+ * It requires the current page's comic info, for any UI that might need to be
  * spawned and would require it.
  *
  */
@@ -159,11 +162,12 @@ BmcEngine.prototype.setup = function() {
  *
  */
 BmcEngine.prototype.track = function() {
-    if (!this._comic.name) {
+    const source = this._comic ? this._comic.getSource(this._reader) : null;
+    if (!this._comic) {
         LOGS.log('S6');
         return ;
     }
-    LOGS.log('S7', {'manga': this._comic.name,
+    LOGS.log('S7', {'manga': source.name,
                     'chapter': this._comic.chapter,
                     'page': this._comic.page});
 
@@ -187,17 +191,13 @@ BmcEngine.prototype.track = function() {
 };
 
 BmcEngine.prototype.sendNotificationWithComicInfo = function(event, err) {
+    const source = this._comic ? this._comic.getSource(this._reader) : null;
     this._ui.makeNotification(
         event,
         err,
         {
-            'comic': {
-                'id': this._comic.id,
-                'reader': this._comic.reader,
-                'name': this._comic.name,
-                'page': this._comic.page,
-                'chapter': this._comic.chapter,
-            },
+            'comic': this._comic ? this._comic.serialize() : null,
+            'source': source ? source.toDict() : null,
         }
     );
 };

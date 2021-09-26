@@ -206,7 +206,7 @@ function BmcComicSource(name, reader, info) {
  * @return {object}
  */
 BmcComicSource.prototype.serialize = function() {
-    // Ensure ordre by using a template string.
+    // Ensure order by using a template string.
     return JSON.stringify(this, ['reader', 'name']);
 };
 
@@ -241,6 +241,33 @@ BmcComicSource.prototype.is = function(source) {
     return this.name == source.name && this.reader == source.reader && this.info === source.info;
 };
 
+/**
+ * Transforms a BmcComicSource into a plain JS dict/object (serialization)
+ *
+ * @method
+ *
+ * @returns {Object}
+ */
+BmcComicSource.prototype.toDict = function() {
+    return {
+        name: this.name,
+        reader: this.reader,
+        info: Object.assign({}, this.info),
+    };
+};
+
+/**
+ * Transforms a plain JS dict/object into a BmcComicSource (deserialization)
+ *
+ * @staticmethod
+ *
+ * @params {Object}
+ *
+ * @returns {BmcComicSource} the unserialized source object
+ */
+BmcComicSource.fromDict = function(input) {
+    return new BmcComicSource(input.name, input.reader, input.info);
+};
 
 
 
@@ -369,10 +396,10 @@ BmcComic.prototype.getSource = function(sourceReader) {
  */
 BmcComic.deserialize = function(obj) {
     return new BmcComic(
-        obj['label'],
-        obj['id'],
-        obj['tracking']['chapter'],
-        obj['tracking']['page']);
+        obj.label,
+        obj.id,
+        (obj.tracking || {}).chapter,
+        (obj.tracking || {}).page);
 };
 
 /**
@@ -603,22 +630,13 @@ BmcDataAPI.prototype.checkLabelAvailability = function(label, cb) {
  *
  * @param {String} label - the unique display name of the comic provided by the
  *                         user
- * @param {String} readerName - Name of the Reader to register as the source
- * @param {Object} comicInfo - Object containing all relevant information
- *                             relevant to a reader and how to read the comic
- *                             on it. It might contain more than only the
- *                             required 'common' member.
- * @param {Object} comicInfo.common - Object containing common properties about
- *                                    a tracked comic.
- * @param {String} comicInfo.common.name    - Name of the Comic to register
- * @param {Number} comicInfo.common.chapter - Chapter number of the last page
- *                                            read
- * @param {Number} comicInfo.common.page    - Page number of the last page read
+ * @param {BmcComic} comic - Comic object to insert into the storage
+ * @param {BmcComicSource} source - Source object to be added along with the comic
 
  * @param {BmcDataAPI~registerCb} cb
  *
  */
-BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) {
+BmcDataAPI.prototype.registerComic = function(label, comic, source, cb) {
     return this.checkLabelAvailability(label, (err, lmap) => {
         if (err) {
             return cb(err);
@@ -629,16 +647,14 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) 
                 return cb(err, id);
             }
             return this._scheme.getMap((err, map) => {
-                const comic = new BmcComic(label, id, comicInfo.chapter, comicInfo.page);
+                comic.id = id;
 
                 const comicKey = this._scheme.keyFromId(id);
                 const dataset = {};
                 dataset[comicKey] = comic.serialize();
 
-                const readerInfo = JSON.parse(JSON.stringify(comicInfo));
-                const source = new BmcComicSource(comicInfo.name, readerName, readerInfo);
                 const sourceKey = this._scheme.computeSourceKey(source);
-                map[sourceKey] = { id, info: readerInfo };
+                map[sourceKey] = { id, info: source.info };
                 dataset[this._scheme.BMC_MAP_KEY] = map;
                 lmap[label] = { id };
                 dataset[this._scheme.BMC_LMAP_KEY] = lmap;
@@ -663,25 +679,13 @@ BmcDataAPI.prototype.registerComic = function(label, readerName, comicInfo, cb) 
  * This is done through the update of the name/id mapping from the KeyScheme.
  *
  * @param {Number} comicId - Unique ID of the registered Comic
- * @param {String} readerName - Name of the Reader to register as the aliased source
- * @param {Object} comicInfo - Object containing all information relevant to a
- *                             reader and how to read the comic on it. It might
- *                             contain more than only the required 'common'
- *                             attributes.
- * @param {Object} comicInfo.common - Object containing common properties about
- *                                    a tracked comic.
- * @param {String} comicInfo.common.name    - Name of the Comic to register
- * @param {Number} comicInfo.common.chapter - Chapter number of the last page
- *                                            read
- * @param {Number} comicInfo.common.page    - Page number of the last page read
+ * @param {BmcComicSource} source - Source to add to the Comic (Alias)
  * @param {BmcDataAPI~aliasCb} cb
  */
-BmcDataAPI.prototype.aliasComic = function(comicId, readerName, comicInfo, cb) {
+BmcDataAPI.prototype.aliasComic = function(comicId, source, cb) {
     return this._scheme.getMap((err, map) => {
-        const readerInfo = JSON.parse(JSON.stringify(comicInfo));
-        const source = new BmcComicSource(comicInfo.name, readerName, readerInfo);
         const sourceKey = this._scheme.computeSourceKey(source);
-        map[sourceKey] = { id: comicId, info: readerInfo };
+        map[sourceKey] = { id: comicId, info: source.info };
         const dataset = {};
         dataset[this._scheme.BMC_MAP_KEY] = map;
         return this._data.set(dataset, err => {
@@ -762,13 +766,12 @@ BmcDataAPI.prototype.unregisterComic = function(comicId, cb) {
  * (ie: make a resolvable id point towards removed data).
  *
  * @param {Number} comicId - Unique ID of the registered Comic
- * @param {String} reader - Name of the source's reader
- * @param {String} name - Name of the comic within the reader
+ * @param {BmcComicSource} source - Source to be removed from the comic
  * @param {BmcDataAPI~unaliasCb} cb
  *
  * @return {undefined}
  */
-BmcDataAPI.prototype.unaliasComic = function(comicId, reader, name, cb) {
+BmcDataAPI.prototype.unaliasComic = function(comicId, source, cb) {
     return this._scheme.getMap((err, map) => {
         // First, count the number of Sources for one Comic
         // On the way, check if the source to be removed is still part of the
@@ -779,8 +782,8 @@ BmcDataAPI.prototype.unaliasComic = function(comicId, reader, name, cb) {
             if (map[key].id === comicId) {
                 // omit "info" parameter as we won't use the object being the
                 // deserialization of the key.
-                const source = BmcComicSource.deserialize(key);
-                if (source.reader === reader && source.name === name) {
+                const src = BmcComicSource.deserialize(key);
+                if (src.reader === source.reader && src.name === source.name) {
                     sourceFound = true;
                 }
                 return ctr + 1;
@@ -792,8 +795,8 @@ BmcDataAPI.prototype.unaliasComic = function(comicId, reader, name, cb) {
         // error, and don't do anything more.
         if (!sourceFound) {
             return cb(new Error(LOGS.getString('E0018', {
-                reader,
-                name,
+                reader: source.reader,
+                name: source.name,
                 id: comicId,
             })));
         }
@@ -804,7 +807,6 @@ BmcDataAPI.prototype.unaliasComic = function(comicId, reader, name, cb) {
         }
 
         // Simply remove the source.
-        const source = new BmcComicSource(name, reader, {});
         const sourceKey = this._scheme.computeSourceKey(source);
         delete map[sourceKey];
         const dataset = {};

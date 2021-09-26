@@ -1,4 +1,6 @@
 /* globals
+    BmcComic:readable
+    BmcComicSource:readable
     BmcDataAPI: readable
     BmcMessagingHandler:readable
     BmcSources:readable
@@ -57,7 +59,7 @@ bmcMessaging.addExtensionHandler(
               && evData.module === 'sources'
               && evData.computation === 'URL:Generate:Request',
     evData => {
-        LOGS.log('S68', {'evData' :evData});
+        LOGS.log('S68', {'evData': JSON.stringify(evData)});
         return sendResponse => {
             bmcData.getComic(evData.resource.id, (err, comic) => {
                 let answerEv = {
@@ -73,10 +75,9 @@ bmcMessaging.addExtensionHandler(
                     answerEv.err = LOGS.getString('S1');
                     return sendResponse(answerEv);
                 }
-                const comicInfo = comic.toInfo(evData.resource.reader);
-                answerEv.resource.url = bmcSources.computeURL(evData.resource.reader, comicInfo);
+                answerEv.resource.url = bmcSources.computeURL(evData.resource.reader, comic);
                 if (!answerEv.resource.url) {
-                    answerEv.err = LOGS.getString('S40', {'comicInfo': comicInfo});
+                    answerEv.err = LOGS.getString('S40', {'comic': comic});
                     return sendResponse(answerEv);
                 }
                 return sendResponse(answerEv);
@@ -85,19 +86,14 @@ bmcMessaging.addExtensionHandler(
     }
 );
 
-function sendNotificationWithComicInfo(operation, comic, err) {
+function sendNotificationWithComicInfo(operation, comic, source, err) {
     var evData = {
         type: 'action',
         action: 'notification',
         operation: operation,
         error: (err||{}).message,
-        comic: {
-            id: comic.id,
-            reader: comic.reader,
-            name: comic.name,
-            chapter: comic.chapter,
-            page: comic.page,
-        },
+        comic: comic.serialize(),
+        source: source ? source.toDict() : null,
     };
     compat.sendMessage(evData, () => {});
 }
@@ -107,22 +103,29 @@ bmcMessaging.addExtensionHandler(
     BACKGROUND_ID,
     evData => evData.type === 'action' && evData.action === 'register',
     evData => {
-        register(evData.label, evData.comic, (err, id) => {
-            let retErr = null;
-            if (err) {
-                retErr = new Error(
-                    LOGS.getString(
-                        'E0010',
-                        {
-                            'label': evData.label,
-                            'err': err.message,
-                        }
-                    )
-                );
-            }
-            evData.comic.id = id;
-            sendNotificationWithComicInfo('Register Comic', evData.comic, retErr);
-        });
+        const comic = BmcComic.deserialize(evData.comic);
+        comic.label = evData.label;
+        const source = BmcComicSource.fromDict(evData.source);
+        register(
+            evData.label,
+            comic,
+            source,
+            (err, id) => {
+                let retErr = null;
+                if (err) {
+                    retErr = new Error(
+                        LOGS.getString(
+                            'E0010',
+                            {
+                                'label': evData.label,
+                                'err': err.message,
+                            }
+                        )
+                    );
+                }
+                evData.comic.id = id;
+                sendNotificationWithComicInfo('Register Comic', comic, source, retErr);
+            });
     }
 );
 // Handle "Alias"
@@ -130,16 +133,21 @@ bmcMessaging.addExtensionHandler(
     BACKGROUND_ID,
     evData => evData.type === 'action' && evData.action === 'alias',
     evData => {
-        alias(evData.comic, err => {
-            let retErr = null;
-            if (err) {
-                retErr = new Error(LOGS.getString(
-                    'E0011',
-                    {'id': evData.comic.id, 'err': err.message}
-                ));
-            }
-            sendNotificationWithComicInfo('Alias Comic', evData.comic, retErr);
-        });
+        const comic = BmcComic.deserialize(evData.comic);
+        const source = BmcComicSource.fromDict(evData.source);
+        alias(
+            comic,
+            source,
+            err => {
+                let retErr = null;
+                if (err) {
+                    retErr = new Error(LOGS.getString(
+                        'E0011',
+                        {'id': evData.comic.id, 'err': err.message}
+                    ));
+                }
+                sendNotificationWithComicInfo('Alias Comic', comic, source, retErr);
+            });
     }
 );
 // Handle "Delete"
@@ -147,10 +155,11 @@ bmcMessaging.addExtensionHandler(
     BACKGROUND_ID,
     evData => evData.type === 'action' && evData.action === 'delete',
     evData => {
+        const comic = BmcComic.deserialize(evData.comic);
+        const source = evData.source ? BmcComicSource.fromDict(evData.source) : null;
         deleteSourceOrComic(
-            evData.comic,
-            (evData.source || {}).reader,
-            (evData.source || {}).name,
+            comic,
+            source,
             err => {
                 let retErr = null;
                 if (err) {
@@ -160,7 +169,7 @@ bmcMessaging.addExtensionHandler(
                     }));
                 }
                 const kind = evData.source ? 'Comic Source' : 'Comic';
-                sendNotificationWithComicInfo(`Delete ${kind}`, evData.comic, retErr);
+                sendNotificationWithComicInfo(`Delete ${kind}`, comic, source, retErr);
             });
     }
 );
@@ -171,16 +180,15 @@ bmcMessaging.addExtensionHandler(
  * user-interacting UI spawned on an online reader's page.
  *
  * @param {String} label - the Comic's user-defined label
+ * @param {BmcComic} comic - the Comic's object
+ * @param {BmcComicSource} source - the Source object for the comic
  *
  * @return {undefined}
  */
-function register(label, comic, cb) {
-    LOGS.log('S10', {'label': label,
-                     'reader': comic.reader,
-                     'manga': comic.name,
-                     'chapter': comic.chapter,
-                     'page': comic.page});
-    return bmcData.registerComic(label, comic.reader, comic, (err, id) => {
+function register(label, comic, source, cb) {
+    LOGS.log('S10', {'common': {label: label, chapter: comic.chapter, page: comic.page},
+                     'source': JSON.stringify(source)});
+    return bmcData.registerComic(label, comic, source, (err, id) => {
         LOGS.debug('S11', {'err': err});
         return cb(err, id);
     });
@@ -189,12 +197,17 @@ function register(label, comic, cb) {
 /*
  * This function registers a new name for an existing comic into the saved data.
  * Then, it also updates the progress of reading for this comic.
+ *
+ * @param {BmcComic} comic - the Comic's object
+ * @param {BmcComicSource} source - the Source object for the comic
+ *
+ * @return {undefined}
  */
-function alias(comic, cb) {
+function alias(comic, source, cb) {
     LOGS.log('S12', {'comicId': comic.id,
-                     'reader': comic.reader,
-                     'manga': comic.name});
-    return bmcData.aliasComic(comic.id, comic.reader, comic, err => {
+                     'label': comic.label,
+                     'source': JSON.stringify(source)});
+    return bmcData.aliasComic(comic.id, source, err => {
         return cb(err);
     });
 }
@@ -206,21 +219,20 @@ function alias(comic, cb) {
  * last Source.
  *
  * @param {Number} comicId - Unique comic ID
- * @param {String} reader - Name of the source's reader
- * @param {String} name - Name of the comic within the reader
+ * @param {BmcComicSource} source - the Source object for the comic
  *
  * @return {undefined}
  */
-function deleteSourceOrComic(comic, reader, name, cb) {
-    LOGS.debug('S60', { id: comic.id, reader, name });
+function deleteSourceOrComic(comic, source, cb) {
+    LOGS.debug('S60', { id: comic.id, source: JSON.stringify(source) });
 
     // Both reader and name must be defined to identify a source according to
     // engine/datamodel.js
     // As such, if either is undefined, assume we're targeting the whole comic
-    if (!reader || !name) {
+    if (!source) {
         return bmcData.unregisterComic(comic.id, cb);
     }
     // Otherwise, remove the source (and optionally the Comic if it was the
     // last source)
-    return bmcData.unaliasComic(comic.id, reader, name, cb);
+    return bmcData.unaliasComic(comic.id, source, cb);
 }

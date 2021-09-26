@@ -72,9 +72,9 @@ BmcSources.prototype._fromOrigin = function(origin, preventRecurse) {
     return this._readers[readerKey];
 };
 
-BmcSources.prototype.computeURL = function(origin, info) {
+BmcSources.prototype.computeURL = function(origin, comic) {
     var ori = this._fromOrigin(origin);
-    return ori ? ori.computeURL(info) : null;
+    return ori ? ori.computeURL(comic, comic.getSource(origin)) : null;
 };
 
 BmcSources.prototype.getInfos = function(origin, url, doc) {

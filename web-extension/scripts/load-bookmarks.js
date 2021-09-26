@@ -1,4 +1,6 @@
 /* globals
+    BmcComic:readable
+    BmcComicSource:readable
     BmcDataAPI:readable
     BmcMessagingHandler:readable
     BmcUI:readable
@@ -18,6 +20,7 @@ const bmcDb = new BmcDataAPI();
 function BmcMangaList() {
     this._node = document.getElementById('manga-list');
     this.currentComic = null;
+    this.currentSource = null;
     this.comics = [];
 }
 
@@ -49,7 +52,8 @@ function sendAliasRequest(comicId) {
         const evData = {
             type: 'action',
             action: 'alias',
-            comic: comic,
+            comic: comic.serialize(),
+            source: mangaList.currentSource.toDict(),
         };
         compat.sendMessage(evData, () => {});
     });
@@ -153,10 +157,10 @@ BmcMangaList.prototype.sourceDelete = function(comicId, reader, name, comicLabel
     const evData = {
         type: 'action',
         action: 'delete',
-        comic: {
+        comic: {            // Follows BmcComic model
             id: comicId,
         },
-        source: {
+        source: {           // Follows BmcComicSource model
             reader: reader,
             name: name,
         },
@@ -174,7 +178,7 @@ BmcMangaList.prototype.onEntryDelete = function(ev) {
     const evData = {
         type: 'action',
         action: 'delete',
-        comic: {
+        comic: {                        // Follows BmcComic model
             id: comicLabel.bmcData.id,
         },
     };
@@ -188,7 +192,7 @@ BmcMangaList.prototype.showRegisterDeleteButton = function() {
     }
     for (let i = 0, len = this.comics.length; i < len; ++i) {
         const comic = this.comics[i];
-        if (comic.id === this.currentComic.id && comic.getSource(this.currentComic.reader) !== null) {
+        if (comic.id === this.currentComic.id && comic.getSource(this.currentSource.reader) !== null) {
             showDeleteButton();
             return;
         }
@@ -377,7 +381,7 @@ function setActiveComic() {
             const sources = cloneArray(item.querySelectorAll('.nested .label'));
             for (i = 0, len = sources.length; i < len; ++i) {
                 const source = sources[i];
-                if (source.innerText === mangaList.currentComic.reader) {
+                if (source.innerText === mangaList.currentSource.reader) {
                     source.parentElement.classList.add('current');
                     break;
                 }
@@ -412,7 +416,8 @@ function addEvents() {
             type: 'action',
             action: 'register',
             label,
-            comic: mangaList.currentComic,
+            comic: mangaList.currentComic.serialize(),
+            source: mangaList.currentSource.toDict(),
         };
         compat.sendMessage(evData, () => {});
     }
@@ -527,7 +532,7 @@ function addEvents() {
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'notification' &&
-                  evData.operation === 'Comic Information',
+                  (evData.operation === 'Comic Information' || evData.operation === 'track'),
         evData => {
             if (evData.error) {
                 updateErrorDisplay(evData.error);
@@ -535,12 +540,12 @@ function addEvents() {
                 // Skip acknowledgement, as this was an error.
                 return ;
             }
-            if (typeof evData.comic !== 'undefined') {
-                mangaList.currentComic = evData.comic;
-            } else {
-                mangaList.currentComic = null;
-            }
+            mangaList.currentComic = typeof evData.comic === 'undefined' || evData.comic === null ? null : BmcComic.deserialize(evData.comic);
+            mangaList.currentSource = typeof evData.source === 'undefined' || evData.source == null ? null : BmcComicSource.fromDict(evData.source);
             mangaList.showRegisterDeleteButton();
+            if (evData.operation === 'track') {
+                notifyResult(evData.operation, evData.error);
+            }
         });
     bmcMessaging.addExtensionHandler(
         BmcUI.prototype.SIDEPANEL_ID,
@@ -566,11 +571,13 @@ function addEvents() {
             if (evData.operation.startsWith('Delete')) {
                 mangaList.generate();
             } else {
-                if (evData.comic.name === mangaList.currentComic.name && evData.comic.reader === mangaList.currentComic.reader) {
-                    mangaList.currentComic.id = evData.comic.id;
+                const evComic = BmcComic.deserialize(evData.comic);
+                const evSource = evData.source ? BmcComicSource.fromDict(evData.source) : null;
+                if (evSource && evSource.name === mangaList.currentSource.name && evSource.reader === mangaList.currentSource.reader) {
+                    mangaList.currentComic.id = evComic.id;
                 }
 
-                bmcDb.getComic(evData.comicId, (err, comic) => {
+                bmcDb.getComic(evComic.id, (err, comic) => {
                     if (comic === null) {
                         LOGS.error('S74');
                         return ;
@@ -794,8 +801,8 @@ function showHideSidePanelAdder() {
         sidePanelAdder.style.display = 'block';
         confirmBut.disabled = true;
         bookmarkName.value = '';
-        if (mangaList.currentComic !== null && mangaList.currentComic.name !== undefined) {
-            bookmarkName.value = mangaList.currentComic.name;
+        if (mangaList.currentSource !== null && mangaList.currentSource.name !== undefined) {
+            bookmarkName.value = mangaList.currentSource.name;
             changeConfirmButtonStatus(confirmBut, bookmarkName.value);
         }
         bookmarkName.focus();
@@ -809,6 +816,6 @@ function showHideSidePanelDeleter() {
     if (!mangaList.currentComic) {
         LOGS.error('E0020');
     }
-    mangaList.sourceDelete(mangaList.currentComic.id, mangaList.currentComic.reader,
-                           mangaList.currentComic.name);
+    mangaList.sourceDelete(mangaList.currentComic.id, mangaList.currentSource.reader,
+                           mangaList.currentSource.name);
 }

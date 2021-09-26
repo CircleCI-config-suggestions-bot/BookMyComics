@@ -59,13 +59,13 @@ function Localization(lang = DEFAULT_LANG) {
             'en': 'BookMyComic: bmcEngine.track.doTrack: Got comicId from storage: {id}',
         },
         'S10': {
-            'en': 'BookMyComic: bmcEngine.register: label={label} reader={reader} manga={manga} chapter={chapter} page={page}',
+            'en': 'BookMyComic: bmcEngine.register: common={common} source={source}',
         },
         'S11': {
             'en': 'Register completed with ERR={err}',
         },
         'S12': {
-            'en': 'BookMyComic: bmcEngine.alias: id={comicId} reader={reader} manga={manga}',
+            'en': 'BookMyComic: bmcEngine.alias: id={comicId} label={label} source={source}',
         },
         'S13': {
             'en': 'Could not alias current page to comicId {id}: {err}',
@@ -152,7 +152,7 @@ function Localization(lang = DEFAULT_LANG) {
             'en': 'BookMyComics: entrypoint.js: Requesting URL parsing from background script',
         },
         'S40': {
-            'en': 'Could not resolve URL from comic {comicInfo}'
+            'en': 'Could not resolve URL from comic {comic}'
         },
         'S41': {
             'en': 'BookMyComics: entrypoint.js: retrieved ComicInfo={data}',
@@ -214,7 +214,7 @@ function Localization(lang = DEFAULT_LANG) {
             'en': 'Could not delete current {kind}: {reason}',
         },
         'S60': {
-            'en': 'BookMyComics: bmcEngine.delete: id={id} reader={reader} manga={name}',
+            'en': 'BookMyComics: bmcEngine.delete: id={id} source={source}',
         },
         'S61': {
             'en': 'Source to remove ({reader}:{name})'
