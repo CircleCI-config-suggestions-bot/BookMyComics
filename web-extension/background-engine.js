@@ -2,9 +2,8 @@
     BmcComic:readable
     BmcComicSource:readable
     BmcDataAPI: readable
-    BmcMessagingHandler:readable
+    BmcBackgroundMessagingHandler:readable
     BmcSources:readable
-    compat:readable
     LOGS:readable
 */
 
@@ -50,39 +49,37 @@ LOGS.log('S66');
 
 const bmcData = new BmcDataAPI();
 
-const bmcMessaging = new BmcMessagingHandler();
+const bmcMessaging = new BmcBackgroundMessagingHandler();
 LOGS.log('S67');
 
-bmcMessaging.addExtensionHandler(
+bmcMessaging.addHandler(
     BACKGROUND_ID,
-    evData => evData.type === 'computation'
-              && evData.module === 'sources'
-              && evData.computation === 'URL:Generate:Request',
-    evData => {
-        LOGS.log('S68', {'evData': JSON.stringify(evData)});
-        return sendResponse => {
-            bmcData.getComic(evData.resource.id, (err, comic) => {
-                let answerEv = {
-                    type: 'computation',
-                    module: 'sources',
-                    computation: 'URL:Generate:Response',
-                    resource: {
-                        err: false,
-                        url: null,
-                    },
-                };
-                if (err) {
-                    answerEv.err = LOGS.getString('S1');
-                    return sendResponse(answerEv);
-                }
-                answerEv.resource.url = bmcSources.computeURL(evData.resource.reader, comic);
-                if (!answerEv.resource.url) {
-                    answerEv.err = LOGS.getString('S40', {'comic': comic});
-                    return sendResponse(answerEv);
-                }
-                return sendResponse(answerEv);
-            });
-        };
+    ev => ev.data.type === 'computation'
+       && ev.data.module === 'sources'
+       && ev.data.computation === 'URL:Generate:Request',
+    ev => {
+        LOGS.log('S68', {'evData': JSON.stringify(ev.data)});
+        bmcData.getComic(ev.data.resource.id, (err, comic) => {
+            let answerEv = {
+                type: 'computation',
+                module: 'sources',
+                computation: 'URL:Generate:Response',
+                resource: {
+                    err: false,
+                    url: null,
+                },
+            };
+            if (err) {
+                answerEv.err = LOGS.getString('S1');
+                return bmcMessaging.send(ev.channel.sender.tab.id, answerEv);
+            }
+            answerEv.resource.url = bmcSources.computeURL(ev.data.resource.reader, comic);
+            if (!answerEv.resource.url) {
+                answerEv.err = LOGS.getString('S40', {'comic': comic});
+                return bmcMessaging.send(ev.channel.sender.tab.id, answerEv);
+            }
+            return bmcMessaging.send(ev.channel.sender.tab.id, answerEv);
+        });
     }
 );
 
@@ -95,19 +92,19 @@ function sendNotificationWithComicInfo(operation, comic, source, err) {
         comic: comic.serialize(),
         source: source ? source.toDict() : null,
     };
-    compat.sendMessage(evData, () => {});
+    bmcMessaging.broadcast(evData);
 }
 
 // Handle "Register"
-bmcMessaging.addExtensionHandler(
+bmcMessaging.addHandler(
     BACKGROUND_ID,
-    evData => evData.type === 'action' && evData.action === 'register',
-    evData => {
-        const comic = BmcComic.deserialize(evData.comic);
-        comic.label = evData.label;
-        const source = BmcComicSource.fromDict(evData.source);
+    ev => ev.data.type === 'action' && ev.data.action === 'register',
+    ev => {
+        const comic = BmcComic.deserialize(ev.data.comic);
+        comic.label = ev.data.label;
+        const source = BmcComicSource.fromDict(ev.data.source);
         register(
-            evData.label,
+            ev.data.label,
             comic,
             source,
             (err, id) => {
@@ -115,23 +112,23 @@ bmcMessaging.addExtensionHandler(
                 if (err) {
                     retErr = new Error(
                         LOGS.getString('E0010', {
-                            'label': evData.label,
+                            'label': ev.data.label,
                             'err': err.message,
                         })
                     );
                 }
-                evData.comic.id = id;
+                ev.data.comic.id = id;
                 sendNotificationWithComicInfo('Register Comic', comic, source, retErr);
             });
     }
 );
 // Handle "Alias"
-bmcMessaging.addExtensionHandler(
+bmcMessaging.addHandler(
     BACKGROUND_ID,
-    evData => evData.type === 'action' && evData.action === 'alias',
-    evData => {
-        const comic = BmcComic.deserialize(evData.comic);
-        const source = BmcComicSource.fromDict(evData.source);
+    ev => ev.data.type === 'action' && ev.data.action === 'alias',
+    ev => {
+        const comic = BmcComic.deserialize(ev.data.comic);
+        const source = BmcComicSource.fromDict(ev.data.source);
         alias(
             comic,
             source,
@@ -139,7 +136,7 @@ bmcMessaging.addExtensionHandler(
                 let retErr = null;
                 if (err) {
                     retErr = new Error(LOGS.getString('E0011', {
-                        'id': evData.comic.id,
+                        'id': ev.data.comic.id,
                         'err': err.message
                     }));
                 }
@@ -148,12 +145,12 @@ bmcMessaging.addExtensionHandler(
     }
 );
 // Handle "Delete"
-bmcMessaging.addExtensionHandler(
+bmcMessaging.addHandler(
     BACKGROUND_ID,
-    evData => evData.type === 'action' && evData.action === 'delete',
-    evData => {
-        const comic = BmcComic.deserialize(evData.comic);
-        const source = evData.source ? BmcComicSource.fromDict(evData.source) : null;
+    ev => ev.data.type === 'action' && ev.data.action === 'delete',
+    ev => {
+        const comic = BmcComic.deserialize(ev.data.comic);
+        const source = ev.data.source ? BmcComicSource.fromDict(ev.data.source) : null;
         deleteSourceOrComic(
             comic,
             source,
@@ -161,11 +158,11 @@ bmcMessaging.addExtensionHandler(
                 let retErr = null;
                 if (err) {
                     retErr = new Error(LOGS.getString('E0017', {
-                        kind: evData.source ? 'Source' : 'Comic',
+                        kind: ev.data.source ? 'Source' : 'Comic',
                         reason: err.message,
                     }));
                 }
-                const kind = evData.source ? 'Comic Source' : 'Comic';
+                const kind = ev.data.source ? 'Comic Source' : 'Comic';
                 sendNotificationWithComicInfo(`Delete ${kind}`, comic, source, retErr);
             });
     }

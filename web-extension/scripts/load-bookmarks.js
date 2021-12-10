@@ -2,9 +2,8 @@
     BmcComic:readable
     BmcComicSource:readable
     BmcDataAPI:readable
-    BmcMessagingHandler:readable
+    BmcSidebarMessagingHandler:readable
     BmcUI:readable
-    compat:readable
     LOGS:readable
     cloneArray
 */
@@ -14,7 +13,7 @@ const hostOrigin = decodeURIComponent(uriParams[0].split('=')[1]);
 LOGS.log('S44', {'origin': hostOrigin});
 
 LOGS.log('S45');
-const bmcMessaging = new BmcMessagingHandler(hostOrigin);
+const bmcMessaging = new BmcSidebarMessagingHandler(hostOrigin);
 const bmcDb = new BmcDataAPI();
 
 function BmcMangaList() {
@@ -55,7 +54,7 @@ function sendAliasRequest(comicId) {
             comic: comic.serialize(),
             source: mangaList.currentSource.toDict(),
         };
-        compat.sendMessage(evData, () => {});
+        bmcMessaging.sendExtension(evData);
     });
 }
 
@@ -115,23 +114,7 @@ BmcMangaList.prototype.onSourceClick = function(comic, source) {
      *    to load the requested one.
      *
      */
-    compat.sendMessage(ev, (err, response) => {
-        if (err || !response) {
-            LOGS.warn('E0013', {'err': err});
-            return undefined;
-        }
-        if (response.err) {
-            LOGS.warn('E0014', {'err': response.err});
-            return undefined;
-        }
-        let localEv = {
-            type: 'action',
-            action: 'urlopen',
-            url: response.resource.url,
-        };
-        // Let the content script at the page's root handle the URL opening
-        window.top.postMessage(localEv, '*');
-    });
+    bmcMessaging.sendExtension(ev);
 };
 
 BmcMangaList.prototype.onSourceDelete = function(ev) {
@@ -165,7 +148,7 @@ BmcMangaList.prototype.sourceDelete = function(comicId, reader, name, comicLabel
             name: name,
         },
     };
-    compat.sendMessage(evData, () => {});
+    bmcMessaging.sendExtension(evData);
 };
 
 BmcMangaList.prototype.onEntryDelete = function(ev) {
@@ -182,7 +165,7 @@ BmcMangaList.prototype.onEntryDelete = function(ev) {
             id: comicLabel.bmcData.id,
         },
     };
-    compat.sendMessage(evData, () => {});
+    bmcMessaging.sendExtension(evData);
 };
 
 BmcMangaList.prototype.showRegisterDeleteButton = function() {
@@ -303,6 +286,8 @@ BmcMangaList.prototype.generate = function() {
         marker.id = 'manga-list-end-marker';
         this._node.appendChild(marker);
         this.showRegisterDeleteButton();
+        // Now, ensure the active comic (if set) is highlighted.
+        setActiveComic();
     });
 };
 
@@ -349,7 +334,7 @@ BmcMangaList.prototype.askComicInformation = function() {
         type: 'query',
         action: 'Comic Information',
     };
-    window.top.postMessage(evData, '*');
+    bmcMessaging.sendWindow(evData);
 };
 
 function showDeleteButton() {
@@ -376,7 +361,8 @@ function setActiveComic() {
     for (let i = 0, len = items.length; i < len; ++i) {
         const item = items[i];
         const label = item.getElementsByClassName('rollingArrow')[0];
-        if (label.bmcData.id === mangaList.currentComic.id) {
+        if (mangaList.currentComic
+            && label.bmcData.id === mangaList.currentComic.id) {
             label.parentElement.classList.add('current');
             const sources = cloneArray(item.querySelectorAll('.nested .label'));
             for (i = 0, len = sources.length; i < len; ++i) {
@@ -419,7 +405,7 @@ function addEvents() {
             comic: mangaList.currentComic.serialize(),
             source: mangaList.currentSource.toDict(),
         };
-        compat.sendMessage(evData, () => {});
+        bmcMessaging.sendExtension(evData);
     }
 
     // On button-add click, Trigger a new comic registration
@@ -546,33 +532,56 @@ function addEvents() {
             if (evData.operation === 'track') {
                 notifyResult(evData.operation, evData.error);
             }
+            setActiveComic();
         });
     bmcMessaging.addExtensionHandler(
         BmcUI.prototype.SIDEPANEL_ID,
-        evData => evData.type === 'action' && evData.action === 'notification',
-        evData => {
-            LOGS.log('S53', {'op': evData.operation, 'error': evData.error});
-            notifyResult(evData.operation, evData.error);
+        ev => ev.data.type === 'computation'
+           && ev.data.module === 'sources'
+           && ev.data.computation === 'URL:Generate:Response',
+        ev => {
+            if (ev.data.err || !ev.data.resource) {
+                LOGS.warn('E0013', {'err': ev.data.err});
+                return undefined;
+            }
+            if (ev.data.resource.err) {
+                LOGS.warn('E0014', {'err': ev.data.resource.err});
+                return undefined;
+            }
+            let localEv = {
+                type: 'action',
+                action: 'urlopen',
+                url: ev.data.resource.url,
+            };
+            // Let the content script at the page's root handle the URL opening
+            bmcMessaging.sendWindow(localEv);
         });
     bmcMessaging.addExtensionHandler(
         BmcUI.prototype.SIDEPANEL_ID,
-        evData => evData.type === 'action' && evData.action === 'notification' &&
-                  (evData.operation === 'Alias Comic'
-                    || evData.operation === 'Register Comic'
-                    || evData.operation === 'Delete Comic Source'
-                    || evData.operation === 'Delete Comic'),
-        evData => {
-            if (evData.error) {
-                updateErrorDisplay(evData.error);
+        ev => ev.data.type === 'action' && ev.data.action === 'notification',
+        ev => {
+            LOGS.log('S53', {'op': ev.data.operation, 'error': ev.data.error});
+            notifyResult(ev.data.operation, ev.data.error);
+        });
+    bmcMessaging.addExtensionHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
+        ev => ev.data.type === 'action' && ev.data.action === 'notification' &&
+                  (ev.data.operation === 'Alias Comic'
+                    || ev.data.operation === 'Register Comic'
+                    || ev.data.operation === 'Delete Comic Source'
+                    || ev.data.operation === 'Delete Comic'),
+        ev => {
+            if (ev.data.error) {
+                updateErrorDisplay(ev.data.error);
                 confirmBut.disabled = true;
                 // Skip acknowledgement, as this was an error.
                 return ;
             }
-            if (evData.operation.startsWith('Delete')) {
+            if (ev.data.operation.startsWith('Delete')) {
                 mangaList.generate();
             } else {
-                const evComic = BmcComic.deserialize(evData.comic);
-                const evSource = evData.source ? BmcComicSource.fromDict(evData.source) : null;
+                const evComic = BmcComic.deserialize(ev.data.comic);
+                const evSource = ev.data.source ? BmcComicSource.fromDict(ev.data.source) : null;
                 if (evSource && evSource.name === mangaList.currentSource.name && evSource.reader === mangaList.currentSource.reader) {
                     mangaList.currentComic.id = evComic.id;
                 }
@@ -583,7 +592,7 @@ function addEvents() {
                         return ;
                     }
                     let comicDOM = mangaList.generateComic(comic);
-                    if (evData.operation.startsWith('Register')) { // 'RegisterComic'
+                    if (ev.data.operation.startsWith('Register')) { // 'RegisterComic'
                         // Insert the new entry before the end-of-listing marker // (made for testing purposes)
                         mangaList.appendComic(comicDOM);
                     } else { // 'Alias Comic'
@@ -591,14 +600,13 @@ function addEvents() {
                     }
                     showHideSidePanelAdder();
                     mangaList.generate();
-                    setActiveComic();
                 });
             }
         });
 
     // Now that we're ready, we can ask to the UI handler to check if we have to open the sidebar
     // or not.
-    window.top.postMessage({'type': 'action', 'action': 'CheckSidebar'}, '*');
+    bmcMessaging.sendWindow({'type': 'action', 'action': 'CheckSidebar'});
     // Ask for the current comic information.
     mangaList.askComicInformation();
 }
@@ -718,7 +726,7 @@ function showHideSidePanel() {
         shiftButtonLeft(delBtn);
     }
     // Notify top window of the SidePanel action
-    window.top.postMessage(evData, '*');
+    bmcMessaging.sendWindow(evData);
 }
 
 function switchSelectedEntry() {
@@ -782,10 +790,10 @@ function showHideSidePanelAdder() {
         updateErrorDisplay(null); // Reset error display and hide it
         if (prev === '') {
             // Force iframe to non full size.
-            window.top.postMessage({'type': 'action', 'action': 'IFrameResize'}, '*');
+            bmcMessaging.sendWindow({'type': 'action', 'action': 'IFrameResize'});
         } else {
             // Show sidebar.
-            window.top.postMessage({'type': 'action', 'action': 'ShowSidePanel'}, '*');
+            bmcMessaging.sendWindow({'type': 'action', 'action': 'ShowSidePanel'});
         }
         mangaList.showRegisterDeleteButton();
     } else {
@@ -795,7 +803,7 @@ function showHideSidePanelAdder() {
         sidePanel.setAttribute('prev', sidePanel.style.display);
 
         // Force iframe to full size.
-        window.top.postMessage({'type': 'action', 'action': 'IFrameResize', 'fullSize': 'true'}, '*');
+        bmcMessaging.sendWindow({'type': 'action', 'action': 'IFrameResize', 'fullSize': 'true'});
 
         sidePanel.style.display = 'none';
         sidePanelAdder.style.display = 'block';

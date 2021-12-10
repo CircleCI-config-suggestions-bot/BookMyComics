@@ -109,15 +109,15 @@ function Localization(lang = DEFAULT_LANG) {
         'S26': {
             'en': 'Got message error: {data}',
         },
-        'S27': {
-            'en': 'BmcMessagingHandler: EventData is of unexpected type',
-        },
+        // 'S27': {
+        //     'en': 'BmcMessagingHandler: EventData is of unexpected type',
+        // },
         'S28': {
             'en': 'Received RUNTIME message: {msg}',
         },
-        'S29': {
-            'en': 'BmcMessagingHandler: event is of unexpected type',
-        },
+        // 'S29': {
+        //     'en': 'BmcMessagingHandler: event is of unexpected type',
+        // },
         'S30': {
             'en': '[Wrapper] Selected mode: {mode}',
         },
@@ -181,9 +181,9 @@ function Localization(lang = DEFAULT_LANG) {
         'S49': {
             'en': 'generating bookmark list',
         },
-        'S50': {
-            'en': 'Messaging: Wrong number of handlers for event: {count} instead of 1',
-        },
+        // 'S50': {
+        //     'en': 'Messaging: Wrong number of handlers for event: {count} instead of 1',
+        // },
         'S51': {
             'en': 'Input of searchbox changed: filtering bookmarks list',
         },
@@ -292,15 +292,15 @@ function Logs(level = INFO) {
     this.level = level;
 
     this.ERRORS = {
-        'E0000': 'S50',
+        // 'E0000': 'S50',
         'E0001': 'S2',
         // 'E0002': 'S40',
         'E0003': 'S43',
-        'E0004': 'S29',
+        // 'E0004': 'S29',
         // 'E0005': 'S6',
         // 'E0006': 'S7',
         'E0007': 'S8',
-        'E0008': 'S27',
+        // 'E0008': 'S27',
         'E0009': 'S17',
         'E0010': 'S15',
         'E0011': 'S13',

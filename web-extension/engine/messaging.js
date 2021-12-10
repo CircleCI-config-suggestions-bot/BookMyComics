@@ -1,54 +1,28 @@
 /* globals
-    compat:readable
     getBrowser:readable
     LOGS:readable
 */
 
 /**
- * This global object is an array containing the various BmcMessageHandler
- * objects used by the window to handle its internal communication events.
+ * A function that tells whether an event/message should be handled by the
+ * BaseMessagingHandler logic, based on various properties.
+ * If the message should be handled, the function should return a sanitized
+ * object, which can be directly fed to BmcMessageHandler~SelectorFunction and
+ * BmcMessageHandler~HandlerFunction
  *
- * The reason why it's separate from `BmcExtensionHandlers` is that the API to
- * resolve both differs greatly:
- * - window message handling does not expect "answers" and thus requires no
- *   specific handling for asynchronous handlers.
- * - extension-wide messaging handling can be answered to, and by design, our
- *   web-extension may require to handle asynchronous handling to interact with
- *   various components before answering.
+ * @callback BaseMessagingHandler~SanitizerFunction
  *
- * This object should never be accessed directly, but accessed through a
- * BmcMessagingHandlers object.
+ * @params {Object} message - The message to check and sanitize
  *
- * @global
+ * @returns {object|null} - The sanitized event's data in case of success, nul
+ *                          otherwise
  */
-var BmcWindowHandlers = [];
 
 /**
- * This global object is an array containing the various BmcMessageHandler
- * objects used by any piece of the web-extension to communicate globally with
- * other pieces of the web-extension. Note that this is mostly useful for
- * communications between a window and the background page.
- *
- * The reason why it's separate from `BmcWindowHandlers` is that the API to
- * resolve both differs greatly:
- * - window message handling does not expect "answers" and thus requires no
- *   specific handling for asynchronous handlers.
- * - extension-wide messaging handling can be answered to, and by design, our
- *   web-extension may require to handle asynchronous handling to interact with
- *   various components before answering.
- *
- * This object should never be accessed directly, but accessed through a
- * BmcMessagingHandlers object.
- *
- * @global
- */
-var BmcExtensionHandlers = [];
-
-
-/**
- * A function that tells whether an event should be handled by the associated
- * BmcMEssageHandler~HandlerFunction, by checking the event's object provided
- * as parameter.
+ * A function that tells whether an event/message should be handled by the
+ * associated BmcMEssageHandler~HandlerFunction, by checking the event's object
+ * provided as parameter. It only handles data previously sanitized by a
+ * BaseMessagingHandler~SanitizerFunction.
  *
  * @callback BmcMessageHandler~SelectorFunction
  *
@@ -71,8 +45,7 @@ var BmcExtensionHandlers = [];
 /**
  * This function is the constructor for the BmcMessageHandler class
  * This class is used as a wrapper to hold all informations regarding one
- * specific handler. A collection of these handlers can be found in the
- * `BmcWindowHandlers` global variable, and shall be manipulated through the
+ * specific handler. A collection of these handlers is handled in each MessagingHandler, and shall be manipulated through the
  * BmcMessagingHandler framework-class.
  *
  * @class
@@ -93,9 +66,9 @@ function BmcMessageHandler(tag, selector, handler) {
 }
 
 /**
- * This function is the constructor for the BmcMessagingHandler class
- * This class is used as a messaging framework, which stores its data globally
- * (through the `BmcWindowHanlders` variable).
+ * This function is the constructor for the common logic of message handling.
+ * It contains and manages a list of BmcMessageHandlers, and calls the relevant
+ * handler upon receiving a message to dispatch.
  *
  * @class
  *
@@ -103,95 +76,88 @@ function BmcMessageHandler(tag, selector, handler) {
  *            to allow accepting messages from it additionally to internal
  *            web-extension messages. This allows exchanging between host
  *            window and web-extension iframes.
- *
  */
-function BmcMessagingHandler(topOrigin) {
-    this._setup = false;
+function BaseMessagingHandler(topOrigin) {
     this._topOrigin = topOrigin;
+    /*
+     * an event's origin is actually shown as the extension's internal URL, so
+     * let's retrieve the expected value for BMC using runtime.getURL('').
+     * We'll check against this value when dispatching/handling messages.
+     */
     this._selfOrigin = getBrowser().runtime.getURL('');
+    this._handlers = [];
 }
 
-/*
- * This method makes use of internal object data in order to determine whether
- * a provided origin is accepted as the source of a message or not.
+/**
+ * This method is a pre-check dedicated to window-based event handling,
+ * ensuring that the event is indeed supposed to be handled by our code.
+ *
+ * @method
+ *
+ * @returns {object} null or valid object
  */
-BmcMessagingHandler.prototype._checkOrigin = function(origin) {
-    if (this._selfOrigin.indexOf(origin) !== -1) {
-        return true;
+BaseMessagingHandler.prototype._checkWindowMessage = function(event) {
+    if (event.type === 'message'
+        && !(event instanceof Error)
+        /*
+         * The origin provided by an event does not include an ending '/' while
+         * the URL of the extension does (retrieve on initialization), hence
+         * the 'indexOf' method rather than a simple equality comparison.
+         * Then we also check against the content script's host page's URL
+         */
+        && (this._selfOrigin.indexOf(event.origin) !== -1
+            || this._topOrigin === event.origin)
+        && typeof(event.data) === 'object') {
+        return event.data;
     }
-    return this._topOrigin === origin;
+    return null;
 };
 
 /**
- * This function shall only be called once by the BmcMessagingHandler class.
- * It sets up one global eventHandler function for the 'message' events, and
- * handles various event Handlers through the BmcWindowHandlers variable and
- * its BmcMessageHandle objects.
- * This method allows a finer control over the Handlers managed by the
- * BmcMessagingHandlers class.
+ * This method is an utility which applies the handler selection logic for any
+ * given "message" no matter what type is actually behind it.
+ *
+ * @method
+ *
+ * @params {Event|object} message
+ * @params {BaseMessagingHandler~SanitizerFunction} checkf - checker
+ *                      function to apply on the message, ensuring it is indeed
+ *                      a message we should dispatch.
+ * @params {Boolean} once - true to apply only the first handler selected for this event
+ *                          false to apply all selected handlers for this event
+ */
+BaseMessagingHandler.prototype.dispatch = function(message, checkf, once) {
+    const do_once = once || false;
+    const sanitized = checkf(message);
+    if (sanitized === null || message instanceof Error) {
+        LOGS.log('S26', {
+            'data': JSON.stringify(event, ['message', 'arguments', 'type', 'name']),
+        });
+        return;
+    }
+
+    let done = false;
+    this._handlers.forEach(handler => {
+        if ((!do_once || !done) && handler.select(sanitized)) {
+            handler.handle(sanitized);
+            done = true;
+        }
+    });
+};
+
+/**
+ * This function registers the object's handlers as window-messaging handlers,
+ * in the relevant callback.
+ *
+ * Can be used to set-up cross-iframe/window messaging in relevant child
+ * classes of BaseMessagingHandler
  *
  * @method
  */
-BmcMessagingHandler.prototype.setupMessaging = function() {
-    // Setup the cross-window (iframe actually) messaging to get notified when
-    // the iframe will have spent its usefulness.
+BaseMessagingHandler.prototype.setupWindowMessaging = function() {
     window.addEventListener('message', event => {
-        if (event.type === 'message') {
-            if (event instanceof Error) {
-                LOGS.log('S26',
-                         {'data': JSON.stringify(event, ['message', 'arguments', 'type', 'name'])});
-                return ;
-            }
-
-            /*
-             * NOTE
-             * Origin is actually shown as the extension's internal URL, so
-             * let's retrieve it using runtime.getURL(''); and compare the
-             * origin against it.
-             * Note that the origin does not include an ending '/' while the
-             * URL of the extension does, hence the 'indexOf' method rather
-             * than a simple '===' comparison.
-             */
-            if (this._checkOrigin(event.origin)) {
-                var eventData = event.data;
-                if (typeof(eventData) !== 'object') {
-                    LOGS.warn('E0008');
-                    return ;
-                }
-                BmcWindowHandlers.forEach(handler => {
-                    if (handler.select(eventData)) {
-                        handler.handle(eventData);
-                    }
-                });
-            }
-        }
+        this.dispatch(event, m => this._checkWindowMessage(m));
     });
-
-    // Now, setup communication between background script & inserted frames:
-    // `runtime.onMessage()` had a extension-wide range of messaging
-    getBrowser().runtime.onMessage.addListener((event, sender, sendResponse) => {
-        LOGS.log('S28', {'msg': JSON.stringify(event)});
-        if (typeof(event) !== 'object') {
-            LOGS.warn('E0004');
-            return ;
-        }
-        let selected = BmcExtensionHandlers.filter(handler => handler.select(event));
-        // Leave a trace if some handlers may not have been executed, for debugging
-        if (selected.length < 1) {
-            LOGS.error('E0000', {count: selected.length});
-            sendResponse(null);
-            return false;
-        }
-        let ret;
-        for (var i = selected.length - 1; i >= 0; i--) {
-            ret = selected[i].handle(event, sender, sendResponse);
-        }
-        // We only expect one response for this channel, so we only execute the
-        // first handler found: Note: the proper return depending on async/sync
-        // is ensured by `compat.extensionMessageWrapper()`.
-        return ret;
-    });
-    this._setup = true;
 };
 
 /**
@@ -209,13 +175,12 @@ BmcMessagingHandler.prototype.setupMessaging = function() {
  *                        to the event if the selector for this handler
  *                        returned true
  */
-BmcMessagingHandler.prototype.addWindowHandler = function(tag, selector, handler) {
-    BmcWindowHandlers.push(new BmcMessageHandler(tag, selector, handler));
+BaseMessagingHandler.prototype._addHandler = function(tag, selector, handler) {
+    this._handlers.push(new BmcMessageHandler(tag, selector, handler));
     if (this._setup === false) {
         this.setupMessaging();
     }
 };
-
 
 /**
  * This function removes all handlers which tag match the parameter provided.
@@ -227,44 +192,220 @@ BmcMessagingHandler.prototype.addWindowHandler = function(tag, selector, handler
  * @params {string} tag - a name to identify the groups of handlers to be
  *                        removed from the messaging framework
  */
-BmcMessagingHandler.prototype.removeWindowHandlers = function(tag) {
-    BmcWindowHandlers = BmcWindowHandlers.filter(handler => handler.tag !== tag);
+BaseMessagingHandler.prototype._removeHandlers = function(tag) {
+    this._handlers = this._handlers.filter(handler => handler.tag !== tag);
 };
 
 
 /**
- * This function registers a handler in the messaging system according to the
- * provided handler settings.
+ * This class is a dedicated messaging handler for the background script of the
+ * web-extension. It manages a list of connected peers, which are actually the
+ * various tabs opened which have loaded the extension's content-scripts.
+ * It provides the capability to receive, route, and process messages coming
+ * from the various content-scripts, as well as the capability to send a
+ * message to them, by id or through a broadcasting approach.
+ *
+ * @class
+ *
+ */
+function BmcBackgroundMessagingHandler() {
+    BaseMessagingHandler.call(this);
+    this.peers = {};
+    getBrowser().runtime.onConnect.addListener(channel => {
+        this.peers[channel.sender.tab.id] = channel;
+        // Handle Disconnections and track only connected peers
+        channel.onDisconnect.addListener(channel => {
+            channel.onMessage.removeListener();
+            channel.onDisconnect.removeListener();
+            delete this.peers[channel.sender.tab.id];
+        });
+        // Message handling through BaseMessagingHandler.dispatch
+        channel.onMessage.addListener(msg => {
+            this.dispatch(msg, e => { return {channel, data: e}; }, true/*once*/);
+        });
+    });
+}
+// Inherit from BaseMessagingHandler
+BmcBackgroundMessagingHandler.prototype = new BaseMessagingHandler();
+BmcBackgroundMessagingHandler.prototype.constructor = BmcBackgroundMessagingHandler;
+
+/**
+ * Add a handler for messages received from the sidebar's content-script.
  *
  * @method
- *
- * @params {string} tag - a tag to identify a group of Handlers with for
- *                        grouped removal
- * @params {BmcMessageHandler~SelectorFunction} selector - a function to tell
- *                        whether the handler wants to be called for the
- *                        handled event.
- * @params {BmcMessageHandler~HandlerFunction} handler - the function to apply
- *                        to the event if the selector for this handler
- *                        returned true
+ * See BaseMessagingHandler._addHandler for parameters specifics
  */
-BmcMessagingHandler.prototype.addExtensionHandler = function(tag, selector, handler) {
-    BmcExtensionHandlers.push(new BmcMessageHandler(tag, selector, compat.extensionMessageWrapper(handler)));
-    if (this._setup === false) {
-        this.setupMessaging();
+BmcBackgroundMessagingHandler.prototype.addHandler = function(tag, selector, handler) {
+    this._addHandler(tag, selector, handler);
+};
+
+/**
+ * Remove the selected handlers from the internal list.
+ *
+ * @method
+ * See BaseMessagingHandler._addHandler for parameters specifics
+ */
+BmcBackgroundMessagingHandler.prototype.removeHandlers = function(tag) {
+    this._removeHandlers(tag);
+};
+
+/**
+ * Sends a message to a sidebar content-script specified by its tab id
+ *
+ * @method
+ * See runtime.Port.postMessage documentation for message description
+ */
+BmcBackgroundMessagingHandler.prototype.send = function(id, message) {
+    const channel = this.peers[id];
+    if (channel) {
+        channel.postMessage(message);
+    }
+};
+
+/**
+ * Sends a message to all currently connected sidebar content-scripts
+ *
+ * @method
+ * See runtime.Port.postMessage documentation for message description
+ */
+BmcBackgroundMessagingHandler.prototype.broadcast = function(message) {
+    for (const id in this.peers) {
+        this.peers[id].postMessage(message);
     }
 };
 
 
 /**
- * This function removes all handlers which tag match the parameter provided.
- * It is useful to "unregister" a specific component (thus by removing all
- * related listeners, identified by a chosen tag).
+ * This class is a dedicated messaging handler for the extension's entrypoint
+ * content-script (loaded directly into the host page).
+ *
+ * It only manages messaging through the window.postMessage API, between the
+ * entrypoint content-script and the sidebar's content-script. It does not
+ * allow interacting with the background script.
+ *
+ * @class
+ *
+ */
+function BmcEntrypointMessagingHandler(topOrigin) {
+    BaseMessagingHandler.call(this, topOrigin);
+    this.setupWindowMessaging(this);
+}
+// Inherit from BaseMessagingHandler
+BmcEntrypointMessagingHandler.prototype = new BaseMessagingHandler();
+BmcEntrypointMessagingHandler.prototype.constructor = BmcEntrypointMessagingHandler;
+
+/**
+ * Add a handler for messages received from the sidebar's content-script.
  *
  * @method
- *
- * @params {string} tag - a name to identify the groups of handlers to be
- *                        removed from the messaging framework
+ * See BaseMessagingHandler._addHandler for parameters specifics
  */
-BmcMessagingHandler.prototype.removeExtensionHandlers = function(tag) {
-    BmcExtensionHandlers = BmcExtensionHandlers.filter(handler => handler.tag !== tag);
+BmcEntrypointMessagingHandler.prototype.addHandler = function(tag, selector, handler) {
+    this._addHandler(tag, selector, handler);
+};
+
+/**
+ * Remove the selected handlers from the internal list.
+ *
+ * @method
+ * See BaseMessagingHandler._addHandler for parameters specifics
+ */
+BmcEntrypointMessagingHandler.prototype.removeHandlers = function(tag) {
+    this._removeHandlers(tag);
+};
+
+
+/**
+ * This class is a dedicated messaging handler for the content-script making up
+ * the sidebar (in a dedicated frame injected in the host page).
+ *
+ * It manages two types of messaging, for two types of targets of interaction:
+ * - window.postMessage/addEventListener to communicate with the entrypoint
+ *   injected in the hostpage
+ * - browser.runtime.connect to initiate a connected session with the
+ *   extension's background script
+ *
+ * Each target is identified in the method names with the words 'Window' and
+ * 'Extension' respectively.
+ *
+ * @class
+ *
+ */
+function BmcSidebarMessagingHandler(topOrigin) {
+    // Communication with the window's top frame (web-ext entrypoint)
+    BaseMessagingHandler.call(this, topOrigin);
+    this.setupWindowMessaging();
+
+    // Communication with the background page (aka extension)
+    this._ext =  getBrowser().runtime.connect({name: 'sidebar'});
+    this._extHandler = new BaseMessagingHandler();
+    this._ext.onMessage.addListener(m => this._onExtMessage(m));
+}
+// Inherit from BaseMessagingHandler
+BmcSidebarMessagingHandler.prototype = new BaseMessagingHandler();
+BmcSidebarMessagingHandler.prototype.constructor = BmcSidebarMessagingHandler;
+
+BmcSidebarMessagingHandler.prototype._onExtMessage = function(msg) {
+    this._extHandler.dispatch(msg, e => { return {channel: this._ext, data: e}; }, false/*many*/);
+};
+
+/**
+ * Add a handler for messages received from the extension's background script.
+ *
+ * @method
+ * See BaseMessagingHandler._addHandler for parameters specifics
+ */
+BmcSidebarMessagingHandler.prototype.addExtensionHandler = function(tag, selector, handler) {
+    this._extHandler._addHandler(tag, selector, handler);
+};
+
+/**
+ * Removes the selected handlers from the background-script dedicated handlers.
+ *
+ * @method
+ * See BaseMessagingHandler._addHandler for parameters specifics
+ */
+BmcSidebarMessagingHandler.prototype.removeExtensionHandlers = function(tag) {
+    this._extHandler._removeHandlers(tag);
+};
+
+/**
+ * Sends a message to the extension's background scripts
+ *
+ * @method
+ * See runtime.Port.postMessage documentation for parameters description
+ */
+BmcSidebarMessagingHandler.prototype.sendExtension = function(msg) {
+    return this._ext.postMessage(msg);
+};
+
+/**
+ * Add a handler for messages received from the content-script hosted in the
+ * same window (top frame).
+ *
+ * @method
+ * See BaseMessagingHandler._addHandler for parameters specifics
+ */
+BmcSidebarMessagingHandler.prototype.addWindowHandler = function(tag, selector, handler) {
+    this._addHandler(tag, selector, handler);
+};
+
+/**
+ * Removes the selected handlers from the content-script dedicated handlers.
+ *
+ * @method
+ * See BaseMessagingHandler._addHandler for parameters specifics
+ */
+BmcSidebarMessagingHandler.prototype.removeWindowHandler = function(tag) {
+    this._removeHandlers(tag);
+};
+
+/**
+ * Sends a message to the extension's background scripts
+ *
+ * @method
+ * See window.top.postMessage documentation for parameters description
+ */
+BmcSidebarMessagingHandler.prototype.sendWindow = function(msg) {
+    window.top.postMessage(msg, '*');
 };

@@ -1,6 +1,6 @@
 /* globals
     BmcDataAPI:readable
-    BmcMessagingHandler:readable
+    BmcEntrypointMessagingHandler:readable
     BmcSources:readable
     BmcUI:readable
     LOGS:readable
@@ -20,7 +20,7 @@ function BmcEngine(hostOrigin) {
     this._hostOrigin = hostOrigin;
     this._db = new BmcDataAPI();
     LOGS.log('S14', {'elem': 'BmcDataAPI'});
-    this._messaging = new BmcMessagingHandler(this._hostOrigin);
+    this._messaging = new BmcEntrypointMessagingHandler(this._hostOrigin);
     LOGS.log('S14', {'elem': 'BmcMEssagingHandler'});
     this._ui = new BmcUI(this._messaging, this._db);
     LOGS.log('S14', {'elem': 'BmcUI'});
@@ -33,14 +33,14 @@ function BmcEngine(hostOrigin) {
 
     // Setup listeners for messages, which should be directly handled by the core.
     // Handle "URLOpen"
-    this._messaging.addWindowHandler(
+    this._messaging.addHandler(
         ENGINE_ID,
         evData => evData.type === 'action' && evData.action === 'urlopen',
         evData => {
             window.location.replace(evData.url);
         });
     // Handle "Comic information query"
-    this._messaging.addWindowHandler(
+    this._messaging.addHandler(
         ENGINE_ID,
         evData => evData.type === 'query' && evData.action === 'Comic Information',
         () => {
