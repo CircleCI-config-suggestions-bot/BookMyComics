@@ -56,6 +56,20 @@ the requirements.txt file:
 > pytest tests/func
 ```
 
+It is **highly** recommended to use `-s -vvv` options when running tests to get useful information.
+
+You can run tests from a specific file like this:
+
+```bash
+> pytest tests/func/test_reader.py
+```
+
+And you can run a specific function like this:
+
+```bash
+pytest tests/func/test_reader.py::TestUtilities::test_navigation
+```
+
 Additional parameters are available to limit which setup is to be tested:
  - `--browser`: Defines which browsers will be tested
    - Can be specified multiple times (one value at a time)
