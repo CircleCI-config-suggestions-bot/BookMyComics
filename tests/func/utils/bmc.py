@@ -165,11 +165,22 @@ class SideBarController:
         add_btn = self._driver.find_element_by_id('register-but')
         WebDriverWait(self._driver, 10).until(
             lambda driver: add_btn.is_displayed())
+        # Ensure that we can click on it.
+        assert add_btn.is_enabled() and add_btn.is_displayed()
         add_btn.click()
 
-        WebDriverWait(self._driver, 10).until(
-            lambda driver: driver.find_element_by_css_selector(
-                '#side-panel-adder > #bookmark-name').is_displayed())
+        try:
+            WebDriverWait(self._driver, 5).until(
+                lambda driver: driver.find_element_by_css_selector(
+                    '#side-panel-adder > #bookmark-name').is_displayed())
+        except:
+            # Maybe the click failed for whatever reason? Let's retry...
+            add_btn.click()
+            WebDriverWait(self._driver, 5).until(
+                lambda driver: driver.find_element_by_css_selector(
+                    '#side-panel-adder > #bookmark-name').is_displayed())
+        elem = self._driver.find_element_by_css_selector('#side-panel-adder > #bookmark-name')
+        assert elem.is_displayed()
 
     def register(self, display_name):
         """
