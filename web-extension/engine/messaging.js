@@ -88,6 +88,10 @@ function BaseMessagingHandler(topOrigin) {
     this._handlers = [];
 }
 
+function prepareMessage(message) {
+    message.bookmycomics = 'hello people';
+}
+
 /**
  * This method is a pre-check dedicated to window-based event handling,
  * ensuring that the event is indeed supposed to be handled by our code.
@@ -128,6 +132,9 @@ BaseMessagingHandler.prototype._checkWindowMessage = function(event) {
  */
 BaseMessagingHandler.prototype.dispatch = function(message, checkf, once) {
     const do_once = once || false;
+    if (message.bookmycomics !== 'hello people' && (message.data === undefined || message.data.bookmycomics !== 'hello people')) {
+        return;
+    }
     const sanitized = checkf(message);
     if (sanitized === null || message instanceof Error) {
         LOGS.log('S26', {
@@ -258,6 +265,7 @@ BmcBackgroundMessagingHandler.prototype.removeHandlers = function(tag) {
 BmcBackgroundMessagingHandler.prototype.send = function(id, message) {
     const channel = this.peers[id];
     if (channel) {
+        prepareMessage(message);
         channel.postMessage(message);
     }
 };
@@ -269,6 +277,7 @@ BmcBackgroundMessagingHandler.prototype.send = function(id, message) {
  * See runtime.Port.postMessage documentation for message description
  */
 BmcBackgroundMessagingHandler.prototype.broadcast = function(message) {
+    prepareMessage(message);
     for (const id in this.peers) {
         this.peers[id].postMessage(message);
     }
@@ -376,6 +385,7 @@ BmcSidebarMessagingHandler.prototype.removeExtensionHandlers = function(tag) {
  * See runtime.Port.postMessage documentation for parameters description
  */
 BmcSidebarMessagingHandler.prototype.sendExtension = function(msg) {
+    prepareMessage(msg);
     return this._ext.postMessage(msg);
 };
 
@@ -407,5 +417,6 @@ BmcSidebarMessagingHandler.prototype.removeWindowHandler = function(tag) {
  * See window.top.postMessage documentation for parameters description
  */
 BmcSidebarMessagingHandler.prototype.sendWindow = function(msg) {
+    prepareMessage(msg);
     window.top.postMessage(msg, '*');
 };

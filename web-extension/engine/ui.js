@@ -2,6 +2,7 @@
     FrameFinder:readable
     getBrowser:readable
     LOGS:readable
+    prepareMessage:readable
 */
 
 /**
@@ -89,19 +90,24 @@ BmcUI.prototype.fullSize = function(showSidebar) {
     }
 };
 
-BmcUI.prototype.toggleSidePanel = function(showSidebar, sendMessage) {
-    this.fullSize(showSidebar);
+BmcUI.prototype.sendMessage = function(data) {
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
         return ;
     }
+    prepareMessage(data);
+    sidepanel.postMessage(data, '*');
+};
+
+BmcUI.prototype.toggleSidePanel = function(showSidebar, sendMessage) {
+    this.fullSize(showSidebar);
     if (sendMessage === true) {
         const evData = {
             type: 'action',
             action: 'toggle',
             module: 'sidebar',
         };
-        sidepanel.postMessage(evData, '*');
+        this.sendMessage(evData, '*');
     }
 };
 
@@ -112,11 +118,7 @@ BmcUI.prototype.makeRegisterDialog = function() {
         action: 'setup',
         operation: 'register',
     };
-    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
-    if (!sidepanel) {
-        return ;
-    }
-    sidepanel.postMessage(evData, '*');
+    this.sendMessage(evData, '*');
 };
 
 BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin) {
@@ -132,11 +134,7 @@ BmcUI.prototype.refreshSidePanel = function() {
         action: 'refresh',
         module: 'sidebar',
     };
-    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
-    if (!sidepanel) {
-        return ;
-    }
-    sidepanel.postMessage(evData, '*');
+    this.sendMessage(evData, '*');
 };
 
 // The `extras` dictionary is an optional argument. All duplicate keys between
@@ -158,10 +156,6 @@ BmcUI.prototype.makeNotification = function(operation, err, extras) {
             }
         });
     }
-    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
-    if (!sidepanel) {
-        return ;
-    }
     LOGS.log('S34');
-    sidepanel.postMessage(evData, '*');
+    this.sendMessage(evData, '*');
 };
