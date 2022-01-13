@@ -184,9 +184,6 @@ BaseMessagingHandler.prototype.setupWindowMessaging = function() {
  */
 BaseMessagingHandler.prototype._addHandler = function(tag, selector, handler) {
     this._handlers.push(new BmcMessageHandler(tag, selector, handler));
-    if (this._setup === false) {
-        this.setupMessaging();
-    }
 };
 
 /**
