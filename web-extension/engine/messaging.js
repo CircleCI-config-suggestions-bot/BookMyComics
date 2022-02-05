@@ -130,8 +130,7 @@ BaseMessagingHandler.prototype._checkWindowMessage = function(event) {
  * @params {Boolean} once - true to apply only the first handler selected for this event
  *                          false to apply all selected handlers for this event
  */
-BaseMessagingHandler.prototype.dispatch = function(message, checkf, once) {
-    const do_once = once || false;
+BaseMessagingHandler.prototype.dispatch = function(message, checkf) {
     if (message.bookmycomics !== 'hello people' && (message.data === undefined || message.data.bookmycomics !== 'hello people')) {
         return;
     }
@@ -143,9 +142,8 @@ BaseMessagingHandler.prototype.dispatch = function(message, checkf, once) {
         return;
     }
 
-    let done = false;
     this._handlers.forEach(handler => {
-        if ((!do_once || !done) && handler.select(sanitized)) {
+        if (handler.select(sanitized)) {
             handler.handle(sanitized);
             done = true;
         }
@@ -225,7 +223,7 @@ function BmcBackgroundMessagingHandler() {
         });
         // Message handling through BaseMessagingHandler.dispatch
         channel.onMessage.addListener(msg => {
-            this.dispatch(msg, e => { return {channel, data: e}; }, true/*once*/);
+            this.dispatch(msg, e => { return {channel, data: e}; });
         });
     });
 }
@@ -352,7 +350,7 @@ BmcSidebarMessagingHandler.prototype = new BaseMessagingHandler();
 BmcSidebarMessagingHandler.prototype.constructor = BmcSidebarMessagingHandler;
 
 BmcSidebarMessagingHandler.prototype._onExtMessage = function(msg) {
-    this._extHandler.dispatch(msg, e => { return {channel: this._ext, data: e}; }, false/*many*/);
+    this._extHandler.dispatch(msg, e => { return {channel: this._ext, data: e}; });
 };
 
 /**
