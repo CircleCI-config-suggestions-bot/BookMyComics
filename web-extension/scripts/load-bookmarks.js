@@ -590,6 +590,7 @@ function addEvents() {
                 const evSource = ev.data.source ? BmcComicSource.fromDict(ev.data.source) : null;
                 if (evSource && mangaList.currentSource && evSource.name === mangaList.currentSource.name && evSource.reader === mangaList.currentSource.reader) {
                     mangaList.currentComic.id = evComic.id;
+                    hideSidePanelAdder();
                 }
 
                 bmcDb.getComic(evComic.id, (err, comic) => {
@@ -604,7 +605,6 @@ function addEvents() {
                     } else { // 'Alias Comic'
                         mangaList.refreshComic(comicDOM);
                     }
-                    hideSidePanelAdder();
                     mangaList.generate();
                 });
             }
@@ -702,11 +702,10 @@ function shiftButtonLeft(btn) {
     }
 }
 
-function moveButtonsToTheRightPlace() {
+function moveButtonsToTheRightPlace(panel) {
     var togBtn = document.getElementById('hide-but');
     var regBtn = document.getElementById('register-but');
     var delBtn = document.getElementById('delete-but');
-    var panel = document.getElementById('side-panel');
 
     if (panel.style.display === 'block') {
         shiftButtonRight(togBtn);
@@ -739,7 +738,7 @@ function showHideSidePanel() {
         evData.action = 'HideSidePanel';
         panel.style.display = '';
     }
-    moveButtonsToTheRightPlace();
+    moveButtonsToTheRightPlace(panel);
     // Notify top window of the SidePanel action
     bmcMessaging.sendWindow(evData);
 }
@@ -791,7 +790,7 @@ function showHideAddIntoExisting() {
 
 function hideSidePanelAdder() {
     var sidePanelAdder = document.getElementById('side-panel-adder');
-    if (sidePanelAdder.style.display === 'block') {
+    if (sidePanelAdder.style.display !== 'block') {
         return;
     }
     var sidePanel = document.getElementById('side-panel');
@@ -811,7 +810,7 @@ function hideSidePanelAdder() {
         bmcMessaging.sendWindow({'type': 'action', 'action': 'ShowSidePanel'});
     }
     mangaList.showRegisterDeleteButton();
-    moveButtonsToTheRightPlace();
+    moveButtonsToTheRightPlace(sidePanel);
 }
 
 function showSidePanelAdder() {
@@ -843,7 +842,7 @@ function showSidePanelAdder() {
     regBtn.style.display = '';
     delBtn.style.display = '';
     hideBut.style.display = 'none';
-    moveButtonsToTheRightPlace();
+    moveButtonsToTheRightPlace(sidePanel);
 }
 
 function showHideSidePanelAdder() {
