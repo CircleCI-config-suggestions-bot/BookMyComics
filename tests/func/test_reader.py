@@ -39,7 +39,6 @@ class TestRegister:
         if not controller.sidebar.hidden:
             controller.sidebar.toggle()
         assert controller.sidebar.hidden is True
-        assert len(controller.sidebar.get_registered()) == 0
         with controller.sidebar.focus():
             reg_btn = controller.driver.find_element_by_css_selector(
                 'body > div#register-but')

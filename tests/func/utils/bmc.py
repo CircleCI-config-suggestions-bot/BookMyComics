@@ -182,7 +182,14 @@ class SideBarController:
         elem = self._driver.find_element_by_css_selector('#side-panel-adder > #bookmark-name')
         assert elem.is_displayed()
 
-    def register(self, display_name):
+    def wait_for_sidepanel_visible_nofocus(self):
+        # Wait for the side-panel to be visible again.
+        # The code ensures that it should be shown only after the manga-list
+        # has been completely re-generated.
+        WebDriverWait(self._driver, 10).until(
+            EC.visibility_of_element_located((By.ID, 'side-panel')))
+
+    def register(self, display_name, expect_failure=False):
         """
             Allows to register the current page under the name `display_name`
 
@@ -199,10 +206,15 @@ class SideBarController:
             cfrm_btn = self._driver.find_element_by_css_selector(
                 '#side-panel-adder > #add-confirm.button-add')
             cfrm_btn.click()
-            # Clicking on confirm button should temporarily disable the
-            # confirm_button, which we expect to see acknowledgement of the
-            # operation. Sadly, it may go faster than the test code can check,
-            # so it's currently not relied-upon.
+            if not expect_failure:
+                self.wait_for_sidepanel_visible_nofocus()
+                def registered_entry_available(driver):
+                    elms = driver.find_elements(by=By.CSS_SELECTOR, value='.label.rollingArrow')
+                    for elm in elms:
+                        if elm.text == display_name:
+                            return True
+                    return False
+                WebDriverWait(self._driver, 10).until(registered_entry_available)
 
     def check_registration_error(self, do_wait=True):
         """
@@ -229,13 +241,7 @@ class SideBarController:
         with FrameFocus(self._driver, self._frame):
             items = []
             try:
-                # Need to find something to wait on, which ensures that the
-                # list is already populated by the web extension's JS
-                def list_is_visible_and_loaded(driver):
-                    elm = driver.find_element(by=By.ID, value='manga-list')
-                    marker = driver.find_element(by=By.ID, value='manga-list-end-marker')
-                    return elm and elm.value_of_css_property('display') == 'block' and marker
-                WebDriverWait(self._driver, 10).until(list_is_visible_and_loaded)
+                self.wait_for_sidepanel_visible_nofocus()
                 items = self._driver.find_elements_by_css_selector(
                     '#manga-list .mangaListItem')
             except NoSuchElementException:
@@ -249,13 +255,7 @@ class SideBarController:
         """
         prev_url = self._driver.current_url
         with FrameFocus(self._driver, self._frame):
-            # Need to find something to wait on, which ensures that the
-            # list is already populated by the web extension's JS
-            def list_is_visible_and_loaded(driver):
-                elm = driver.find_element(by=By.ID, value='manga-list')
-                marker = driver.find_element(by=By.ID, value='manga-list-end-marker')
-                return elm and elm.value_of_css_property('display') == 'block' and marker
-            WebDriverWait(self._driver, 10).until(list_is_visible_and_loaded)
+            self.wait_for_sidepanel_visible_nofocus()
             items = self._driver.find_elements_by_css_selector('#manga-list .mangaListItem')
             # Need to check text at relative xpath: '.label-container .label .inner_text'
             selected = [i for i in items if i.find_element_by_css_selector('.label-container .label').text == name]
@@ -329,12 +329,12 @@ class BmcController:
             self._sidebar = SideBarController(self.driver)
         return self._sidebar
 
-    def register(self, display_name):
+    def register(self, display_name, expect_failure=False):
         """
             Register the current manga/comic page as a new entry in the
             extension.
         """
-        self.sidebar.register(display_name)
+        self.sidebar.register(display_name, expect_failure)
 
     def refresh(self):
         """

@@ -266,14 +266,14 @@ BmcMangaList.prototype.refreshComic = function(comicDOM) {
     }
 };
 
-BmcMangaList.prototype.generate = function() {
+BmcMangaList.prototype.generate = function(completionCb) {
     LOGS.log('S49');
-    // First, remove any child node, to ensure it's clean before we start
-    // generating.
-    emptyElem(this._node);
 
     // Now that the parent is a clean slate, let's generate
     bmcDb.list((err, comics) => {
+        // First, remove any child node, to ensure it's clean before we start
+        // generating.
+        emptyElem(this._node);
         this.comics = comics;
 
         comics.forEach(
@@ -286,8 +286,14 @@ BmcMangaList.prototype.generate = function() {
         marker.id = 'manga-list-end-marker';
         this._node.appendChild(marker);
         this.showRegisterDeleteButton();
+
         // Now, ensure the active comic (if set) is highlighted.
         setActiveComic();
+
+        // Finally, call completion cb if set
+        if (completionCb) {
+            completionCb();
+        }
     });
 };
 
@@ -386,7 +392,7 @@ function setActiveComic() {
 function addEvents() {
     // Clicking on the `>`/`<` button will show/hide the panel
     var but = document.getElementById('hide-but');
-    but.onclick = showHideSidePanel;
+    but.onclick = () => mangaList.generate(showHideSidePanel);
 
     // Input in searchbox will filter the list of mangas
     var sbox = document.getElementById('searchbox');
@@ -513,7 +519,7 @@ function addEvents() {
         BmcUI.prototype.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'toggle' && evData.module === 'sidebar',
         () => {
-            showHideSidePanel();
+            mangaList.generate(showHideSidePanel);
         });
     bmcMessaging.addWindowHandler(
         BmcUI.prototype.SIDEPANEL_ID,
@@ -588,9 +594,10 @@ function addEvents() {
             } else {
                 const evComic = BmcComic.deserialize(ev.data.comic);
                 const evSource = ev.data.source ? BmcComicSource.fromDict(ev.data.source) : null;
+                let do_hide = false;
                 if (evSource && mangaList.currentSource && evSource.name === mangaList.currentSource.name && evSource.reader === mangaList.currentSource.reader) {
                     mangaList.currentComic.id = evComic.id;
-                    hideSidePanelAdder();
+                    do_hide = true;
                 }
 
                 bmcDb.getComic(evComic.id, (err, comic) => {
@@ -598,14 +605,11 @@ function addEvents() {
                         LOGS.error('S74');
                         return ;
                     }
-                    let comicDOM = mangaList.generateComic(comic);
-                    if (ev.data.operation.startsWith('Register')) { // 'RegisterComic'
-                        // Insert the new entry before the end-of-listing marker // (made for testing purposes)
-                        mangaList.appendComic(comicDOM);
-                    } else { // 'Alias Comic'
-                        mangaList.refreshComic(comicDOM);
-                    }
-                    mangaList.generate();
+                    mangaList.generate(() => {
+                        if (do_hide) {
+                            hideSidePanelAdder();
+                        }
+                    });
                 });
             }
         });
@@ -618,8 +622,6 @@ function addEvents() {
 }
 
 var mangaList = new BmcMangaList();
-mangaList.generate();
-setActiveComic();
 addEvents();
 
 
