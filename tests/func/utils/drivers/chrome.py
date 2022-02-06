@@ -15,6 +15,8 @@ class Wrapper(BaseWebdriverWrapper):
         options = webdriver.ChromeOptions()
         options.add_argument('--load-extension={}'.format(self._ext.unpacked_path))
         options.headless = False
+        # Attempt to fix driver.get() getting stuck during tests.
+        options.add_argument('--disable-browser-side-navigation')
 
         print('[Chrome] Loading addon from "{}"'.format(self._ext.unpacked_path))
         print('[Chrome] Loading manifest from "{}"'.format(self._ext._manifest_path))
