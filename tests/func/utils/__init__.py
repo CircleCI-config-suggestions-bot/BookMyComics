@@ -39,13 +39,13 @@ def retry(retries=5, abort=True):
     return decorator
 
 
-def check_predicate(errorType):
+def check_predicate(errorType, msg):
     def decorator(func):
         def wrapper(self, *args, **kwargs):
             predicate = kwargs.pop('predicate', None)
             ret = func(self, *args, **kwargs)
             if predicate and not predicate(self):
-                raise errorType()
+                raise errorType(msg)
             return ret
         return wrapper
     return decorator

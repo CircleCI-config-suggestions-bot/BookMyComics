@@ -37,7 +37,7 @@ class MangaKakalotDriver(SupportBase):
         self.validate_popup()
 
     @retry(abort=True)
-    @check_predicate(RetriableError)
+    @check_predicate(RetriableError, "Could not load random comic")
     def load_random(self):
         chapters_lists = [manga.find_elements(by=By.CSS_SELECTOR, value='li>span>a')
                           for manga in self._get_mangas()]
