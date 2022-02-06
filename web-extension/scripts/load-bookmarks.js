@@ -338,11 +338,17 @@ BmcMangaList.prototype.askComicInformation = function() {
 };
 
 function showDeleteButton() {
+    if (!mangaList.currentSource) {
+        return;
+    }
     document.getElementById('delete-but').style.display = 'block';
     document.getElementById('register-but').style.display = '';
 }
 
 function showRegisterButton() {
+    if (!mangaList.currentSource) {
+        return;
+    }
     document.getElementById('register-but').style.display = 'block';
     document.getElementById('delete-but').style.display = '';
 }
@@ -378,7 +384,7 @@ function setActiveComic() {
 }
 
 function addEvents() {
-    // Clicking on the  `>`/`<` button will show/hide the panel
+    // Clicking on the `>`/`<` button will show/hide the panel
     var but = document.getElementById('hide-but');
     but.onclick = showHideSidePanel;
 
@@ -582,7 +588,7 @@ function addEvents() {
             } else {
                 const evComic = BmcComic.deserialize(ev.data.comic);
                 const evSource = ev.data.source ? BmcComicSource.fromDict(ev.data.source) : null;
-                if (evSource && evSource.name === mangaList.currentSource.name && evSource.reader === mangaList.currentSource.reader) {
+                if (evSource && mangaList.currentSource && evSource.name === mangaList.currentSource.name && evSource.reader === mangaList.currentSource.reader) {
                     mangaList.currentComic.id = evComic.id;
                 }
 
@@ -598,7 +604,7 @@ function addEvents() {
                     } else { // 'Alias Comic'
                         mangaList.refreshComic(comicDOM);
                     }
-                    showHideSidePanelAdder();
+                    hideSidePanelAdder();
                     mangaList.generate();
                 });
             }
@@ -696,14 +702,30 @@ function shiftButtonLeft(btn) {
     }
 }
 
+function moveButtonsToTheRightPlace() {
+    var togBtn = document.getElementById('hide-but');
+    var regBtn = document.getElementById('register-but');
+    var delBtn = document.getElementById('delete-but');
+    var panel = document.getElementById('side-panel');
+
+    if (panel.style.display === 'block') {
+        shiftButtonRight(togBtn);
+        shiftButtonRight(regBtn);
+        shiftButtonRight(delBtn);
+        togBtn.innerText = '<';
+    } else {
+        shiftButtonLeft(togBtn);
+        shiftButtonLeft(regBtn);
+        shiftButtonLeft(delBtn);
+        togBtn.innerText = '>';
+    }
+}
+
 function showHideSidePanel() {
     var evData = {
         type: 'action',
         action: null,
     };
-    var togBtn = document.getElementById('hide-but');
-    var regBtn = document.getElementById('register-but');
-    var delBtn = document.getElementById('delete-but');
     var panel = document.getElementById('side-panel');
 
     // Ensure no transition will be ongoing after the state change.
@@ -713,18 +735,11 @@ function showHideSidePanel() {
     if (panel.style.display !== 'block') {
         evData.action = 'ShowSidePanel';
         panel.style.display = 'block';
-        togBtn.innerText = '<';
-        shiftButtonRight(togBtn);
-        shiftButtonRight(regBtn);
-        shiftButtonRight(delBtn);
     } else {
         evData.action = 'HideSidePanel';
         panel.style.display = '';
-        togBtn.innerText = '>';
-        shiftButtonLeft(togBtn);
-        shiftButtonLeft(regBtn);
-        shiftButtonLeft(delBtn);
     }
+    moveButtonsToTheRightPlace();
     // Notify top window of the SidePanel action
     bmcMessaging.sendWindow(evData);
 }
@@ -774,49 +789,70 @@ function showHideAddIntoExisting() {
     }
 }
 
-function showHideSidePanelAdder() {
-    var sidePanel = document.getElementById('side-panel');
+function hideSidePanelAdder() {
     var sidePanelAdder = document.getElementById('side-panel-adder');
+    if (sidePanelAdder.style.display === 'block') {
+        return;
+    }
+    var sidePanel = document.getElementById('side-panel');
+    var hideBut = document.getElementById('hide-but');
+    let prev = sidePanel.getAttribute('prev');
+
+    sidePanel.style.display = prev;
+    sidePanel.setAttribute('prev', '');
+    sidePanelAdder.style.display = '';
+    hideBut.style.display = '';
+    updateErrorDisplay(null); // Reset error display and hide it
+    if (prev === '') {
+        // Force iframe to non full size.
+        bmcMessaging.sendWindow({'type': 'action', 'action': 'IFrameResize'});
+    } else {
+        // Show sidebar.
+        bmcMessaging.sendWindow({'type': 'action', 'action': 'ShowSidePanel'});
+    }
+    mangaList.showRegisterDeleteButton();
+    moveButtonsToTheRightPlace();
+}
+
+function showSidePanelAdder() {
+    var sidePanelAdder = document.getElementById('side-panel-adder');
+    if (sidePanelAdder.style.display === 'block') {
+        return;
+    }
+    var sidePanel = document.getElementById('side-panel');
     var hideBut = document.getElementById('hide-but');
     var regBtn = document.getElementById('register-but');
     var delBtn = document.getElementById('delete-but');
+    var bookmarkName = document.getElementById('bookmark-name');
+    var confirmBut = document.getElementById('add-confirm');
+
+    sidePanel.setAttribute('prev', sidePanel.style.display);
+
+    // Force iframe to full size.
+    bmcMessaging.sendWindow({'type': 'action', 'action': 'IFrameResize', 'fullSize': 'true'});
+
+    sidePanel.style.display = 'none';
+    sidePanelAdder.style.display = 'block';
+    confirmBut.disabled = true;
+    bookmarkName.value = '';
+    if (mangaList.currentSource !== null && mangaList.currentSource.name !== undefined) {
+        bookmarkName.value = mangaList.currentSource.name;
+        changeConfirmButtonStatus(confirmBut, bookmarkName.value);
+    }
+    bookmarkName.focus();
+    regBtn.style.display = '';
+    delBtn.style.display = '';
+    hideBut.style.display = 'none';
+    moveButtonsToTheRightPlace();
+}
+
+function showHideSidePanelAdder() {
+    var sidePanelAdder = document.getElementById('side-panel-adder');
 
     if (sidePanelAdder.style.display === 'block') {
-        let prev = sidePanel.getAttribute('prev');
-        sidePanel.style.display = prev;
-        sidePanel.setAttribute('prev', '');
-        sidePanelAdder.style.display = '';
-        hideBut.style.display = '';
-        updateErrorDisplay(null); // Reset error display and hide it
-        if (prev === '') {
-            // Force iframe to non full size.
-            bmcMessaging.sendWindow({'type': 'action', 'action': 'IFrameResize'});
-        } else {
-            // Show sidebar.
-            bmcMessaging.sendWindow({'type': 'action', 'action': 'ShowSidePanel'});
-        }
-        mangaList.showRegisterDeleteButton();
+        hideSidePanelAdder();
     } else {
-        var bookmarkName = document.getElementById('bookmark-name');
-        var confirmBut = document.getElementById('add-confirm');
-
-        sidePanel.setAttribute('prev', sidePanel.style.display);
-
-        // Force iframe to full size.
-        bmcMessaging.sendWindow({'type': 'action', 'action': 'IFrameResize', 'fullSize': 'true'});
-
-        sidePanel.style.display = 'none';
-        sidePanelAdder.style.display = 'block';
-        confirmBut.disabled = true;
-        bookmarkName.value = '';
-        if (mangaList.currentSource !== null && mangaList.currentSource.name !== undefined) {
-            bookmarkName.value = mangaList.currentSource.name;
-            changeConfirmButtonStatus(confirmBut, bookmarkName.value);
-        }
-        bookmarkName.focus();
-        regBtn.style.display = '';
-        delBtn.style.display = '';
-        hideBut.style.display = 'none';
+        showSidePanelAdder();
     }
 }
 

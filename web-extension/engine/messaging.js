@@ -145,7 +145,6 @@ BaseMessagingHandler.prototype.dispatch = function(message, checkf) {
     this._handlers.forEach(handler => {
         if (handler.select(sanitized)) {
             handler.handle(sanitized);
-            done = true;
         }
     });
 };
@@ -214,12 +213,23 @@ function BmcBackgroundMessagingHandler() {
     BaseMessagingHandler.call(this);
     this.peers = {};
     getBrowser().runtime.onConnect.addListener(channel => {
-        this.peers[channel.sender.tab.id] = channel;
+        if (this.peers[channel.sender.tab.id] === undefined) {
+            this.peers[channel.sender.tab.id] = {
+                channel: channel,
+                count: 1,
+            };
+        } else {
+            this.peers[channel.sender.tab.id].channel = channel;
+            this.peers[channel.sender.tab.id].count += 1;
+        }
         // Handle Disconnections and track only connected peers
         channel.onDisconnect.addListener(channel => {
-            channel.onMessage.removeListener();
-            channel.onDisconnect.removeListener();
-            delete this.peers[channel.sender.tab.id];
+            this.peers[channel.sender.tab.id].count -= 1;
+            if (this.peers[channel.sender.tab.id].count < 1) {
+                channel.onMessage.removeListener();
+                channel.onDisconnect.removeListener();
+                delete this.peers[channel.sender.tab.id];
+            }
         });
         // Message handling through BaseMessagingHandler.dispatch
         channel.onMessage.addListener(msg => {
@@ -258,10 +268,10 @@ BmcBackgroundMessagingHandler.prototype.removeHandlers = function(tag) {
  * See runtime.Port.postMessage documentation for message description
  */
 BmcBackgroundMessagingHandler.prototype.send = function(id, message) {
-    const channel = this.peers[id];
-    if (channel) {
+    const peer = this.peers[id];
+    if (peer) {
         prepareMessage(message);
-        channel.postMessage(message);
+        peer.channel.postMessage(message);
     }
 };
 
@@ -274,7 +284,7 @@ BmcBackgroundMessagingHandler.prototype.send = function(id, message) {
 BmcBackgroundMessagingHandler.prototype.broadcast = function(message) {
     prepareMessage(message);
     for (const id in this.peers) {
-        this.peers[id].postMessage(message);
+        this.peers[id].channel.postMessage(message);
     }
 };
 
