@@ -192,7 +192,7 @@ KeyScheme.prototype.computeSourceKey = function(source) {
  *                        for a comic
  */
 function BmcComicSource(name, reader, info) {
-    this.name = name;
+    this.name = name.trim();
     this.reader = reader;
     this.info = Object.assign({}, info);
 }
