@@ -2,6 +2,7 @@
     FrameFinder:readable
     getBrowser:readable
     LOGS:readable
+    prepareMessage:readable
 */
 
 /**
@@ -30,7 +31,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     // Etc. Add your own styles if you want to
     var body = document.getElementsByTagName('body')[0];
     body.appendChild(iframe);
-    this._messaging.addWindowHandler(
+    this._messaging.addHandler(
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'HideSidePanel',
         () => {
@@ -38,7 +39,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
             this._db._data.set({'sidebar-displayed': 'false'}, () => {});
             this.toggleSidePanel(false);
         });
-    this._messaging.addWindowHandler(
+    this._messaging.addHandler(
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'ShowSidePanel',
         () => {
@@ -46,7 +47,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
             this._db._data.set({'sidebar-displayed': 'true'}, () => {});
             this.toggleSidePanel(true);
         });
-    this._messaging.addWindowHandler(
+    this._messaging.addHandler(
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'IFrameResize',
         evData => {
@@ -55,7 +56,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
         });
     // We receive this event when the sidebar UI is loaded. If the sidebar was
     // open, we need to re-open it to keep the previous "state".
-    this._messaging.addWindowHandler(
+    this._messaging.addHandler(
         this.SIDEPANEL_ID,
         evData => evData.type === 'action' && evData.action === 'CheckSidebar',
         () => {
@@ -66,6 +67,16 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
             });
             setupTracker();
         });
+    this._messaging.addHandler(
+        this.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'Refresh',
+        () => this.refreshSidePanel()
+    );
+    this._messaging.addHandler(
+        this.SIDEPANEL_ID,
+        evData => evData.type === 'action' && evData.action === 'Notify',
+        evData => this.makeNotification(evData.operation, evData.err, evData.extra)
+    );
 };
 
 BmcUI.prototype.fullSize = function(showSidebar) {
@@ -79,19 +90,24 @@ BmcUI.prototype.fullSize = function(showSidebar) {
     }
 };
 
-BmcUI.prototype.toggleSidePanel = function(showSidebar, sendMessage) {
-    this.fullSize(showSidebar);
+BmcUI.prototype.sendMessage = function(data) {
     const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
     if (!sidepanel) {
         return ;
     }
+    prepareMessage(data);
+    sidepanel.postMessage(data, '*');
+};
+
+BmcUI.prototype.toggleSidePanel = function(showSidebar, sendMessage) {
+    this.fullSize(showSidebar);
     if (sendMessage === true) {
         const evData = {
             type: 'action',
             action: 'toggle',
             module: 'sidebar',
         };
-        sidepanel.postMessage(evData, '*');
+        this.sendMessage(evData, '*');
     }
 };
 
@@ -102,11 +118,7 @@ BmcUI.prototype.makeRegisterDialog = function() {
         action: 'setup',
         operation: 'register',
     };
-    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
-    if (!sidepanel) {
-        return ;
-    }
-    sidepanel.postMessage(evData, '*');
+    this.sendMessage(evData, '*');
 };
 
 BmcUI.prototype.makeSidePanel = function(setupTracker, hostOrigin) {
@@ -122,20 +134,7 @@ BmcUI.prototype.refreshSidePanel = function() {
         action: 'refresh',
         module: 'sidebar',
     };
-    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
-    if (!sidepanel) {
-        return ;
-    }
-    sidepanel.postMessage(evData, '*');
-};
-
-BmcUI.prototype.removeSidePanel = function() {
-    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
-    if (!sidepanel) {
-        return ;
-    }
-    sidepanel.parentNode.removeChild(sidepanel);
-    this._messaging.removeWindowHandlers(this.SIDEPANEL_ID);
+    this.sendMessage(evData, '*');
 };
 
 // The `extras` dictionary is an optional argument. All duplicate keys between
@@ -157,10 +156,6 @@ BmcUI.prototype.makeNotification = function(operation, err, extras) {
             }
         });
     }
-    const sidepanel = FrameFinder.findWindow(FrameFinder.definitions.SIDEPANEL);
-    if (!sidepanel) {
-        return ;
-    }
     LOGS.log('S34');
-    sidepanel.postMessage(evData, '*');
+    this.sendMessage(evData, '*');
 };

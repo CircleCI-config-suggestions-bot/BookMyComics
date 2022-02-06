@@ -116,7 +116,7 @@ class FanFoxDriver(SupportBase):
             pass
 
     @retry(abort=True)
-    @check_predicate(RetriableError)
+    @check_predicate(RetriableError, "Could not load random comic")
     def load_random(self):
         # First, go to the website
         self.home()

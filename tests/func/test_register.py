@@ -128,7 +128,7 @@ class TestRegister:
         if controller.sidebar.hidden:
             controller.sidebar.toggle()
         assert controller.sidebar.hidden is False
-        controller.register(name)
+        controller.register(name, expect_failure=True)
 
         #
         # Confirm failure through multiple means:

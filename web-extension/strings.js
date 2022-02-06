@@ -37,15 +37,15 @@ function Localization(lang = DEFAULT_LANG) {
         'S2': {
             'en': 'BmcEngine._memoizeComic: unknown comic name.',
         },
-        'S3': {
-            'en': 'BmcEngine: Resetting ID memoization after end of ongoing memoization',
-        },
-        'S4': {
-            'en': 'BmcEngine: Resetting ID memoization',
-        },
-        'S5': {
-            'en': 'Memoization reset complete',
-        },
+        // 'S3': {
+        //     'en': 'BmcEngine: Resetting ID memoization after end of ongoing memoization',
+        // },
+        // 'S4': {
+        //     'en': 'BmcEngine: Resetting ID memoization',
+        // },
+        // 'S5': {
+        //     'en': 'Memoization reset complete',
+        // },
         'S6': {
             'en': 'BmcEngine.track: Nothing to track',
         },
@@ -59,13 +59,13 @@ function Localization(lang = DEFAULT_LANG) {
             'en': 'BookMyComic: bmcEngine.track.doTrack: Got comicId from storage: {id}',
         },
         'S10': {
-            'en': 'BookMyComic: bmcEngine.register: label={label} reader={reader} manga={manga} chapter={chapter} page={page}',
+            'en': 'BookMyComic: bmcEngine.register: common={common} source={source}',
         },
         'S11': {
             'en': 'Register completed with ERR={err}',
         },
         'S12': {
-            'en': 'BookMyComic: bmcEngine.alias: id={comicId} reader={reader} manga={manga}',
+            'en': 'BookMyComic: bmcEngine.alias: id={comicId} label={label} source={source}',
         },
         'S13': {
             'en': 'Could not alias current page to comicId {id}: {err}',
@@ -109,15 +109,15 @@ function Localization(lang = DEFAULT_LANG) {
         'S26': {
             'en': 'Got message error: {data}',
         },
-        'S27': {
-            'en': 'BmcMessagingHandler: EventData is of unexpected type',
-        },
+        // 'S27': {
+        //     'en': 'BmcMessagingHandler: EventData is of unexpected type',
+        // },
         'S28': {
             'en': 'Received RUNTIME message: {msg}',
         },
-        'S29': {
-            'en': 'BmcMessagingHandler: event is of unexpected type',
-        },
+        // 'S29': {
+        //     'en': 'BmcMessagingHandler: event is of unexpected type',
+        // },
         'S30': {
             'en': '[Wrapper] Selected mode: {mode}',
         },
@@ -152,7 +152,7 @@ function Localization(lang = DEFAULT_LANG) {
             'en': 'BookMyComics: entrypoint.js: Requesting URL parsing from background script',
         },
         'S40': {
-            'en': 'Could not resolve URL from comic {comicInfo}'
+            'en': 'Could not resolve URL from comic {comic}'
         },
         'S41': {
             'en': 'BookMyComics: entrypoint.js: retrieved ComicInfo={data}',
@@ -181,9 +181,9 @@ function Localization(lang = DEFAULT_LANG) {
         'S49': {
             'en': 'generating bookmark list',
         },
-        'S50': {
-            'en': 'Messaging: Wrong number of handlers for event: {count} instead of 1',
-        },
+        // 'S50': {
+        //     'en': 'Messaging: Wrong number of handlers for event: {count} instead of 1',
+        // },
         'S51': {
             'en': 'Input of searchbox changed: filtering bookmarks list',
         },
@@ -214,7 +214,7 @@ function Localization(lang = DEFAULT_LANG) {
             'en': 'Could not delete current {kind}: {reason}',
         },
         'S60': {
-            'en': 'BookMyComics: bmcEngine.delete: id={id} reader={reader} manga={name}',
+            'en': 'BookMyComics: bmcEngine.delete: id={id} source={source}',
         },
         'S61': {
             'en': 'Source to remove ({reader}:{name})'
@@ -292,15 +292,15 @@ function Logs(level = INFO) {
     this.level = level;
 
     this.ERRORS = {
-        'E0000': 'S50',
+        // 'E0000': 'S50',
         'E0001': 'S2',
         // 'E0002': 'S40',
         'E0003': 'S43',
-        'E0004': 'S29',
+        // 'E0004': 'S29',
         // 'E0005': 'S6',
         // 'E0006': 'S7',
         'E0007': 'S8',
-        'E0008': 'S27',
+        // 'E0008': 'S27',
         'E0009': 'S17',
         'E0010': 'S15',
         'E0011': 'S13',

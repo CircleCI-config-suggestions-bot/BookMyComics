@@ -1,6 +1,6 @@
 /* globals
     BmcDataAPI:readable
-    BmcMessagingHandler:readable
+    BmcEntrypointMessagingHandler:readable
     BmcSources:readable
     BmcUI:readable
     LOGS:readable
@@ -20,7 +20,7 @@ function BmcEngine(hostOrigin) {
     this._hostOrigin = hostOrigin;
     this._db = new BmcDataAPI();
     LOGS.log('S14', {'elem': 'BmcDataAPI'});
-    this._messaging = new BmcMessagingHandler(this._hostOrigin);
+    this._messaging = new BmcEntrypointMessagingHandler(this._hostOrigin);
     LOGS.log('S14', {'elem': 'BmcMEssagingHandler'});
     this._ui = new BmcUI(this._messaging, this._db);
     LOGS.log('S14', {'elem': 'BmcUI'});
@@ -32,104 +32,49 @@ function BmcEngine(hostOrigin) {
     this.dispatchEvent = this._eventCore.dispatchEvent.bind(this._eventCore);
 
     // Setup listeners for messages, which should be directly handled by the core.
-    //
-    // Handle "Register"
-    this._messaging.addWindowHandler(
-        ENGINE_ID,
-        evData => evData.type === 'action' && evData.action === 'register',
-        evData => {
-            this.register(evData.label, err => {
-                let retErr = null;
-                if (err) {
-                    retErr = new Error(LOGS.getString('E0010', {'label': evData.label,
-                                                                'err': err.message}));
-                }
-                this.sendNotificationWithComicInfo('Register Comic', retErr);
-            });
-        });
-    // Handle "Alias"
-    this._messaging.addWindowHandler(
-        ENGINE_ID,
-        evData => evData.type === 'action' && evData.action === 'alias',
-        evData => {
-            this.alias(evData.id, err => {
-                let retErr = null;
-                if (err) {
-                    retErr = new Error(LOGS.getString('E0011', {'id': evData.id,
-                                                                'err': err.message}));
-                }
-                this.sendNotificationWithComicInfo('Alias Comic', retErr);
-            });
-        });
-    // Handle "Delete"
-    this._messaging.addWindowHandler(
-        ENGINE_ID,
-        evData => evData.type === 'action' && evData.action === 'delete',
-        evData => {
-            this.delete(
-                evData.comic.id,
-                (evData.source || {}).reader,
-                (evData.source || {}).name,
-                err => {
-                    let retErr = null;
-                    if (err) {
-                        retErr = new Error(LOGS.getString('E0017', {
-                            kind: evData.source ? 'Source' : 'Comic',
-                            reason: err.message,
-                        }));
-                    }
-                    this._ui.refreshSidePanel();
-                    const kind = evData.source ? 'Comic Source' : 'Comic';
-                    this._ui.makeNotification(`Delete ${kind}`, retErr);
-                });
-        });
     // Handle "URLOpen"
-    this._messaging.addWindowHandler(
+    this._messaging.addHandler(
         ENGINE_ID,
         evData => evData.type === 'action' && evData.action === 'urlopen',
         evData => {
             window.location.replace(evData.url);
         });
     // Handle "Comic information query"
-    this._messaging.addWindowHandler(
+    this._messaging.addHandler(
         ENGINE_ID,
-        evData => evData.type === 'query' && evData.action === 'comic information',
+        evData => evData.type === 'query' && evData.action === 'Comic Information',
         () => {
             this.sendNotificationWithComicInfo('Comic Information', null);
         });
 }
 
-BmcEngine.prototype.refresh_comic = function(cb) {
+BmcEngine.prototype.refresh_comic = function() {
     const readerName = window.location.hostname;
     // The `href.slice()` is used to ensure we include the hash part in the provided URL
     const loc = window.location;
     var comic = sources.getInfos(loc.host, loc.href.slice(loc.origin.length), document.body);
     // Log about comic info retrieval
-    if (comic) {
-        LOGS.log('S41', {'data': JSON.stringify(comic)});
+    if (comic !== null) {
+        LOGS.log('S41', {'data': JSON.stringify({
+            comic: comic.serialize(),
+            source: comic.getSource(readerName).toDict(),
+        })});
     } else {
         LOGS.error('E0022');
     }
-    let sanitizedInfo = comic || { common: {} };
+    let sanitizedInfo = comic || null;
 
     // Reuse this._comic if already set
-    this._comic = {
-        reader: readerName,
-        info: sanitizedInfo,
-        name: sanitizedInfo.common.name,
-        chapter: sanitizedInfo.common.chapter,
-        page: sanitizedInfo.common.page,
-        id: (this._comic || {}).id || undefined,
-        memoizing: false,
-    };
-    // Only when relevant, setup the listeners for internal events,
-    // and launch the asynchronous necessary loads
-    if (this._comic.name) {
-        // utility that will remember the comic ID and serve as a cache
-        if (cb) {
-            return this._forceMemoizeComic(cb);
+    if (this._comic) { // Update comic chapter/page without overriding tracking info
+        this._comic.chapter = comic.chapter;
+        this._comic.page = comic.page;
+    } else { // Initial setup
+        this._comic = sanitizedInfo;
+        if (this._comic) {
+            comic.id = undefined; // Set unresolved-marker value until we could resolved the id
         }
-        return this._memoizeComic();
+        this._reader = readerName;
+        this._memoizing = false;
     }
 };
 
@@ -160,10 +105,8 @@ BmcEngine.prototype._dispatchLoad = function () {
  *
  */
 BmcEngine.prototype._memoizeComic = function () {
-    if (this._comic.name === undefined
-        || this._comic.name === null
-        || typeof this._comic.name !== 'string'
-        || this._comic.name === '') {
+    const source = this._comic ? this._comic.getSource(this._reader) : null;
+    if (!source) {
         LOGS.warn('E0001');
         return;
     }
@@ -172,61 +115,38 @@ BmcEngine.prototype._memoizeComic = function () {
         this._dispatchLoad();
         return ;
     }
-    if (this._comic.memoizing) {
+    if (this._memoizing) {
         // console.log('BmcEngine._memoizeComic: Memoize request already pending.');
         return ;
     }
-    this._comic.memoizing = true;
-    this._db.findComic(this._comic.reader, this._comic.name, (err, comicId) => {
+    this._memoizing = true;
+    this._db.findComic(source.reader, source.name, (err, comicId) => {
         // console.log('BmcEngine._memoizeComic: memoized id=', comicId);
         this._comic.id = comicId;
-        this._comic.memoizing = false;
+        this._memoizing = false;
         this._dispatchLoad();
+        this.sendNotificationWithComicInfo();
     });
-};
-
-BmcEngine.prototype._forceMemoizeComic = function (cb) {
-    // If memoization is ongoing, wait for the end of it before forcing a new
-    // memoization.
-    if (this._comic.memoizing) {
-        LOGS.log('S3');
-        this.addEventListener(this.events.load, () => this._forceMemoizeComic(cb), {once: true});
-        this._memoizeComic();
-        return ;
-    }
-
-    LOGS.log('S4');
-    // Now that we're sure no memoization is ongoing, reset the memoized ID,
-    // and restart memoization
-    this._comic.id = undefined;
-    if (this._comic.name) {
-        this.addEventListener(this.events.load, () => {
-            LOGS.log('S5');
-            cb();
-        }, {once: true});
-        this._memoizeComic();
-    }
 };
 
 /*
  * This function is the main window's entry point to setup the add-on's
  * necessary utilities (UI, background process, etc.)
- * It requires the current page's comis info, for any UI that might need to be
+ * It requires the current page's comic info, for any UI that might need to be
  * spawned and would require it.
  *
  */
 BmcEngine.prototype.setup = function() {
-    // Detect AJAX-driven URL/hash changes in order to trigger tracking on AJAX
-    // browsing
-    window.addEventListener('hashchange', () => {
-        this.refresh_comic(() => {
-            this.track();
-        });
-    });
-
     // A bit of stateful data, so that we can avoid re-checking the storage
     // everytime (and thus speed-up a bit the logic that spawn the UI bits)
     this.refresh_comic();
+
+    // Detect AJAX-driven URL/hash changes in order to trigger tracking on AJAX
+    // browsing
+    window.addEventListener('hashchange', () => {
+        this.refresh_comic();
+        this.track();
+    });
 
     return this._ui.makeSidePanel(
         () => this.track(),
@@ -242,11 +162,12 @@ BmcEngine.prototype.setup = function() {
  *
  */
 BmcEngine.prototype.track = function() {
-    if (!this._comic.name) {
+    const source = this._comic ? this._comic.getSource(this._reader) : null;
+    if (!this._comic) {
         LOGS.log('S6');
         return ;
     }
-    LOGS.log('S7', {'manga': this._comic.name,
+    LOGS.log('S7', {'manga': source.name,
                     'chapter': this._comic.chapter,
                     'page': this._comic.page});
 
@@ -269,90 +190,14 @@ BmcEngine.prototype.track = function() {
     this._memoizeComic();
 };
 
-/*
- * This function registers a comic into the saved data. It shall be used by the
- * user-interacting UI spawned on an online reader's page.
- *
- * @param {String} label - the Comic's user-defined label
- *
- * @return {undefined}
- */
-BmcEngine.prototype.register = function(label, cb) {
-    LOGS.log('S10', {'label': label,
-                     'reader': this._comic.reader,
-                     'manga': this._comic.name,
-                     'chapter': this._comic.chapter,
-                     'page': this._comic.page});
-    return this._db.registerComic(label, this._comic.reader, this._comic.info, err => {
-        LOGS.debug('S11', {'err': err});
-        if (!err) {
-            this._forceMemoizeComic(() => cb());
-            return ;
-        }
-        return cb(err);
-    });
-};
-
-/*
- * This function registers a new name for an existing comic into the saved data.
- * Then, it also updates the progress of reading for this comic.
- *
- * @param {Number} comicId - Unique comic ID
- *
- * @return {undefined}
- */
-BmcEngine.prototype.alias = function(comicId, cb) {
-    LOGS.log('S12', {'comicId': comicId,
-                     'reader': this._comic.reader,
-                     'manga': this._comic.name});
-    return this._db.aliasComic(comicId, this._comic.reader, this._comic.info, err => {
-        if (!err) {
-            this._forceMemoizeComic(() => cb());
-            return ;
-        }
-        return cb(err);
-    });
-};
-
-/*
- * This function deletes a Source from a comic or a whole Comic, given a comic
- * ID, and an optional reader and name.  If the deleted source was the last
- * source associated to the Comic, the Comic will be deleted along with its
- * last Source.
- *
- * @param {Number} comicId - Unique comic ID
- * @param {String} reader - Name of the source's reader
- * @param {String} name - Name of the comic within the reader
- *
- * @return {undefined}
- */
-BmcEngine.prototype.delete = function(comicId, reader, name, cb) {
-    LOGS.debug('S60', { id: comicId, reader, name });
-
-    // Common completion closure which forces memoization (in case we just
-    // removed the Comic/Source matching the current page)
-    const completeDelete = err => {
-        if (!err) {
-            this._forceMemoizeComic(() => cb());
-            return ;
-        }
-        return cb(err);
-    };
-    // Both reader and name must be defined to identify a source according to
-    // engine/datamodel.js
-    // As such, if either is undefined, assume we're targeting the whole comic
-    if (!reader || !name) {
-        return this._db.unregisterComic(comicId, completeDelete);
-    }
-    // Otherwise, remove the source (and optionally the Comic if it was the
-    // last source)
-    return this._db.unaliasComic(comicId, reader, name, completeDelete);
-};
-
 BmcEngine.prototype.sendNotificationWithComicInfo = function(event, err) {
-    this._ui.makeNotification(event, err,
-                              {'comicId': this._comic.id,
-                               'comicSource': this._comic.reader,
-                               'comicName': this._comic.name,
-                              });
+    const source = this._comic ? this._comic.getSource(this._reader) : null;
+    this._ui.makeNotification(
+        event,
+        err,
+        {
+            'comic': this._comic ? this._comic.serialize() : null,
+            'source': source ? source.toDict() : null,
+        }
+    );
 };

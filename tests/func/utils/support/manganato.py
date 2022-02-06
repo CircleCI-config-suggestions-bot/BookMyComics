@@ -26,7 +26,7 @@ class MangaNatoDriver(SupportBase):
         self._driver.get('https://manganato.com/')
 
     @retry(abort=True)
-    @check_predicate(RetriableError)
+    @check_predicate(RetriableError, "Could not load random comic")
     def load_random(self):
         to_ignore = []
 

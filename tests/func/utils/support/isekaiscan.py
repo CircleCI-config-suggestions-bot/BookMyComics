@@ -31,7 +31,7 @@ class IsekaiScanDriver(SupportBase):
         return 'ch-' if '/ch-' in url else 'chapter-'
 
     @retry(abort=True)
-    @check_predicate(RetriableError)
+    @check_predicate(RetriableError, "Could not load random comic")
     def load_random(self):
         mangas = self._get_mangas()
         print(f'checking {len(mangas)} mangas...')

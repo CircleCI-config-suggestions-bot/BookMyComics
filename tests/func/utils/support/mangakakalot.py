@@ -19,14 +19,25 @@ class MangaKakalotDriver(SupportBase):
         # Retrieve the generated random link, which is generated after loading the page
         return self._driver.find_elements(by=By.CLASS_NAME, value='itemupdate')
 
+    def validate_popup(self):
+        # Bypass a common popup acting as a layer on top of the page...
+        try:
+            self._driver.find_element_by_css_selector(
+                '#qc-cmp2-main .qc-cmp2-summary-buttons button:last-of-type').click()
+        except NoSuchElementException:
+            # fine, we only need to handle it once
+            pass
+
+
     def home(self):
         """
             Loads the homepage of the reader
         """
         self._driver.get('https://mangakakalot.com/')
+        self.validate_popup()
 
     @retry(abort=True)
-    @check_predicate(RetriableError)
+    @check_predicate(RetriableError, "Could not load random comic")
     def load_random(self):
         chapters_lists = [manga.find_elements(by=By.CSS_SELECTOR, value='li>span>a')
                           for manga in self._get_mangas()]
@@ -51,6 +62,7 @@ class MangaKakalotDriver(SupportBase):
         return False
 
     def prev_page(self):
+        self.validate_popup()
         # In case you wonder, yes, button with "next" class is actually to go to the previous
         # chapter, because why not!
         btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.btn-navigation-chap>.next')
@@ -62,6 +74,7 @@ class MangaKakalotDriver(SupportBase):
         return False
 
     def next_page(self):
+        self.validate_popup()
         # In case you wonder, yes, button with "back" class is actually to go to the next
         # chapter, because why not!
         btn = self._driver.find_element(by=By.CSS_SELECTOR, value='.btn-navigation-chap>.back')

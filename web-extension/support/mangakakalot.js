@@ -1,4 +1,6 @@
 /* globals
+    BmcComicSource:readable
+    BmcComic:readable
     LOGS:readable
     cloneArray
 */
@@ -7,6 +9,8 @@ function MangaKakalotComPlugin() {
 }
 
 MangaKakalotComPlugin.prototype.getInfos = function(url, doc) {
+    const comic = new BmcComic(null, null, null, null, null);
+    let source = null;
     let parts = url.split('/').filter(s => s.length !== 0);
 
     if (parts.length < 1) {
@@ -26,29 +30,34 @@ MangaKakalotComPlugin.prototype.getInfos = function(url, doc) {
             return null;
         }
         let id = elem.getAttribute('href').split('/chapter/')[0].split('/')[0];
-        return { common: { name, chapter: null, page: null }, id, homeUrl: url.split('mangakakalot.com')[1] };
+        source = new BmcComicSource(name, 'mangakakalot.com', {id, homeUrl: url.split('mangakakalot.com')[1]});
+        comic.addSource(source);
+    } else {
+        // chapter page
+        let elems = cloneArray(doc.querySelectorAll('.breadcrumb > p > span > a'));
+        if (elems.length < 3) {
+            LOGS.log('S79');
+            return null;
+        }
+        let name = elems[1].children[0].innerText;
+        let homeUrl = elems[1].getAttribute('href').split('mangakakalot.com')[1];
+        let chapter = parts[parts.length - 1].split('_');
+        chapter = parseInt(chapter[chapter.length - 1]);
+        let id = parts[parts.length - 2];
+        source = new BmcComicSource(name, 'mangakakalot.com', {id, homeUrl});
+        comic.addSource(source);
+        comic.chapter = chapter;
     }
-    // chapter page
-    let elems = cloneArray(doc.querySelectorAll('.breadcrumb > p > span > a'));
-    if (elems.length < 3) {
-        LOGS.log('S79');
-        return null;
-    }
-    let name = elems[1].children[0].innerText;
-    let homeUrl = elems[1].getAttribute('href').split('mangakakalot.com')[1];
-    let chapter = parts[parts.length - 1].split('_');
-    chapter = parseInt(chapter[chapter.length - 1]);
-    let id = parts[parts.length - 2];
 
-    return { common: { name, chapter, page: null }, id, homeUrl };
+    return comic;
 };
 
-MangaKakalotComPlugin.prototype.computeURL = function(comicInfo) {
+MangaKakalotComPlugin.prototype.computeURL = function(comic, source) {
     // At the time of development, MangaKakalot SSL certificate seems legit and
     // working out of the box, so we might as well enforce HTTPS as a default.
     // Might be configurable later on.
-    if (comicInfo.common.chapter) {
-        return `https://mangakakalot.com/chapter/${comicInfo.id}/chapter_${comicInfo.common.chapter}`;
+    if (comic.chapter) {
+        return `https://mangakakalot.com/chapter/${source.info.id}/chapter_${comic.chapter}`;
     }
-    return `https://mangakakalot.com/${comicInfo.homeUrl}`;
+    return `https://mangakakalot.com/${source.info.homeUrl}`;
 };
