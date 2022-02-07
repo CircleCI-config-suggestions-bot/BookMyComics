@@ -538,8 +538,8 @@ function addEvents() {
                 // Skip acknowledgement, as this was an error.
                 return ;
             }
-            mangaList.currentComic = typeof evData.comic === 'undefined' || evData.comic === null ? null : BmcComic.deserialize(evData.comic);
-            mangaList.currentSource = typeof evData.source === 'undefined' || evData.source == null ? null : BmcComicSource.fromDict(evData.source);
+            mangaList.currentComic = evData.comic === undefined || evData.comic === null ? null : BmcComic.deserialize(evData.comic);
+            mangaList.currentSource = evData.source === undefined || evData.source == null ? null : BmcComicSource.fromDict(evData.source);
             mangaList.showRegisterDeleteButton();
             if (evData.operation === 'track') {
                 notifyResult(evData.operation, evData.error);
