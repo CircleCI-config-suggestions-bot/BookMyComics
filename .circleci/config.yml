@@ -54,7 +54,8 @@ commands:
   chrome-setup:
     description: "Test setup for chrome testing"
     steps:
-      - browser-tools/install-chrome
+      - browser-tools/install-chrome:
+          chrome-version: 90.0.4430.212
       - browser-tools/install-chromedriver
       - browser-test-setup:
           browser: chrome
