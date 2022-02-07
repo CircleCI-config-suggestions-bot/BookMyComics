@@ -1,3 +1,4 @@
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -57,7 +58,14 @@ class RegisteredItem:
             Deleted the RegisteredItem by triggering a click on the associated
             delete button
         """
-        pass
+        with self._panel.focus():
+            label = self._dom.find_element(by=By.CSS_SELECTOR, value=':not(.nested) > .label-container .label')
+            del_btn = self._dom.find_element(by=By.CSS_SELECTOR, value=':not(.nested) > .label-container .fa-trash')
+            actions = ActionChains(self._panel._driver)
+            actions.move_to_element(label)
+            actions.move_to_element(del_btn)
+            actions.click(del_btn)
+            actions.perform()
 
     @property
     def folded(self):
@@ -76,6 +84,9 @@ class RegisteredItem:
         fold_marker = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
         fold_marker.click()
 
+    def wait_for_removal(self, timeout=10):
+        with self._panel.focus():
+            WebDriverWait(self._panel._driver, timeout).until(EC.staleness_of(self._dom))
 
 class SideBarController:
     SIDEPANEL_ID = 'BmcSidePanel'

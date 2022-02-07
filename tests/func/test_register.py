@@ -286,3 +286,26 @@ class TestRegister:
         with controller.sidebar.focus():
             labels = controller.driver.find_elements_by_css_selector('.label-container.current')
             assert len(labels) == 2
+
+    @staticmethod
+    def test_delete_from_entry_single_source(controller, unique_reader):
+        """
+            Validates that we can remove a Comic entry using the trash icon
+            that appears when hovering over the comic's name in the sidebar.
+        """
+        init_sidebar(unique_reader, controller)
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('sample100')
+        items = controller.sidebar.get_registered()
+        assert len(items) != orig_n_items
+
+        # Retrieve entry that we want to delete and delete it
+        selected = [item for item in items if item.get_name() == 'sample100']
+        assert len(selected) == 1
+        selected[0].delete()
+
+        # Wait & check that we're back to (expected) 0 items in sidebar
+        selected[0].wait_for_removal()
+        controller.refresh()
+        items = controller.sidebar.get_registered()
+        assert len(items) == orig_n_items
