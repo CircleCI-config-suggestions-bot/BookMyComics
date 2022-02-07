@@ -23,17 +23,41 @@ commands:
           paths:
             - ".git"
 
+  browser-test-setup:
+    description: "Sets up common dependencies for browser testing (python deps, manifest, packed web-ext)"
+    parameters:
+      browser:
+        type: string
+        default: firefox
+    steps:
+      - run:
+          command: pip install -r requirements.txt
+      # Work-around to define env variables from another, for the subsequent
+      # steps.
+      #  - Useful for firefox driver which relies on packaged extension
+      - run:
+          name: Define Packed Webext path
+          command: |
+            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
+      - run:
+          name: Setup manifest
+          command: python3 setup.py << parameters.browser >>
+
   firefox-setup:
     description: "Test setup for firefox testing"
     steps:
       - browser-tools/install-firefox
       - browser-tools/install-geckodriver
+      - browser-test-setup:
+          browser: firefox
 
   chrome-setup:
     description: "Test setup for chrome testing"
     steps:
       - browser-tools/install-chrome
       - browser-tools/install-chromedriver
+      - browser-test-setup:
+          browser: chrome
 
 executors:
   python-node:
@@ -129,16 +153,6 @@ jobs:
           at: /tmp/ws
 
       - << parameters.browser >>-setup
-      # Work-around to define env variables from another, for the subsequent
-      # steps.
-      #  - Useful for firefox driver which relies on packaged extension
-      - run:
-          name: Define Packed Webext path
-          command: |
-            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
-      - run:
-          name: Setup manifest
-          command: python3 setup.py << parameters.browser >>
       - run:
           command: pytest -v -s --browser << parameters.browser >> tests/func/test_load.py tests/func/test_sidebar_display.py
 
@@ -152,18 +166,7 @@ jobs:
       - cached-checkout
       - attach_workspace:
           at: /tmp/ws
-
       - << parameters.browser >>-setup
-      # Work-around to define env variables from another, for the subsequent
-      # steps.
-      #  - Useful for firefox driver which relies on packaged extension
-      - run:
-          name: Define Packed Webext path
-          command: |
-            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
-      - run:
-          name: Setup manifest
-          command: python3 setup.py << parameters.browser >>
       - run:
           command: pytest -v -s --browser << parameters.browser >> tests/func/test_register.py
 
@@ -179,18 +182,7 @@ jobs:
       - cached-checkout
       - attach_workspace:
           at: /tmp/ws
-
       - << parameters.browser >>-setup
-      # Work-around to define env variables from another, for the subsequent
-      # steps.
-      #  - Useful for firefox driver which relies on packaged extension
-      - run:
-          name: Define Packed Webext path
-          command: |
-            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
-      - run:
-          name: Setup manifest
-          command: python3 setup.py << parameters.browser >>
       - run:
           command: pytest -v -s --browser << parameters.browser >> --reader << parameters.reader >> tests/func/test_reader.py
 
