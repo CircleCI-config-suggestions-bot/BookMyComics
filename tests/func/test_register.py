@@ -267,9 +267,9 @@ class TestRegister:
     @staticmethod
     def test_current_comic_source(controller, unique_reader):
         """
-            Validates that the comic registration goes well, and that the new
-            comic has its name in the sidebar and not the name of another
-            comic.
+            Validates that once a comic is registered, both the comic entry
+            itself and its source matching the current reader are set as
+            "current" (which should highlight them)
         """
         init_sidebar(unique_reader, controller)
         orig_n_items = len(controller.sidebar.get_registered())
