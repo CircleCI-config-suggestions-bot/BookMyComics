@@ -28,7 +28,7 @@ class ItemSource:
         self._dom = dom_element
 
     def click(self):
-        self._dom.find_element_by_css_selector('.label').click()
+        self._dom.find_element(by=By.CSS_SELECTOR, value='.label').click()
 
     def delete(self):
         with self._panel.focus():
@@ -63,14 +63,14 @@ class RegisteredItem:
     def name(self):
         if self._name is None:
             with self._panel.focus():
-                self._name = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow').text
+                self._name = self._dom.find_element(by=By.CSS_SELECTOR, value='.label-container > .label.rollingArrow').text
         return self._name
 
     def _list_sources_nofocus(self):
         """ Returns a list of ItemSource for the RegisteredItem """
         if self.folded:
             self.toggle()
-        items = self._dom.find_elements_by_css_selector('.nested > .label-container')
+        items = self._dom.find_elements(by=By.CSS_SELECTOR, value='.nested > .label-container')
         return [ItemSource(self._panel, item) for item in items]
 
     def delete(self):
@@ -93,7 +93,7 @@ class RegisteredItem:
             Return a boolean telling whether the RegisteredItem's sources are
             unrolled of rolled-up
         """
-        fold_marker = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
+        fold_marker = self._dom.find_element(by=By.CSS_SELECTOR, value='.label-container > .label.rollingArrow')
         return "rollingArrow-down" not in fold_marker.get_attribute("class")
 
     def toggle(self):
@@ -101,7 +101,7 @@ class RegisteredItem:
             Unrolls (unfold) or Rolls (fold) all the sources for the
             RegisteredItem, effectively showing/hiding them.
         """
-        fold_marker = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
+        fold_marker = self._dom.find_element(by=By.CSS_SELECTOR, value='.label-container > .label.rollingArrow')
         fold_marker.click()
 
     def wait_for_removal(self, timeout=10):
@@ -193,7 +193,7 @@ class SideBarController:
 
             Must be called within a FrameFocus's context.
         """
-        add_btn = self._driver.find_element_by_id('register-but')
+        add_btn = self._driver.find_element(by=By.ID, value='register-but')
         WebDriverWait(self._driver, 10).until(
             lambda driver: add_btn.is_displayed())
         # Ensure that we can click on it.
@@ -202,15 +202,15 @@ class SideBarController:
 
         try:
             WebDriverWait(self._driver, 5).until(
-                lambda driver: driver.find_element_by_css_selector(
-                    '#side-panel-adder > #bookmark-name').is_displayed())
+                lambda driver: driver.find_element(
+                    by=By.CSS_SELECTOR, value='#side-panel-adder > #bookmark-name').is_displayed())
         except:
             # Maybe the click failed for whatever reason? Let's retry...
             add_btn.click()
             WebDriverWait(self._driver, 5).until(
-                lambda driver: driver.find_element_by_css_selector(
-                    '#side-panel-adder > #bookmark-name').is_displayed())
-        elem = self._driver.find_element_by_css_selector('#side-panel-adder > #bookmark-name')
+                lambda driver: driver.find_element(
+                    by=By.CSS_SELECTOR, value='#side-panel-adder > #bookmark-name').is_displayed())
+        elem = self._driver.find_element(by=By.CSS_SELECTOR, value='#side-panel-adder > #bookmark-name')
         assert elem.is_displayed()
 
     def wait_for_sidepanel_visible_nofocus(self):
@@ -230,12 +230,12 @@ class SideBarController:
         """
         with FrameFocus(self._driver, self._frame):
             self.start_registration_nofocus()
-            input_field = self._driver.find_element_by_css_selector(
-                '#side-panel-adder > #bookmark-name')
+            input_field = self._driver.find_element(
+                by=By.CSS_SELECTOR, value='#side-panel-adder > #bookmark-name')
             input_field.clear()
             input_field.send_keys(display_name)
-            cfrm_btn = self._driver.find_element_by_css_selector(
-                '#side-panel-adder > #add-confirm.button-add')
+            cfrm_btn = self._driver.find_element(
+                by=By.CSS_SELECTOR, value='#side-panel-adder > #add-confirm.button-add')
             cfrm_btn.click()
             if not expect_failure:
                 self.wait_for_sidepanel_visible_nofocus()
@@ -252,14 +252,14 @@ class SideBarController:
             Asserts whether the error display shows an error
         """
         with FrameFocus(self._driver, self._frame):
-            disp = self._driver.find_element_by_css_selector(
-                '#side-panel-adder > #error-display')
+            disp = self._driver.find_element(
+                by=By.CSS_SELECTOR, value='#side-panel-adder > #error-display')
             if do_wait is False:
                 assert disp.value_of_css_property('display') == 'none'
             else:
                 def validator(driver):
-                    elm = driver.find_element_by_css_selector(
-                            '#side-panel-adder > #error-display')
+                    elm = driver.find_element(
+                            by=By.CSS_SELECTOR, value='#side-panel-adder > #error-display')
                     return (elm.value_of_css_property('display') == 'block'
                             and elm.text != '')
                 WebDriverWait(self._driver, 10).until(validator)
@@ -273,8 +273,8 @@ class SideBarController:
             items = []
             try:
                 self.wait_for_sidepanel_visible_nofocus()
-                items = self._driver.find_elements_by_css_selector(
-                    '#manga-list .mangaListItem')
+                items = self._driver.find_elements(
+                    by=By.CSS_SELECTOR, value='#manga-list .mangaListItem')
             except NoSuchElementException:
                 pass
         return [RegisteredItem(self, i) for i in items]
@@ -287,9 +287,9 @@ class SideBarController:
         prev_url = self._driver.current_url
         with FrameFocus(self._driver, self._frame):
             self.wait_for_sidepanel_visible_nofocus()
-            items = self._driver.find_elements_by_css_selector('#manga-list .mangaListItem')
+            items = self._driver.find_elements(by=By.CSS_SELECTOR, value='#manga-list .mangaListItem')
             # Need to check text at relative xpath: '.label-container .label .inner_text'
-            selected = [i for i in items if i.find_element_by_css_selector('.label-container .label').text == name]
+            selected = [i for i in items if i.find_element(by=By.CSS_SELECTOR, value='.label-container .label').text == name]
             assert len(selected) == 1
             comic = RegisteredItem(self, selected[0])
             sources = comic._list_sources_nofocus()

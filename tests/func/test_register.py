@@ -26,13 +26,13 @@ def check_active_subs(dom_node, nb):
         Ensures that the number of visible unrolled comic's source lists
         matches the expected number.
     """
-    labels = dom_node.find_elements_by_css_selector(
-        '.label-container > .rollingArrow-down')
+    labels = dom_node.find_elements(
+        by=By.CSS_SELECTOR, value='.label-container > .rollingArrow-down')
     assert len(labels) == nb
     # Dom element might be a mangaList item so the sources might be
     # directly beneath it.
-    sources = dom_node.find_elements_by_css_selector(
-        '.nested.active')
+    sources = dom_node.find_elements(
+        by=By.CSS_SELECTOR, value='.nested.active')
     assert len(sources) == nb
 
 
@@ -51,24 +51,24 @@ class TestSingleComic:
 
         # Fake an attempt to register, end it with a cancel
         with controller.sidebar.focus():
-            add_btn = controller.driver.find_element_by_css_selector(
-                'body > div#register-but')
+            add_btn = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='body > div#register-but')
             add_btn.click()
-            input_field = controller.driver.find_element_by_css_selector(
-                '#side-panel-adder > #bookmark-name')
+            input_field = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='#side-panel-adder > #bookmark-name')
             input_field.send_keys('to-be-cancelled')
-            cancel_btn = controller.driver.find_element_by_css_selector(
-                '#side-panel-adder > #add-cancel.button-add')
+            cancel_btn = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='#side-panel-adder > #add-cancel.button-add')
             cancel_btn.click()
         assert len(controller.sidebar.get_registered()) == orig_n_items
 
         # Check the side-panel-adder again, ensure that the input is now empty
         with controller.sidebar.focus():
-            add_btn = controller.driver.find_element_by_css_selector(
-                'body > div#register-but')
+            add_btn = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='body > div#register-but')
             add_btn.click()
-            input_field = controller.driver.find_element_by_css_selector(
-                '#side-panel-adder > #bookmark-name')
+            input_field = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='#side-panel-adder > #bookmark-name')
             assert input_field.text == ""
 
     @staticmethod
@@ -171,8 +171,8 @@ class TestSingleComic:
         controller.sidebar.check_registration_error(do_wait=True)
         # cancel registration to go back to the side-panels' manga-list
         with controller.sidebar.focus():
-            cancel_btn = controller.driver.find_element_by_css_selector(
-                '#side-panel-adder > #add-cancel.button-add')
+            cancel_btn = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='#side-panel-adder > #add-cancel.button-add')
             cancel_btn.click()
         registered = controller.sidebar.get_registered()
         # Check the number of manga-list items is unchanged
@@ -245,8 +245,8 @@ class TestKeyboard:
         assert len(controller.sidebar.get_registered()) == 0
         with controller.sidebar.focus():
             controller.sidebar.start_registration_nofocus()
-            bookmark_input = controller.driver.find_element_by_css_selector(
-                '#bookmark-name')
+            bookmark_input = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='#bookmark-name')
             assert bookmark_input.is_displayed()
             bookmark_input.send_keys('what')
             bookmark_input.send_keys(Keys.RETURN)
@@ -254,7 +254,7 @@ class TestKeyboard:
             # Now we wait for the sidebar to be back.
             WebDriverWait(controller.driver, 10).until(
                     lambda driver:
-                    driver.find_element_by_id('side-panel').is_displayed())
+                    driver.find_element(by=By.ID, value='side-panel').is_displayed())
 
         assert len(controller.sidebar.get_registered()) != 0
 
@@ -268,11 +268,11 @@ class TestKeyboard:
         assert len(controller.sidebar.get_registered()) == 0
         with controller.sidebar.focus():
             controller.sidebar.start_registration_nofocus()
-            body = controller.driver.find_element_by_tag_name('body')
+            body = controller.driver.find_element(by=By.TAG_NAME, value='body')
             body.send_keys(Keys.ESCAPE)
 
-            sidepanel_adder = controller.driver.find_element_by_id(
-                'side-panel-adder')
+            sidepanel_adder = controller.driver.find_element(
+                by=By.ID, value='side-panel-adder')
             assert not sidepanel_adder.is_displayed()
 
 
@@ -324,9 +324,9 @@ class TestMultipleComics:
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
         with controller.sidebar.focus():
-            items = controller.driver.find_elements_by_css_selector('.mangaListItem')
-            containers = controller.driver.find_elements_by_css_selector(':not(.nested) > .label-container')
-            labels = controller.driver.find_elements_by_css_selector(':not(.nested) > .label-container > .label')
+            items = controller.driver.find_elements(by=By.CSS_SELECTOR, value='.mangaListItem')
+            containers = controller.driver.find_elements(by=By.CSS_SELECTOR, value=':not(.nested) > .label-container')
+            labels = controller.driver.find_elements(by=By.CSS_SELECTOR, value=':not(.nested) > .label-container > .label')
             assert len(containers) == 2
             assert len(labels) == 2
 
@@ -358,13 +358,13 @@ class TestMultipleComics:
         """
         def check_filtered(controller, msg, nb_visible_expected):
             with controller.sidebar.focus():
-                filter_input = controller.driver.find_element_by_css_selector(
-                    '#side-panel > #searchbox')
+                filter_input = controller.driver.find_element(
+                    by=By.CSS_SELECTOR, value='#side-panel > #searchbox')
                 filter_input.clear()
                 filter_input.send_keys(msg)
 
-                items = controller.driver.find_elements_by_css_selector(
-                    '#side-panel > #manga-list > .mangaListItem')
+                items = controller.driver.find_elements(
+                    by=By.CSS_SELECTOR, value='#side-panel > #manga-list > .mangaListItem')
                 nb_visible = 0
                 for item in items:
                     if item.is_displayed():
@@ -409,12 +409,12 @@ class TestMultipleComics:
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
         with controller.sidebar.focus():
-            labels = controller.driver.find_elements_by_css_selector('.label-container.current')
+            labels = controller.driver.find_elements(by=By.CSS_SELECTOR, value='.label-container.current')
             assert len(labels) == 2
 
         # We now check if it's correctly applied when reloading the page.
         controller.refresh()
         assert controller.sidebar.loaded
         with controller.sidebar.focus():
-            labels = controller.driver.find_elements_by_css_selector('.label-container.current')
+            labels = controller.driver.find_elements(by=By.CSS_SELECTOR, value='.label-container.current')
             assert len(labels) == 2

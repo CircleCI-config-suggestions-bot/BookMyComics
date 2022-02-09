@@ -1,6 +1,7 @@
 import functools
 import pytest
 
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from .utils.bmc import init_sidebar
@@ -40,8 +41,8 @@ class TestRegister:
             controller.sidebar.toggle()
         assert controller.sidebar.hidden is True
         with controller.sidebar.focus():
-            reg_btn = controller.driver.find_element_by_css_selector(
-                'body > div#register-but')
+            reg_btn = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='body > div#register-but')
             assert reg_btn.is_displayed()
 
     @staticmethod
@@ -56,8 +57,8 @@ class TestRegister:
         cur_name = reader_driver.get_comic_name()
         with controller.sidebar.focus():
             controller.sidebar.start_registration_nofocus()
-            bookmark_input = controller.driver.find_element_by_css_selector(
-                '#bookmark-name')
+            bookmark_input = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='#bookmark-name')
             assert bookmark_input.is_displayed()
             assert bookmark_input.get_attribute('value') == cur_name
 
