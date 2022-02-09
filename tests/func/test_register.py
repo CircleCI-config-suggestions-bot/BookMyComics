@@ -21,17 +21,20 @@ def load_another_random(controller, reader_driver, ignore_list):
             break
     controller.refresh()
 
-def check_active_subs(controller, nb):
+def check_active_subs(dom_node, nb):
     """
         Ensures that the number of visible unrolled comic's source lists
         matches the expected number.
     """
-    labels = controller.driver.find_elements_by_css_selector(
+    labels = dom_node.find_elements_by_css_selector(
         '.label-container > .rollingArrow-down')
     assert len(labels) == nb
-    sources = controller.driver.find_elements_by_css_selector(
-        '.mangaListItem > .active')
+    # Dom element might be a mangaList item so the sources might be
+    # directly beneath it.
+    sources = dom_node.find_elements_by_css_selector(
+        '.nested.active')
     assert len(sources) == nb
+
 
 
 @pytest.mark.order(after='test_sidebar_display.py')
@@ -100,24 +103,24 @@ class TestSingleComic:
         with controller.sidebar.focus():
             # Check toggling via clicking on the label-container
             comics = controller.driver.find_elements(
-                by=By.CSS_SELECTOR, value='.label-container')
+                by=By.CSS_SELECTOR, value=':not(.nested) > .label-container')
             assert len(comics) == 1
 
-            check_active_subs(controller, 0)
+            check_active_subs(controller.driver, 0)
             comics[0].click()
-            check_active_subs(controller, 1)
+            check_active_subs(controller.driver, 1)
             comics[0].click()
-            check_active_subs(controller, 0)
+            check_active_subs(controller.driver, 0)
 
             # Check toggling via clicking on the contained label
             comics = controller.driver.find_elements(
-                by=By.CSS_SELECTOR, value='.label-container > .label')
+                by=By.CSS_SELECTOR, value=':not(.nested) > .label-container > .label')
             assert len(comics) == 1
 
             comics[0].click()
-            check_active_subs(controller, 1)
+            check_active_subs(controller.driver, 1)
             comics[0].click()
-            check_active_subs(controller, 0)
+            check_active_subs(controller.driver, 0)
 
 
     @staticmethod
@@ -309,15 +312,6 @@ class TestMultipleComics:
             Validates that when clicking on a comic, it only expand/collapse
             the given comic, and not the other registered ones.
         """
-        def check_active_subs(controller, nb):
-            labels = controller.driver.find_elements_by_css_selector(
-                '.label-container > .rollingArrow-down')
-            assert len(labels) == nb
-            sources = controller.driver.find_elements_by_css_selector(
-                '.mangaListItem > .active')
-            assert len(sources) == nb
-
-
         init_sidebar(unique_reader, controller)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('toto')
@@ -330,20 +324,31 @@ class TestMultipleComics:
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
         with controller.sidebar.focus():
-            comic = controller.driver.find_element_by_css_selector('.label-container')
+            items = controller.driver.find_elements_by_css_selector('.mangaListItem')
+            containers = controller.driver.find_elements_by_css_selector(':not(.nested) > .label-container')
+            labels = controller.driver.find_elements_by_css_selector(':not(.nested) > .label-container > .label')
+            assert len(containers) == 2
+            assert len(labels) == 2
 
-            check_active_subs(controller, 0)
-            comic.click()
-            check_active_subs(controller, 1)
-            comic.click()
-            check_active_subs(controller, 0)
-
-            comic = controller.driver.find_element_by_css_selector('.label-container > .label')
-
-            comic.click()
-            check_active_subs(controller, 1)
-            comic.click()
-            check_active_subs(controller, 0)
+            for i in range(2):
+                # Toggle from containers, check unrolled count for each "layer"
+                # in the dom tree to ensure only the relevant comic is unrolled
+                check_active_subs(controller.driver, 0)
+                check_active_subs(items[i], 0)
+                containers[i].click()
+                check_active_subs(controller.driver, 1)
+                check_active_subs(items[i], 1)
+                containers[i].click()
+                check_active_subs(controller.driver, 0)
+                check_active_subs(items[i], 0)
+                # Toggle from labels, check unrolled count for each "layer"
+                # in the dom tree to ensure only the relevant comic is unrolled
+                labels[i].click()
+                check_active_subs(controller.driver, 1)
+                check_active_subs(items[i], 1)
+                labels[i].click()
+                check_active_subs(controller.driver, 0)
+                check_active_subs(items[i], 0)
 
     @staticmethod
     def test_manga_list_filter(controller, unique_reader):
