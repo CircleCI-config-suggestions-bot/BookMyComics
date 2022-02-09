@@ -110,7 +110,7 @@ class TestRegister:
         orig_n_items = len(registered)
         # Ensure the hard-coded name is part of the list
         assert functools.reduce(
-            lambda c, r: c+(r.get_name() == name),
+            lambda c, r: c+(r.name == name),
             registered, 0) == 1
 
         #
@@ -146,7 +146,7 @@ class TestRegister:
         assert len(registered) == orig_n_items
         # Ensure the hard-coded name is part of the list
         assert functools.reduce(
-            lambda c, r: c+(r.get_name() == name),
+            lambda c, r: c+(r.name == name),
             registered, 0) == 1
 
     @staticmethod
@@ -217,7 +217,7 @@ class TestRegister:
         to_find = {'sample100', 'sample101'}
         counts = {}
         for comic in controller.sidebar.get_registered():
-            counts[comic.get_name()] = counts.get(comic.get_name(), 0) + 1
+            counts[comic.name] = counts.get(comic.name, 0) + 1
         for expected_name in to_find:
             assert expected_name in counts.keys()
             assert counts[expected_name] == 1
@@ -300,7 +300,7 @@ class TestRegister:
         assert len(items) != orig_n_items
 
         # Retrieve entry that we want to delete and delete it
-        selected = [item for item in items if item.get_name() == 'sample100']
+        selected = [item for item in items if item.name == 'sample100']
         assert len(selected) == 1
         selected[0].delete()
 

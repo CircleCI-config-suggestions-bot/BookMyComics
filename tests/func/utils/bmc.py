@@ -39,12 +39,15 @@ class RegisteredItem:
     def __init__(self, sidepanel, dom_element):
         self._panel = sidepanel
         self._dom = dom_element
+        self._name = None
 
-    def get_name(self):
-        """ Returns the name displayed for the RegisteredItem """
-        with self._panel.focus():
-            name_label = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow')
-            return name_label.text
+
+    @property
+    def name(self):
+        if self._name is None:
+            with self._panel.focus():
+                self._name = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow').text
+        return self._name
 
     def list_sources(self):
         """ Returns a list of ItemSource for the RegisteredItem """
