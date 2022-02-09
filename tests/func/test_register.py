@@ -309,3 +309,29 @@ class TestRegister:
         controller.refresh()
         items = controller.sidebar.get_registered()
         assert len(items) == orig_n_items
+
+    @staticmethod
+    def test_delete_from_single_source(controller, unique_reader):
+        """
+            Validates that we can remove a Comic entry using the trash icon
+            that appears when hovering over the comic's source's name in the
+            sidebar.
+        """
+        init_sidebar(unique_reader, controller)
+        orig_n_items = len(controller.sidebar.get_registered())
+        controller.register('sample100')
+        controller.refresh()
+        items = controller.sidebar.get_registered()
+        assert len(items) != orig_n_items
+
+        # Retrieve entry that we want to delete and delete it
+        selected = [item for item in items if item.name == 'sample100']
+        assert len(selected) == 1
+        assert len(selected[0].sources) == 1
+        selected[0].sources[0].delete()
+
+        # Wait & check that we're back to (expected) 0 items in sidebar
+        selected[0].wait_for_removal()
+        controller.refresh()
+        items = controller.sidebar.get_registered()
+        assert len(items) == orig_n_items

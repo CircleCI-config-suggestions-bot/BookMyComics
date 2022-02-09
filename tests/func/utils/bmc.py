@@ -30,6 +30,16 @@ class ItemSource:
     def click(self):
         self._dom.find_element_by_css_selector('.label').click()
 
+    def delete(self):
+        with self._panel.focus():
+            label = self._dom.find_element(by=By.CSS_SELECTOR, value='.label')
+            del_btn = self._dom.find_element(by=By.CSS_SELECTOR, value='.fa-trash')
+            actions = ActionChains(self._panel._driver)
+            actions.move_to_element(label)
+            actions.move_to_element(del_btn)
+            actions.click(del_btn)
+            actions.perform()
+
 class RegisteredItem:
     """
         Represents and allows to control a registered manga/comic in the
@@ -40,7 +50,14 @@ class RegisteredItem:
         self._panel = sidepanel
         self._dom = dom_element
         self._name = None
+        self._sources = None
 
+    @property
+    def sources(self):
+        if self._sources is None:
+            with self._panel.focus():
+                self._sources = self._list_sources_nofocus()
+        return self._sources
 
     @property
     def name(self):
@@ -49,7 +66,7 @@ class RegisteredItem:
                 self._name = self._dom.find_element_by_css_selector('.label-container > .label.rollingArrow').text
         return self._name
 
-    def list_sources(self):
+    def _list_sources_nofocus(self):
         """ Returns a list of ItemSource for the RegisteredItem """
         if self.folded:
             self.toggle()
@@ -275,7 +292,7 @@ class SideBarController:
             selected = [i for i in items if i.find_element_by_css_selector('.label-container .label').text == name]
             assert len(selected) == 1
             comic = RegisteredItem(self, selected[0])
-            sources = comic.list_sources()
+            sources = comic._list_sources_nofocus()
             assert len(sources) == 1
             sources[0].click()
         if wait_for_url_change:
