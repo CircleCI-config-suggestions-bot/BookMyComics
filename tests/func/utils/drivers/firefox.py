@@ -1,5 +1,4 @@
 from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from .base import BaseWebdriverWrapper
 
@@ -10,12 +9,9 @@ class Wrapper(BaseWebdriverWrapper):
 
         options = webdriver.FirefoxOptions()
         options.add_argument('-headless')
+        options.set_capability('marionette', True)
 
-        capabilities = DesiredCapabilities.FIREFOX
-        capabilities['marionette'] = True
-
-        self._driver = webdriver.Firefox(options=options,
-                                         capabilities=capabilities)
+        self._driver = webdriver.Firefox(options=options)
 
         print('[Firefox] Loading addon from "{}"'.format(self._ext.packed_path))
         print('[Firefox] Loading manifest from "{}"'.format(self._ext._manifest_path))

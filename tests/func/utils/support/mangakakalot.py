@@ -22,8 +22,8 @@ class MangaKakalotDriver(SupportBase):
     def validate_popup(self):
         # Bypass a common popup acting as a layer on top of the page...
         try:
-            self._driver.find_element_by_css_selector(
-                '#qc-cmp2-main .qc-cmp2-summary-buttons button:last-of-type').click()
+            self._driver.find_element(
+                by=By.CSS_SELECTOR, value='#qc-cmp2-main .qc-cmp2-summary-buttons button:last-of-type').click()
         except NoSuchElementException:
             # fine, we only need to handle it once
             pass

@@ -18,14 +18,14 @@ class FanFoxNavBar:
         self.update()
 
     def update(self):
-        # pages = self._driver.find_elements_by_css_selector('div.pager-list-left > span > a')
-        # chapters = self._driver.find_elements_by_css_selector('div.pager-list-left > a.chapter')
+        # pages = self._driver.find_elements(by=By.CSS_SELECTOR, value='div.pager-list-left > span > a')
+        # chapters = self._driver.find_elements(by=By.CSS_SELECTOR, value='div.pager-list-left > a.chapter')
         pager = self._get_pager()
         if not pager:
             return False
 
-        self._pages = pager.find_elements_by_css_selector('span > a')
-        chapters = pager.find_elements_by_css_selector('a.chapter')
+        self._pages = pager.find_elements(by=By.CSS_SELECTOR, value='span > a')
+        chapters = pager.find_elements(by=By.CSS_SELECTOR, value='a.chapter')
         self._chapter_prev = None
         self._chapter_next = None
         for button in chapters:
@@ -110,7 +110,7 @@ class FanFoxDriver(SupportBase):
         self._driver.get('https://fanfox.net')
         # Bypass a common popup acting as a layer on top of the page...
         try:
-            self._driver.find_element_by_css_selector('.lb-win-con > a > img').click()
+            self._driver.find_element(by=By.CSS_SELECTOR, value='.lb-win-con > a > img').click()
         except NoSuchElementException:
             # fine, we only need to handle it once
             pass
@@ -123,12 +123,12 @@ class FanFoxDriver(SupportBase):
 
         # Select a list of "candidate chapters links" (with the href values,
         # which prevents invalidating the candidates by loading a new page)
-        mangas = self._driver.find_elements_by_css_selector('.manga-list-4-list > li')
+        mangas = self._driver.find_elements(by=By.CSS_SELECTOR, value='.manga-list-4-list > li')
         print(f'checking out {len(mangas)} mangas')
         candidates = []
         while len(mangas):
             manga = mangas.pop(random.randrange(len(mangas)))
-            chapters = manga.find_elements_by_css_selector('.manga-list-4-item-part > li > a')
+            chapters = manga.find_elements(by=By.CSS_SELECTOR, value='.manga-list-4-item-part > li > a')
             # Guarantee that we take a chapter which has both a "prev" and a "next"
             if len(chapters) < 3:
                 print('Skipping, not enough chapters')
@@ -158,7 +158,7 @@ class FanFoxDriver(SupportBase):
             # properly updated, and that the required select is present (it's added
             # dynamically)
             try:
-                pages = self._driver.find_elements_by_css_selector('div > div > span > a')
+                pages = self._driver.find_elements(by=By.CSS_SELECTOR, value='div > div > span > a')
             except NoSuchElementException:
                 print('Failed? No navbar')
                 continue

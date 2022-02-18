@@ -1,6 +1,7 @@
 import functools
 import pytest
 
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from .utils.bmc import init_sidebar
@@ -29,6 +30,29 @@ class TestUtilities:
 class TestRegister:
 
     @staticmethod
+    def test_register_disabled_on_homepage(controller, reader_driver):
+        """
+            Validates that the register/delete buttons are not visible to the
+            user on the reader's home page.
+        """
+        reader_driver.home()
+        assert controller.sidebar.loaded
+        assert controller.sidebar.hidden
+        # Check that both register and delete buttons are not available
+        with controller.sidebar.focus():
+            add_btn = controller.driver.find_element(by=By.ID, value='register-but')
+            del_btn = controller.driver.find_element(by=By.ID, value='delete-but')
+            assert not add_btn.is_displayed()
+            assert not del_btn.is_displayed()
+        # Check again, with the sidebar opened
+        controller.sidebar.toggle()
+        with controller.sidebar.focus():
+            add_btn = controller.driver.find_element(by=By.ID, value='register-but')
+            del_btn = controller.driver.find_element(by=By.ID, value='delete-but')
+            assert not add_btn.is_displayed()
+            assert not del_btn.is_displayed()
+
+    @staticmethod
     def test_btn_visible_on_unregistered(controller, reader_driver):
         """
             Validates that the 'register' button (a '+' symbol) is visible when
@@ -40,8 +64,8 @@ class TestRegister:
             controller.sidebar.toggle()
         assert controller.sidebar.hidden is True
         with controller.sidebar.focus():
-            reg_btn = controller.driver.find_element_by_css_selector(
-                'body > div#register-but')
+            reg_btn = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='body > div#register-but')
             assert reg_btn.is_displayed()
 
     @staticmethod
@@ -56,8 +80,8 @@ class TestRegister:
         cur_name = reader_driver.get_comic_name()
         with controller.sidebar.focus():
             controller.sidebar.start_registration_nofocus()
-            bookmark_input = controller.driver.find_element_by_css_selector(
-                '#bookmark-name')
+            bookmark_input = controller.driver.find_element(
+                by=By.CSS_SELECTOR, value='#bookmark-name')
             assert bookmark_input.is_displayed()
             assert bookmark_input.get_attribute('value') == cur_name
 

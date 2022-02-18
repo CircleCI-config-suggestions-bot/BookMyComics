@@ -5,6 +5,9 @@
 #
 version: 2.1
 
+orbs:
+  browser-tools: circleci/browser-tools@1.2.4
+
 commands:
   cached-checkout:
     description: "A checkout command using cache automatically"
@@ -20,22 +23,58 @@ commands:
           paths:
             - ".git"
 
+  browser-test-setup:
+    description: "Sets up common dependencies for browser testing (python deps, manifest, packed web-ext)"
+    parameters:
+      browser:
+        type: string
+        default: firefox
+    steps:
+      - run:
+          command: pip install -r requirements.txt
+      # Work-around to define env variables from another, for the subsequent
+      # steps.
+      #  - Useful for firefox driver which relies on packaged extension
+      - run:
+          name: Define Packed Webext path
+          command: |
+            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
+      - run:
+          name: Setup manifest
+          command: python3 setup.py << parameters.browser >>
+
+  firefox-setup:
+    description: "Test setup for firefox testing"
+    steps:
+      - browser-tools/install-firefox
+      - browser-tools/install-geckodriver
+      - browser-test-setup:
+          browser: firefox
+
+  chrome-setup:
+    description: "Test setup for chrome testing"
+    steps:
+      - browser-tools/install-chrome:
+          chrome-version: 90.0.4430.212
+      - browser-tools/install-chromedriver
+      - browser-test-setup:
+          browser: chrome
+
 executors:
-  node-testing:
+  python-node:
     docker:
-      # Using the LTS v10 (dubnium) image
-      - image: circleci/node:dubnium-browsers
+      # Using the latest Node.js LTS image along with target python version
+      - image: cimg/python:3.7-node
   browser-testing:
     docker:
-      # Using CIRCLECI's python image with browsers testing baked in
+      # Using python image with browsers testing baked in
       # (geckodriver & chrome are relevant for us)
-      - image: circleci/python:3.7-buster-browsers
+      - image: cimg/python:3.7-browsers
 
 jobs:
   basic-testing:
-    executor: node-testing
+    executor: python-node
     working_directory: ~/repo
-
     steps:
       - cached-checkout
 
@@ -61,6 +100,7 @@ jobs:
           paths:
             - node_modules/
 
+      # Execute actual steps: linting, and manifest setup
       - run:
           name: Lint Code
           command: yarn run lint
@@ -82,7 +122,7 @@ jobs:
       browser:
         type: string
         default: firefox
-    executor: node-testing
+    executor: python-node
     working_directory: ~/repo
     steps:
       - cached-checkout
@@ -90,7 +130,7 @@ jobs:
           at: /tmp/ws
 
       - run:
-          name: Setup manifest
+          name: Setup manifest (<< parameters.browser >>)
           command: python3 setup.py << parameters.browser >>
       - run:
           name: Package Extension
@@ -101,33 +141,6 @@ jobs:
           root: .
           paths:
             - build-*
-
-
-  setup-testing:
-    executor: browser-testing
-    working_directory: ~/repo
-    steps:
-      - cached-checkout
-
-      # Install python deps
-      - restore_cache:
-          keys:
-            - v2-pydeps-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - v2-pydeps-{{ .Branch }}-
-            - v2-pydeps-
-      - run: pip3 install virtualenv
-      - run: virtualenv /tmp/ws/venv
-      - run: /tmp/ws/venv/bin/pip3 install -r requirements.txt
-      - save_cache:
-          paths:
-            - /tmp/ws/venv
-          key: v2-pydeps-{{ checksum "requirements.txt" }}
-
-      # Persist required files for functional testing to the workspace
-      - persist_to_workspace:
-          root: /tmp/ws/
-          paths:
-            - venv/
 
   test-common-basics:
     parameters:
@@ -140,18 +153,9 @@ jobs:
       - attach_workspace:
           at: /tmp/ws
 
-      # Work-around to define env variables from another, for the subsequent
-      # steps.
-      #  - Useful for firefox driver which relies on packaged extension
+      - << parameters.browser >>-setup
       - run:
-          name: Define Packed Webext path
-          command: |
-            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
-      - run:
-          name: Setup manifest
-          command: python3 setup.py << parameters.browser >>
-      - run:
-          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> tests/func/test_load.py tests/func/test_sidebar_display.py
+          command: pytest -v -s --browser << parameters.browser >> tests/func/test_load.py tests/func/test_sidebar_display.py
 
   test-common-advanced:
     parameters:
@@ -163,19 +167,9 @@ jobs:
       - cached-checkout
       - attach_workspace:
           at: /tmp/ws
-
-      # Work-around to define env variables from another, for the subsequent
-      # steps.
-      #  - Useful for firefox driver which relies on packaged extension
+      - << parameters.browser >>-setup
       - run:
-          name: Define Packed Webext path
-          command: |
-            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
-      - run:
-          name: Setup manifest
-          command: python3 setup.py << parameters.browser >>
-      - run:
-          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> tests/func/test_register.py
+          command: pytest -v -s --browser << parameters.browser >> tests/func/test_register.py
 
   test-reader:
     parameters:
@@ -189,26 +183,15 @@ jobs:
       - cached-checkout
       - attach_workspace:
           at: /tmp/ws
-
-      # Work-around to define env variables from another, for the subsequent
-      # steps.
-      #  - Useful for firefox driver which relies on packaged extension
+      - << parameters.browser >>-setup
       - run:
-          name: Define Packed Webext path
-          command: |
-            echo 'export WEBEXT_DIR="/tmp/ws/build-<< parameters.browser >>"' >> $BASH_ENV
-      - run:
-          name: Setup manifest
-          command: python3 setup.py << parameters.browser >>
-      - run:
-          command: /tmp/ws/venv/bin/pytest -v -s --browser << parameters.browser >> --reader << parameters.reader >> tests/func/test_reader.py
+          command: pytest -v -s --browser << parameters.browser >> --reader << parameters.reader >> tests/func/test_reader.py
 
 workflows:
   version: 2
   pre-merge:
     jobs:
       - basic-testing
-      - setup-testing
       - build-ext: &build_ff
           name: build-firefox
           requires:
@@ -218,7 +201,7 @@ workflows:
           browser: firefox
           requires:
           - build-firefox
-          - setup-testing
+          - basic-testing
       - test-reader:
           name: test-firefox-manganato
           browser: firefox
@@ -235,7 +218,7 @@ workflows:
           name: test-chrome-basics
           browser: chrome
           requires:
-          - setup-testing
+          - basic-testing
       - test-reader:
           name: test-chrome-manganato
           browser: chrome
@@ -258,7 +241,6 @@ workflows:
                 - master
     jobs:
       - basic-testing
-      - setup-testing
       # Firefox tests
       - build-ext: *build_ff
       - test-common-basics: *basics_ff
