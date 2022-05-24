@@ -39,6 +39,30 @@ def retry(retries=5, abort=True):
     return decorator
 
 
+def retry_on_ex(retry_types, retries=5, abort=True):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            count = 0
+            while count < retries:
+                try:
+                    if count != 0:
+                        time.sleep(1)
+
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if type(e) in retry_types:
+                        count += 1
+                        print(str(e), file=sys.stderr)
+                    else:
+                        raise
+
+            # Assert if abort is set, when all retries are exhausted
+            assert abort == False
+
+        return wrapper
+    return decorator
+
+
 def check_predicate(errorType, msg):
     def decorator(func):
         def wrapper(self, *args, **kwargs):

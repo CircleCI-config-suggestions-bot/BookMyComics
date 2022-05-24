@@ -1,11 +1,11 @@
 import random
 
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 from . import SupportBase
-from .. import RetriableError, retry, check_predicate
+from .. import RetriableError, retry, retry_on_ex, check_predicate
 
 class MangaNatoDriver(SupportBase):
     name = "manganato"
@@ -52,6 +52,7 @@ class MangaNatoDriver(SupportBase):
             by=By.CSS_SELECTOR,
             value='.navi-change-chapter-btn>.navi-change-chapter-btn-prev'))
 
+    @retry_on_ex([StaleElementReferenceException, WebDriverException])
     def prev_page(self):
         # In case you wonder, yes, button with "next" class is actually to go to the previous
         # chapter, because why not!
@@ -65,6 +66,7 @@ class MangaNatoDriver(SupportBase):
             by=By.CSS_SELECTOR,
             value='.navi-change-chapter-btn>.navi-change-chapter-btn-next'))
 
+    @retry_on_ex([StaleElementReferenceException, WebDriverException])
     def next_page(self):
         # In case you wonder, yes, button with "back" class is actually to go to the next
         # chapter, because why not!
