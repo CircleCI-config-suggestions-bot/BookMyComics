@@ -36,7 +36,7 @@ FanFoxNetPlugin.prototype.getInfos = function(url, doc) {
         const homeUrl = elem.getAttribute('href');
         const link_parts = url.split('/manga/')[1].split('/');
         const id = link_parts[0];
-        const chapter = parseInt(link_parts[1].replace('c', ''), 10);
+        const chapter = link_parts[1].replace('c', '').split('.');
         let page = link_parts[2].replace('.html', '');
         // BEWARE ! On FanFox, browsing uses ajax, and may update browsing url
         // with a '#' anchor to show which page is currently viewed. The HTML
@@ -61,7 +61,13 @@ FanFoxNetPlugin.prototype.computeURL = function(comic, source) {
     // Might be configurable later on.
     let url = `https://fanfox.net/manga/${source.info.id}`;
     if (comic.chapter) {
-        url += `/c${comic.chapter.toString().padStart(3, '0')}/${comic.page}.html`;
+        // Backwards-compat to before chapter was an array of sub-numberings
+        let chapter_ref = comic.chapter.toString().padStart(3, '0');
+        if (Array.isArray(comic.chapter)) {
+            const subs = comic.chapter.splice(1);
+            chapter_ref = [comic.chapter[0].padStart(3, '0'), subs.join('.')].join('.');
+        }
+        url += `/c${chapter_ref}/${comic.page}.html`;
         if (comic.page !== '1') {
             url = `${url}#ipg${comic.page}`;
         }

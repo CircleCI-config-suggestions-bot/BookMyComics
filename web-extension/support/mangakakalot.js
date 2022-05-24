@@ -16,7 +16,7 @@ MangaKakalotComPlugin.prototype.getInfos = function(url, doc) {
     if (parts.length < 1) {
         return null;
     } else if (parts[parts.length - 1].indexOf('chapter_') !== 0) {
-        // manga page
+        // manga homepage
         let elem = doc.querySelector('.manga-info-top>.manga-info-text>li>h1');
         if (!elem) {
             LOGS.log('S77');
@@ -41,8 +41,8 @@ MangaKakalotComPlugin.prototype.getInfos = function(url, doc) {
         }
         let name = elems[1].children[0].innerText;
         let homeUrl = elems[1].getAttribute('href').split('mangakakalot.com')[1];
-        let chapter = parts[parts.length - 1].split('_');
-        chapter = parseInt(chapter[chapter.length - 1]);
+        const ctoks = parts[parts.length - 1].split('_');
+        const chapter = ctoks[ctoks.length - 1].split('.');
         let id = parts[parts.length - 2];
         source = new BmcComicSource(name, 'mangakakalot.com', {id, homeUrl});
         comic.addSource(source);
@@ -57,7 +57,12 @@ MangaKakalotComPlugin.prototype.computeURL = function(comic, source) {
     // working out of the box, so we might as well enforce HTTPS as a default.
     // Might be configurable later on.
     if (comic.chapter) {
-        return `https://mangakakalot.com/chapter/${source.info.id}/chapter_${comic.chapter}`;
+        // Backwards-compat to before chapter was an array of sub-numberings
+        let chapter_ref = comic.chapter;
+        if (Array.isArray(comic.chapter)) {
+            chapter_ref = comic.chapter.join('.');
+        }
+        return `https://mangakakalot.com/chapter/${source.info.id}/chapter_${chapter_ref}`;
     }
     return `https://mangakakalot.com/${source.info.homeUrl}`;
 };

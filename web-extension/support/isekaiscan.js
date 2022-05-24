@@ -48,12 +48,8 @@ IsekaiScanComPlugin.prototype.getInfos = function(url, doc) {
         }
         let name = elem.innerText;
         let homeUrl = elem.getAttribute('href');
-        // XXX BUG XXX:
         // Found some chapters numbered `chapter-0-2` (2nd version of chapter 0 ?)
-        // As such, and to provide an uniform reading experience throughout the
-        // supported readers, we'll only keep the first number...
-        // -> We acknowledge this may lead to a non-functional link later on
-        let chapter = parseInt(url.split('/')[3].split('-')[1]);
+        let chapter = url.split('/')[3].split('-');
         let id = homeUrl.split('/manga/')[1].split('/')[0];
         source = new BmcComicSource(name, 'isekaiscan.com', {id, homeUrl, prefixes: {chapter: chapter_prefix}});
         comic.addSource(source);
@@ -65,7 +61,12 @@ IsekaiScanComPlugin.prototype.getInfos = function(url, doc) {
 
 IsekaiScanComPlugin.prototype.computeURL = function(comic, source) {
     if (comic.chapter !== null) {
-        return `https://isekaiscan.com/manga/${source.info.id}/${source.info.prefixes.chapter}-${comic.chapter}`;
+        // Backwards-compat to before chapter was an array of sub-numberings
+        let chapter_ref = comic.chapter;
+        if (Array.isArray(comic.chapter)) {
+            chapter_ref = comic.chapter.join('-');
+        }
+        return `https://isekaiscan.com/manga/${source.info.id}/${source.info.prefixes.chapter}-${chapter_ref}`;
     }
     return comic.homeUrl;
 };

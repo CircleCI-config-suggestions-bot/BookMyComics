@@ -35,7 +35,7 @@ MangaNatoComPlugin.prototype.getInfos = function(url, doc) {
         }
         const name = elems[1].innerText;
         const homeUrl = elems[1].getAttribute('href').split('manganato.com')[1];
-        const chapter = parseInt(parts[parts.length - 1].split('-')[1]);
+        const chapter = parts[parts.length - 1].split('-')[1].split('.');
         const id = parts[parts.length - 2].split('-')[1];
         source = new BmcComicSource(name, 'readmanganato.com', {id: id, homeUrl: homeUrl});
         comic.chapter = chapter;
@@ -51,7 +51,11 @@ MangaNatoComPlugin.prototype.computeURL = function(comic, source) {
     // working out of the box, so we might as well enforce HTTPS as a default.
     // Might be configurable later on.
     if (comic.chapter) {
-        return `https://readmanganato.com/manga-${source.info.id}/chapter-${comic.chapter}`;
+        let chapter_ref = comic.chapter;
+        if (Array.isArray(comic.chapter)) {
+            chapter_ref = comic.chapter.join('.');
+        }
+        return `https://readmanganato.com/manga-${source.info.id}/chapter-${chapter_ref}`;
     }
     return `https://readmanganato.com${source.info.homeUrl}`;
 };
