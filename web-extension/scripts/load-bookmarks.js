@@ -612,7 +612,7 @@ function addEvents() {
         BmcUI.prototype.SIDEPANEL_ID,
         ev => ev.data.type === 'action' && ev.data.action === 'notification',
         ev => {
-            LOGS.log('S53', {'op': ev.data.operation, 'error': ev.data.error});
+            LOGS.log('S53', {'op': ev.data.operation, 'error': JSON.stringify(ev.data.error)});
             notifyResult(ev.data.operation, ev.data.error);
         });
     bmcMessaging.addExtensionHandler(
