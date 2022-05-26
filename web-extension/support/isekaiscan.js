@@ -49,7 +49,7 @@ IsekaiScanComPlugin.prototype.getInfos = function(url, doc) {
         let name = elem.innerText;
         let homeUrl = elem.getAttribute('href');
         // Found some chapters numbered `chapter-0-2` (2nd version of chapter 0 ?)
-        let chapter = url.split('/')[3].split('-');
+        let chapter = url.split('/')[3].split('-').splice(1);
         let id = homeUrl.split('/manga/')[1].split('/')[0];
         source = new BmcComicSource(name, 'isekaiscan.com', {id, homeUrl, prefixes: {chapter: chapter_prefix}});
         comic.addSource(source);
