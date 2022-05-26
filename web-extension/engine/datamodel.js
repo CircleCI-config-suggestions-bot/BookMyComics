@@ -194,7 +194,7 @@ KeyScheme.prototype.computeSourceKey = function(source) {
 function BmcComicSource(name, reader, info) {
     this.name = name.trim();
     this.reader = reader;
-    this.info = Object.assign({}, info);
+    this.info = Object.assign({has_updates: false}, info);
 }
 
 /**
@@ -889,5 +889,27 @@ BmcDataAPI.prototype.getComic = function(comicId, cb) {
             return cb(null, null);
         }
         return cb(null, results[0]);
+    });
+};
+
+/**
+ * This method updates a single ComicSource's data.
+ *
+ * @method
+ *
+ * @param {BmcComic} the comic containing the source to update
+ * @param {BmcComicSource} the source to update
+ *
+ * @returns {undefined}
+ */
+BmcDataAPI.prototype.updateComicSource = function(comicId, source, cb) {
+    return this._scheme.getMap((err, map) => {
+        const sourceKey = this._scheme.computeSourceKey(source);
+        map[sourceKey] = { id: comicId, info: source.info };
+        const dataset = {};
+        dataset[this._scheme.BMC_MAP_KEY] = map;
+        return this._data.set(dataset, err => {
+            return cb(err);
+        });
     });
 };

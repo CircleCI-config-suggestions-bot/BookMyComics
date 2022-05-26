@@ -77,6 +77,11 @@ BmcSources.prototype.computeURL = function(origin, comic) {
     return ori ? ori.computeURL(comic, comic.getSource(origin)) : null;
 };
 
+BmcSources.prototype.hasNextPage = function(origin, doc) {
+    var ori = this._fromOrigin(origin);
+    return ori ? ori.hasNextPage(doc) : false;
+};
+
 BmcSources.prototype.getInfos = function(origin, url, doc) {
     var ori = this._fromOrigin(origin);
     return ori ? ori.getInfos(url, doc) : null;

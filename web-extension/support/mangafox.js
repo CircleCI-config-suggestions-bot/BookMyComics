@@ -76,3 +76,32 @@ FanFoxNetPlugin.prototype.computeURL = function(comic, source) {
     }
     return url;
 };
+
+FanFoxNetPlugin.prototype.hasNextPage = function(doc) {
+    let pages = null;
+    let chapters = null;
+    const pagers = doc.getElementsByClassName('pager-list-left');
+    for (let i=0; i < pagers.length; i++) {
+        if (pagers[i].childElementCount) {
+            pages = pagers[i].querySelectorAll('span > a');
+            chapters = pagers[i].querySelectorAll('a.chapter');
+            break ;
+        }
+    }
+
+    // Check if we're on the last page of the chapter
+    for (let i=0; i < pages.length; i++) {
+        if (pages[i].classList.contains('active')) {
+            if (i < pages.length - 1) {
+                return true;
+            }
+            // If yes, check if there's a next chapter
+            for (let i=0; i < chapters.length; i++) {
+                if (chapters[i].text.indexOf('Next') !== -1) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+};

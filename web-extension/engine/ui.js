@@ -22,7 +22,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     iframe.src = resourcePath;
     LOGS.log('S31', {'src': iframe.src});
     iframe.style.width = '206px';
-    iframe.style.height = '58px';
+    iframe.style.height = '86px';
     iframe.style.position = 'fixed';
     iframe.style.top = '70px';
     iframe.style.left = '0';
@@ -85,7 +85,7 @@ BmcUI.prototype.fullSize = function(showSidebar) {
         iframe.style.height = '100vh';
         iframe.style.top = '0';
     } else {
-        iframe.style.height = '58px';
+        iframe.style.height = '86px';
         iframe.style.top = '70px';
     }
 };

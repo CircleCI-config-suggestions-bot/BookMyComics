@@ -24,8 +24,18 @@
   top: calc(50% - 7px);
   display: none;
 }
+.label-container > .fa-rotate {
+  position: absolute;
+  right: 2px;
+  top: calc(50% - 7px);
+  display: block;
+}
 .fa-trash::before {
   content: "\f1f8";
+}
+.fa-rotate::before {
+  content: "\f2f1";
+  content: "\f1ce";
 }
 .label-container {
   position: relative;
@@ -36,8 +46,14 @@
 .label:hover + .fa-trash, .fa-trash:hover {
   display: initial;
 }
+.label:hover + .fa-rotate, .fa-rotate:hover {
+  display: initial;
+}
 .label-container > .fa-trash:hover {
   color: red;
+}
+.label-container > .fa-rotate:hover {
+  color: #fcfcfc;
 }
 #side-panel,#side-panel-adder,#side-panel-add-into-existing {
   width: calc(100vw - 22px);
@@ -49,6 +65,36 @@
   background-color: #fcfcfc;
   left: 0;
   display: none;
+}
+#refresh-but {
+  position: absolute;
+  top: 58px;
+  padding: 3px;
+  padding-top: 2px;
+  background-color: #fcfcfc;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 14px;
+  cursor: pointer;
+  width: 18px;
+  text-align: center;
+  transition: left .3s, right .3s;
+}
+#refresh-but.left {
+  left: -6px;
+}
+#refresh-but.left:hover {
+  left: 0;
+}
+#refresh-but.right {
+  top: 128px;
+  right: 0;
+}
+#refresh-but.right:hover {
+  right: 4px;
+}
+#refresh-but:hover {
+  background-color: #ebebeb;
 }
 #hide-but {
   position: absolute;
@@ -260,6 +306,9 @@ ul, .mangaListItem {
 .current {
   background: #f9e3d0;
 }
+.readable {
+  background: #a3f9a0;
+}
     </style>
     <script src="strings.js"></script>
     <script src="utils.js"></script>
@@ -290,6 +339,7 @@ ul, .mangaListItem {
       <button id="add-existing-confirm" class="button-add" disabled>Confirm</button>
       <button id="add-existing-cancel" class="button-add cancel">Cancel</button>
     </div>
+    <div id="refresh-but" class="left"><span class="fa fa-rotate"></span></div>
     <div id="register-but" class="left">+</div>
     <div id="delete-but" class="left"><span class="fa fa-trash"></span></div>
     <div id="hide-but" class="left">&gt;</div>

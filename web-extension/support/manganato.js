@@ -59,3 +59,8 @@ MangaNatoComPlugin.prototype.computeURL = function(comic, source) {
     }
     return `https://readmanganato.com${source.info.homeUrl}`;
 };
+
+MangaNatoComPlugin.prototype.hasNextPage = function(doc) {
+    const elem = doc.querySelector('.navi-change-chapter-btn>.navi-change-chapter-btn-next');
+    return elem !== null;
+};

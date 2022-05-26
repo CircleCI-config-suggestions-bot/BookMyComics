@@ -38,7 +38,7 @@ function Localization(lang = DEFAULT_LANG) {
             'en': 'BmcEngine._memoizeComic: unknown comic name.',
         },
         // 'S3': {
-        //     'en': 'BmcEngine: Resetting ID memoization after end of ongoing memoization',
+        //     'en': 'BmcEngine: Check Update failed for  comic {label}: Could not match source {reader}',
         // },
         // 'S4': {
         //     'en': 'BmcEngine: Resetting ID memoization',
@@ -300,7 +300,7 @@ function Logs(level = INFO) {
         // 'E0005': 'S6',
         // 'E0006': 'S7',
         'E0007': 'S8',
-        // 'E0008': 'S27',
+        // 'E0008': 'S3',
         'E0009': 'S17',
         'E0010': 'S15',
         'E0011': 'S13',
