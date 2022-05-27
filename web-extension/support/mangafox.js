@@ -2,6 +2,7 @@
     BmcComicSource:readable
     BmcComic:readable
     LOGS:readable
+    cloneArray:readable
 */
 
 function FanFoxNetPlugin() {
@@ -64,11 +65,12 @@ FanFoxNetPlugin.prototype.computeURL = function(comic, source) {
         // Backwards-compat to before chapter was an array of sub-numberings
         let chapter_ref = comic.chapter.toString().padStart(3, '0');
         if (Array.isArray(comic.chapter)) {
-            const subs = comic.chapter.splice(1);
-            chapter_ref = [comic.chapter[0].padStart(3, '0'), subs.join('.')].join('.');
+            const subs = cloneArray(comic.chapter).splice(1);
+            const ar = [comic.chapter[0].padStart(3, '0')].concat(subs.length ? [subs.join('.')] : []);
+            chapter_ref = ar.join('.');
         }
-        url += `/c${chapter_ref}/${comic.page}.html`;
-        if (comic.page !== '1') {
+        url += `/c${chapter_ref}/${comic.page ? comic.page : 1}.html`;
+        if (comic.page !== null && comic.page !== '1') {
             url = `${url}#ipg${comic.page}`;
         }
     }
