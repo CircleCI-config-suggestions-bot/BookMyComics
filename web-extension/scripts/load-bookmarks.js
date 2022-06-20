@@ -58,6 +58,10 @@ function sendAliasRequest(comicId) {
     });
 }
 
+function getRefreshBut() {
+    return document.getElementById('refresh-but');
+}
+
 BmcMangaList.prototype.onBrowseClick = function(ev) {
     let target = ev.target;
     let comicWrapper = target.parentElement;
@@ -447,7 +451,7 @@ function addEvents() {
     }
 
     // On button-add click, Trigger a new comic registration
-    const refreshBtn = document.getElementById('refresh-but');
+    const refreshBtn = getRefreshBut();
     if (refreshBtn) {
         refreshBtn.onclick = checkForUpdates;
     }
@@ -660,11 +664,13 @@ function addEvents() {
             && ev.data.operation === 'Check Updates',
         ev => {
             if (ev.data.step === 'started') {
-                // TODO STOP rotation animation of refresh-but
-                document.getElementById('refresh-but').style.backgroundColor = '#85dd00';
+                const refreshBut = getRefreshBut();
+                refreshBut.style.backgroundColor = '#85dd00';
+                refreshBut.querySelector('.fa-rotate').classList.add('rotate');
             } else if (ev.data.step === 'completed') {
-                // TODO  STOP rotation animation of refresh-but
-                document.getElementById('refresh-but').style.backgroundColor = '#fcfcfc';
+                const refreshBut = getRefreshBut();
+                refreshBut.style.backgroundColor = '#fcfcfc';
+                refreshBut.querySelector('.fa-rotate').classList.remove('rotate');
             } else if (ev.data.step === 'source') {
                 const evComic = BmcComic.deserialize(ev.data.comic);
                 const evSource = BmcComicSource.fromDict(ev.data.source);
@@ -764,7 +770,7 @@ function shiftButtonLeft(btn) {
 }
 
 function moveButtonsToTheRightPlace(panel) {
-    var refBtn = document.getElementById('refresh-but');
+    var refBtn = getRefreshBut();
     var togBtn = document.getElementById('hide-but');
     var regBtn = document.getElementById('register-but');
     var delBtn = document.getElementById('delete-but');
@@ -884,7 +890,7 @@ function showSidePanelAdder() {
     }
     var sidePanel = document.getElementById('side-panel');
     var hideBut = document.getElementById('hide-but');
-    var refreshBtn = document.getElementById('refresh-but');
+    var refreshBtn = getRefreshBut();
     var regBtn = document.getElementById('register-but');
     var delBtn = document.getElementById('delete-but');
     var bookmarkName = document.getElementById('bookmark-name');

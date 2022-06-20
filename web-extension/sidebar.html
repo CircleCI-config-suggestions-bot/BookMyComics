@@ -34,8 +34,7 @@
   content: "\f1f8";
 }
 .fa-rotate::before {
-  content: "\f2f1";
-  content: "\f1ce";
+  content: "\f021";
 }
 .label-container {
   position: relative;
@@ -65,6 +64,17 @@
   background-color: #fcfcfc;
   left: 0;
   display: none;
+}
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.rotate {
+  animation: rotating 2s linear infinite;
 }
 #refresh-but {
   position: absolute;
