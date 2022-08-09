@@ -17,6 +17,7 @@
             "engine/storage.js",
             "engine/datamodel.js",
             "engine/messaging.js",
+            "support/localhost.js",
             "support/mangafox.js",
             "support/manganato.js",
             "support/mangakakalot.js",
@@ -26,6 +27,24 @@
         ]
     },
     "content_scripts": [
+        {
+            "matches": ["http://localhost/*"],
+            "js": [
+                "strings.js",
+                "utils.js",
+                "compat.js",
+                "engine/utils.js",
+                "engine/storage.js",
+                "engine/datamodel.js",
+                "engine/messaging.js",
+                "engine/ui.js",
+                "sources.js",
+                "engine/bookmycomics.js",
+                "support/localhost.js",
+                "entrypoint.js"
+            ],
+            "all_frames": true
+        },
         {
             "matches": ["*://manganato.com/*"],
             "js": [

@@ -3,6 +3,7 @@
     MangaNatoComPlugin:readable
     MangaKakalotComPlugin:readable
     IsekaiScanComPlugin:readable
+    BookMyComicsTestPlugin:readable
 */
 
 /**
@@ -39,6 +40,20 @@ BmcSources.prototype._load = function(origin) {
         {
             key: 'isekaiscan.com',
             makeObj:() => new IsekaiScanComPlugin(),
+        },
+        // The two following entries are here to support two different
+        // situations for the "localhost" simulacrum website.
+        // * The support module registers the reader `localhost`
+        // * The origin provided by the browser includes the port
+        // Sadly, we cannot include the port by default, because otherwise, the
+        // source mapping mechanism fails somewhere in the URL generation path
+        {
+            key: 'localhost',
+            makeObj: () => new BookMyComicsTestPlugin(),
+        },
+        {
+            key: 'localhost:5000',
+            makeObj: () => new BookMyComicsTestPlugin(),
         }
     ];
     sourceDescs.forEach(desc => {

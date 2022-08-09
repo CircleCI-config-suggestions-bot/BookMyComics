@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<h2>Latest updates</h2>
+<div id="latest-updates">
+{% for item in updates %}
+	<a href="{{ item.url }}">{{ item.name }}</a>
+{% endfor %}
+</div>
+{% endblock %}

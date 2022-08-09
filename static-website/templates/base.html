@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    {% block meta %}{% endblock meta %}
+    <title>Test website - {% block title %}{% endblock %}</title>
+  </head>
+  <body>
+    <header style="display:block; width: 100vw;">
+      <a href="/">Back to home</a>
+    </header>
+    {% block content %}{% endblock %}
+  </body>
+</html>

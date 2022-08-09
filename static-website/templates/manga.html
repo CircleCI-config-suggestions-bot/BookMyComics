@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Manga {{ name }}{% endblock %}
+{% block content %}
+<h2>Manga {{ name }}</h2>
+<div id="chapters">
+{% for item in chapters %}
+	<a href="{{ item.url }}">{{ item.name }}</a>
+{% endfor %}
+</div>
+{% endblock %}
