@@ -70,3 +70,8 @@ IsekaiScanComPlugin.prototype.computeURL = function(comic, source) {
     }
     return comic.homeUrl;
 };
+
+IsekaiScanComPlugin.prototype.hasNextPage = function(doc) {
+    const elem = doc.querySelector('.nav-next > .next_page');
+    return elem !== null;
+};

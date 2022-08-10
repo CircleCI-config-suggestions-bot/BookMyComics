@@ -66,3 +66,8 @@ MangaKakalotComPlugin.prototype.computeURL = function(comic, source) {
     }
     return `https://mangakakalot.com/${source.info.homeUrl}`;
 };
+
+MangaKakalotComPlugin.prototype.hasNextPage = function(doc) {
+    const elem = doc.querySelector('.btn-navigation-chap > .back');
+    return elem !== null;
+};

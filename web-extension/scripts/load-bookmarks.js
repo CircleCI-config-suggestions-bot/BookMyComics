@@ -58,6 +58,10 @@ function sendAliasRequest(comicId) {
     });
 }
 
+function getRefreshBut() {
+    return document.getElementById('refresh-but');
+}
+
 BmcMangaList.prototype.onBrowseClick = function(ev) {
     let target = ev.target;
     let comicWrapper = target.parentElement;
@@ -238,6 +242,7 @@ BmcMangaList.prototype.generateComic = function(comic) {
     comic.iterSources(source => {
         // elm.comicSrcList(1).Comic(index)
         comicSrcList.appendChild(this.generateSource(comic, source));
+        setSourceUpdate(source.info.has_updates, comicLabel, comicSrcList.lastChild.children[0]);
     });
 
     return elm;
@@ -288,7 +293,7 @@ BmcMangaList.prototype.generate = function(completionCb) {
         this.showRegisterDeleteButton();
 
         // Now, ensure the active comic (if set) is highlighted.
-        setActiveComic();
+        updateMangaListItem(this.currentComic, this.currentSource, setActiveComic);
 
         // Finally, call completion cb if set
         if (completionCb) {
@@ -367,24 +372,49 @@ function changeConfirmButtonStatus(confirmBut, value) {
     });
 }
 
-function setActiveComic() {
+function getDomSourcesFromComic(comicLabel) {
+    // two levels of parent Elements to go from label to mangaListItem DOM node
+    return cloneArray(comicLabel.parentElement.parentElement.querySelectorAll('.nested .label'));
+}
+
+function setActiveComic(comicLabel, sourceLabel) {
+    comicLabel.parentElement.classList.add('current');
+    if (sourceLabel) {
+        sourceLabel.parentElement.classList.add('current');
+    }
+}
+
+function setSourceUpdate(has_updates, comicLabel, sourceLabel) {
+    if (!sourceLabel)
+        return ;
+
+    if (has_updates) {
+        comicLabel.parentElement.classList.add('readable');
+        sourceLabel.parentElement.classList.add('readable');
+    } else {
+        sourceLabel.parentElement.classList.remove('readable');
+        const sources = getDomSourcesFromComic(comicLabel);
+        if (sources.some(s => s.parentElement.classList.contains('readable')) == 0) {
+            comicLabel.parentElement.classList.remove('readable');
+        }
+    }
+}
+
+function updateMangaListItem(refComic, refSource, transformCb) {
     const items = cloneArray(
         document.getElementById('manga-list').getElementsByClassName('mangaListItem'));
     for (let i = 0, len = items.length; i < len; ++i) {
         const item = items[i];
         const label = item.getElementsByClassName('rollingArrow')[0];
-        if (mangaList.currentComic
-            && label.bmcData.id === mangaList.currentComic.id) {
-            label.parentElement.classList.add('current');
-            const sources = cloneArray(item.querySelectorAll('.nested .label'));
-            for (i = 0, len = sources.length; i < len; ++i) {
+        if (refComic && label.bmcData.id === refComic.id) {
+            const sources = getDomSourcesFromComic(label);
+            for (i = 0; i < sources.length; ++i) {
                 const source = sources[i];
-                if (source.innerText === mangaList.currentSource.reader) {
-                    source.parentElement.classList.add('current');
-                    break;
+                if (source.innerText === refSource.reader) {
+                    return transformCb(label, source);
                 }
             }
-            return;
+            return transformCb(label, null);
         }
     }
 }
@@ -421,6 +451,10 @@ function addEvents() {
     }
 
     // On button-add click, Trigger a new comic registration
+    const refreshBtn = getRefreshBut();
+    if (refreshBtn) {
+        refreshBtn.onclick = checkForUpdates;
+    }
     const regBtn = document.getElementById('register-but');
     if (regBtn) {
         regBtn.onclick = showHideSidePanelAdder;
@@ -544,7 +578,17 @@ function addEvents() {
             if (evData.operation === 'track') {
                 notifyResult(evData.operation, evData.error);
             }
-            setActiveComic();
+            updateMangaListItem(mangaList.currentComic, mangaList.currentSource, setActiveComic);
+            if (evData.comic && evData.comic.id !== undefined) {
+                // Since we're being notified of a comic tracking, we might as well
+                // trigger the check for updates directly for this comic
+                // Our notification handling message will update the sidebar accordingly
+                bmcMessaging.sendExtension({
+                    type: 'action',
+                    action: 'check-for-update',
+                    comic: Object.assign({}, evData.comic),
+                });
+            }
         });
     bmcMessaging.addExtensionHandler(
         BmcUI.prototype.SIDEPANEL_ID,
@@ -572,7 +616,7 @@ function addEvents() {
         BmcUI.prototype.SIDEPANEL_ID,
         ev => ev.data.type === 'action' && ev.data.action === 'notification',
         ev => {
-            LOGS.log('S53', {'op': ev.data.operation, 'error': ev.data.error});
+            LOGS.log('S53', {'op': ev.data.operation, 'error': JSON.stringify(ev.data.error)});
             notifyResult(ev.data.operation, ev.data.error);
         });
     bmcMessaging.addExtensionHandler(
@@ -611,6 +655,27 @@ function addEvents() {
                         }
                     });
                 });
+            }
+        });
+    bmcMessaging.addExtensionHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
+        ev => ev.data.type === 'action'
+            && ev.data.action === 'notification'
+            && ev.data.operation === 'Check Updates',
+        ev => {
+            if (ev.data.step === 'started') {
+                const refreshBut = getRefreshBut();
+                refreshBut.style.backgroundColor = '#85dd00';
+                refreshBut.querySelector('.fa-rotate').classList.add('rotate');
+            } else if (ev.data.step === 'completed') {
+                const refreshBut = getRefreshBut();
+                refreshBut.style.backgroundColor = '#fcfcfc';
+                refreshBut.querySelector('.fa-rotate').classList.remove('rotate');
+            } else if (ev.data.step === 'source') {
+                const evComic = BmcComic.deserialize(ev.data.comic);
+                const evSource = BmcComicSource.fromDict(ev.data.source);
+                // UPDATE comic/source coloring depending on new page availability (for non-current comic/source)
+                updateMangaListItem(evComic, evSource, setSourceUpdate.bind(this, evSource.info.has_updates));
             }
         });
 
@@ -705,16 +770,19 @@ function shiftButtonLeft(btn) {
 }
 
 function moveButtonsToTheRightPlace(panel) {
+    var refBtn = getRefreshBut();
     var togBtn = document.getElementById('hide-but');
     var regBtn = document.getElementById('register-but');
     var delBtn = document.getElementById('delete-but');
 
     if (panel.style.display === 'block') {
+        shiftButtonRight(refBtn);
         shiftButtonRight(togBtn);
         shiftButtonRight(regBtn);
         shiftButtonRight(delBtn);
         togBtn.innerText = '<';
     } else {
+        shiftButtonLeft(refBtn);
         shiftButtonLeft(togBtn);
         shiftButtonLeft(regBtn);
         shiftButtonLeft(delBtn);
@@ -822,6 +890,7 @@ function showSidePanelAdder() {
     }
     var sidePanel = document.getElementById('side-panel');
     var hideBut = document.getElementById('hide-but');
+    var refreshBtn = getRefreshBut();
     var regBtn = document.getElementById('register-but');
     var delBtn = document.getElementById('delete-but');
     var bookmarkName = document.getElementById('bookmark-name');
@@ -841,6 +910,7 @@ function showSidePanelAdder() {
         changeConfirmButtonStatus(confirmBut, bookmarkName.value);
     }
     bookmarkName.focus();
+    refreshBtn.style.display = '';
     regBtn.style.display = '';
     delBtn.style.display = '';
     hideBut.style.display = 'none';
@@ -855,6 +925,15 @@ function showHideSidePanelAdder() {
     } else {
         showSidePanelAdder();
     }
+}
+
+function checkForUpdates() {
+    // Now do the actual registration.
+    const ev= {
+        type: 'action',
+        action: 'check-for-updates',
+    };
+    bmcMessaging.sendExtension(ev);
 }
 
 function showHideSidePanelDeleter() {

@@ -2,6 +2,7 @@
     BmcComicSource:readable
     BmcComic:readable
     LOGS:readable
+    cloneArray:readable
 */
 
 function FanFoxNetPlugin() {
@@ -64,13 +65,43 @@ FanFoxNetPlugin.prototype.computeURL = function(comic, source) {
         // Backwards-compat to before chapter was an array of sub-numberings
         let chapter_ref = comic.chapter.toString().padStart(3, '0');
         if (Array.isArray(comic.chapter)) {
-            const subs = comic.chapter.splice(1);
-            chapter_ref = [comic.chapter[0].padStart(3, '0'), subs.join('.')].join('.');
+            const subs = cloneArray(comic.chapter).splice(1);
+            const ar = [comic.chapter[0].padStart(3, '0')].concat(subs.length ? [subs.join('.')] : []);
+            chapter_ref = ar.join('.');
         }
-        url += `/c${chapter_ref}/${comic.page}.html`;
-        if (comic.page !== '1') {
+        url += `/c${chapter_ref}/${comic.page ? comic.page : 1}.html`;
+        if (comic.page !== null && comic.page !== '1') {
             url = `${url}#ipg${comic.page}`;
         }
     }
     return url;
+};
+
+FanFoxNetPlugin.prototype.hasNextPage = function(doc) {
+    let pages = null;
+    let chapters = null;
+    const pagers = doc.getElementsByClassName('pager-list-left');
+    for (let i=0; i < pagers.length; i++) {
+        if (pagers[i].childElementCount) {
+            pages = pagers[i].querySelectorAll('span > a');
+            chapters = pagers[i].querySelectorAll('a.chapter');
+            break ;
+        }
+    }
+
+    // Check if we're on the last page of the chapter
+    for (let i=0; i < pages.length; i++) {
+        if (pages[i].classList.contains('active')) {
+            if (i < pages.length - 1) {
+                return true;
+            }
+            // If yes, check if there's a next chapter
+            for (let i=0; i < chapters.length; i++) {
+                if (chapters[i].text.indexOf('Next') !== -1) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 };

@@ -5,6 +5,8 @@
     BmcBackgroundMessagingHandler:readable
     BmcSources:readable
     LOGS:readable
+    cloneArray:readable
+    stringToHTML:readable
 */
 
 /*
@@ -168,6 +170,53 @@ bmcMessaging.addHandler(
     }
 );
 
+// Handle "check-for-update" (Checking updates on one comic/source)
+bmcMessaging.addHandler(
+    BACKGROUND_ID,
+    ev => ev.data.type === 'action' && ev.data.action === 'check-for-update',
+    ev => {
+        const evComic = BmcComic.deserialize(ev.data.comic);
+        bmcData.getComic(evComic.id, (err, comic) => {
+            if (err) {
+                return ;
+            }
+            // Do nothing upon completion
+            checkSourcesUpdates(comic, cloneArray(comic._sources), () => {});
+        });
+    }
+);
+
+// Handle "check-for-updates" (Checking updates on all comics/sources)
+bmcMessaging.addHandler(
+    BACKGROUND_ID,
+    ev => ev.data.type === 'action' && ev.data.action === 'check-for-updates',
+    () => {
+        bmcData.list((err, list) => {
+            if (err) {
+                return ;
+            }
+            const evData = {
+                type: 'action',
+                action: 'notification',
+                operation: 'Check Updates',
+                step: 'started',
+                error: false,
+            };
+            bmcMessaging.broadcast(evData);
+            checkComicUpdates(list, err => {
+                const evData = {
+                    type: 'action',
+                    action: 'notification',
+                    operation: 'Check Updates',
+                    step: 'completed',
+                    error: !!err,
+                };
+                bmcMessaging.broadcast(evData);
+            });
+        });
+    }
+);
+
 
 /*
  * This function registers a comic into the saved data. It shall be used by the
@@ -229,4 +278,137 @@ function deleteSourceOrComic(comic, source, cb) {
     // Otherwise, remove the source (and optionally the Comic if it was the
     // last source)
     return bmcData.unaliasComic(comic.id, source, cb);
+}
+
+/*
+ * Utility function to notify all sidebars that an Update Check was completed
+ * on a specific comic/source.
+ *
+ * @param {BmcComic} the comic being checked
+ * @param {BmcComicSource} the comic's source being checked
+ *
+ * @return {undefined}
+ */
+function checkSourcesUpdateNotif(comic, source, err) {
+    let evData = {
+        type: 'action',
+        action: 'notification',
+        operation: 'Check Updates',
+        step: 'source',
+        comic: comic.serialize(),
+        source: source.toDict(),
+        error: err ? err.toString() : null,
+    };
+    bmcMessaging.broadcast(evData);
+}
+
+/*
+ * Function that checks one comic/source couple for updates.It will call
+ * `startF` before processing, and `endF` at the end of processing this couple.
+ * `startF` is optional and can be set to null instead.
+ * Once checked, the source will be updated in the datamodel.
+ *
+ * @param {BmcComic} the comic being checked
+ * @param {Array[BmcComicSource]} the array of comic sources to be checked
+ * @param {callback} the continuation routine to call after everything is handled
+ *
+ * @return {undefined}
+ */
+function checkSourceUpdate(comic, source, cb) {
+    // compute URL for comic/source
+    const url = bmcSources.computeURL(source.reader, comic);
+    // Fetch page's HTML
+    fetch(url)
+        .then(function(response) {
+            if (!response.ok) {
+                // Send comic/source end event (failure),
+                // but continue processing the rest of the comics/sources
+                checkSourcesUpdateNotif(
+                    comic, source, true,
+                    `Failed to fetch, HTTP Status ${response.status}(${response.statusText})`);
+                // Tell the continuation routine to continue processing,
+                // As this error only concerns the current comic/source.
+                return cb(null);
+            }
+            return response.text();
+        })
+        .then(function(html_text) {
+            let doc = stringToHTML(html_text);
+            // Check for next button
+            source.info.has_updates = bmcSources.hasNextPage(source.reader, doc);
+            // Store result in DB
+            bmcData.updateComicSource(comic.id, source, err => {
+                // This error might come from the storage and be irrecoverable.
+                // => We need to interrupt the updates check
+                if (err) {
+                    checkSourcesUpdateNotif(
+                        comic, source, err,
+                        `Failed to update source: ${JSON.stringify(err)}`);
+                    return cb(err);
+                }
+                checkSourcesUpdateNotif(comic, source, null);
+                return cb(null);
+            });
+        })
+        .catch(function(error) {
+            // Send comic/source end event (failure),
+            // but continue processing the rest of the comics/sources
+            checkSourcesUpdateNotif(comic, source, error);
+            // Tell the continuation routine to continue processing,
+            // As this error only concerns the current comic/source.
+            return cb(null);
+        });
+}
+
+/*
+ * Async-recursive function which will check a list of sources for a given
+ * comic for updates.It will notify all sidebars about the start/end of a
+ * source check, and record the updates availability into the storage via the
+ * datamodel.
+ *
+ * @param {BmcComic} the comic being checked
+ * @param {Array[BmcComicSource]} the array of comic sources to be checked
+ *
+ * @return {undefined}
+ */
+function checkSourcesUpdates(comic, sources, cb) {
+    if (sources.length === 0) {
+        return cb(null /* no error */);
+    }
+    const nextSources = sources.splice(1);
+
+    checkSourceUpdate(
+        comic, sources[0],
+        err => {
+            if (err) {
+                return cb(err);
+            }
+            // Then Recursively repeat for all remaining sources
+            return checkSourcesUpdates(comic, nextSources, cb);
+        });
+    return null;
+}
+
+/*
+ * Async-recursive function which will check a list of comic for updates.
+ * For each of them, il will run the check for updates on each of their
+ * sources.
+ *
+ * @param {BmcComic} the comic being checked
+ * @param {Array[BmcComicSource]} the array of comic sources to be checked
+ * @param
+ *
+ * @return {undefined}
+ */
+function checkComicUpdates(comics, cb) {
+    if (comics.length === 0) {
+        return cb(null /* no error */);
+    }
+    const nextComics = comics.splice(1);
+    return checkSourcesUpdates(comics[0], cloneArray(comics[0]._sources), err => {
+        if (err) {
+            return cb(err);
+        }
+        return checkComicUpdates(nextComics, cb);
+    });
 }
