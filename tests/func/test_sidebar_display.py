@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 EXT = Extension()
 SIDEBAR_WIDTH = 206
 COLLAPSED_SIDEBAR_HEIGHT = 86
+COLLAPSED_SIDEBAR_WIDTH = 22
 
 
 @pytest.mark.order(after='test_webext_loads')
@@ -21,7 +22,7 @@ class TestSidebarDisplay:
         # -> This guarantees that the users can continue clicking on the page's
         # button when the sidebar is hidden.
         size = controller.sidebar.size
-        assert size['height'] == COLLAPSED_SIDEBAR_HEIGHT and size['width'] == SIDEBAR_WIDTH
+        assert size['height'] == COLLAPSED_SIDEBAR_HEIGHT and size['width'] == COLLAPSED_SIDEBAR_WIDTH
 
         # Ensures that the content of the sidebar is hidden
         assert controller.sidebar.hidden
