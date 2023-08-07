@@ -15,11 +15,17 @@ def load_another_random(controller, reader_driver, ignore_list):
         Ensures that the randomly selected/loaded comic page is different from
         any of the pages provided in the ignore_list
     """
+    hidden = controller.sidebar.hidden
+    if not hidden:
+        controller.sidebar.toggle()
     while True:
         reader_driver.load_random()
-        if not controller.driver.current_url in ignore_list:
+        name = reader_driver.get_comic_name()
+        if not any([item == name for item in ignore_list]):
             break
     controller.refresh()
+    if not hidden:
+        controller.sidebar.toggle()
 
 def check_active_subs(dom_node, nb):
     """
