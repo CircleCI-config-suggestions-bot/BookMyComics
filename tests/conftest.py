@@ -140,7 +140,7 @@ def pytest_exception_interact(node, call, report):
         print('\n=== MODULE ERROR ===')
         print(node.obj)
         print('=== END OR MODULE ERROR ===')
-    elif hasattr(node, "funcargs"):
+    elif hasattr(node, "funcargs") and 'controller' in node.funcargs:
         controller = node.funcargs['controller']
         if report.failed:
             controller.driver.save_screenshot('/tmp/test-failed.png')
