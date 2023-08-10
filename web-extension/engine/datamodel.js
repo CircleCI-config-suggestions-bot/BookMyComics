@@ -81,6 +81,8 @@ KeyScheme.prototype.getLabelMap = function(cb) {
             LOGS.log('S71');
             return cb(err, null);
         }
+        if (data === undefined)
+            data = {};
         return cb(null, data[this.BMC_LMAP_KEY]);
     });
 };
