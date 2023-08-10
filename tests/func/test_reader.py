@@ -14,8 +14,12 @@ class TestUtilities:
     @staticmethod
     def test_navigation(reader_driver):
         reader_driver.load_random()
-        reader_driver.prev_page()
-        reader_driver.next_page()
+        if not reader_driver.has_prev_page():
+            reader_driver.next_page()
+            reader_driver.prev_page()
+        else:
+            reader_driver.prev_page()
+            reader_driver.next_page()
 
     @staticmethod
     def test_webext_loads(controller, reader_driver):
