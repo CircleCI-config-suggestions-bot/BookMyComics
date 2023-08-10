@@ -297,7 +297,7 @@ class TestMultipleComics:
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
-        load_another_random(controller, unique_reader, [controller.driver.current_url])
+        load_another_random(controller, unique_reader, [unique_reader.get_comic_name()])
 
         init_sidebar(unique_reader, controller, load_random=False)
         orig_n_items = len(controller.sidebar.get_registered())
@@ -323,7 +323,7 @@ class TestMultipleComics:
         controller.register('toto')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
-        load_another_random(controller, unique_reader, [controller.driver.current_url])
+        load_another_random(controller, unique_reader, [unique_reader.get_comic_name()])
         init_sidebar(unique_reader, controller, load_random=False)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('zaza')
@@ -383,14 +383,14 @@ class TestMultipleComics:
         controller.register('totow')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
-        to_ignore.append(controller.driver.current_url)
+        to_ignore.append(unique_reader.get_comic_name())
         load_another_random(controller, unique_reader, to_ignore)
 
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('zaza')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
-        to_ignore.append(controller.driver.current_url)
+        to_ignore.append(unique_reader.get_comic_name())
         load_another_random(controller, unique_reader, to_ignore)
 
         orig_n_items = len(controller.sidebar.get_registered())
