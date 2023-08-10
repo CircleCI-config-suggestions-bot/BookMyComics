@@ -64,12 +64,12 @@ executors:
   python-node:
     docker:
       # Using the latest Node.js LTS image along with target python version
-      - image: cimg/python:3.7-node
+      - image: cimg/python:3.9-node
   browser-testing:
     docker:
       # Using python image with browsers testing baked in
       # (geckodriver & chrome are relevant for us)
-      - image: cimg/python:3.7-browsers
+      - image: cimg/python:3.9-browsers
 
 jobs:
   basic-testing:
