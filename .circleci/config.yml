@@ -203,9 +203,9 @@ workflows:
           - build-firefox
           - basic-testing
       - test-reader:
-          name: test-firefox-manganato
+          name: test-firefox-localhost
           browser: firefox
-          reader: manganato
+          reader: localhost
           requires: &ff_requirements
           - test-firefox-basics
       - test-common-advanced:
@@ -213,16 +213,16 @@ workflows:
           browser: firefox
           requires:
             - test-firefox-basics
-            - test-firefox-manganato
+            - test-firefox-localhost
       - test-common-basics: &basics_chrome
           name: test-chrome-basics
           browser: chrome
           requires:
           - basic-testing
       - test-reader:
-          name: test-chrome-manganato
+          name: test-chrome-localhost
           browser: chrome
-          reader: manganato
+          reader: localhost
           requires: &chrome_requirements
           - test-chrome-basics
       - test-common-advanced:
@@ -230,7 +230,7 @@ workflows:
           browser: chrome
           requires:
             - test-chrome-basics
-            - test-chrome-manganato
+            - test-chrome-localhost
   weekly:
     triggers:
       - schedule:
