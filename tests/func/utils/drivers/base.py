@@ -3,7 +3,8 @@ from os import path
 
 
 class BaseWebdriverWrapper:
-    def __init__(self, extension):
+    def __init__(self, extension, headless=True):
+        self._headless = headless
         self._ext = extension
         # Used to handle snap support
         self._snap_prefix = None

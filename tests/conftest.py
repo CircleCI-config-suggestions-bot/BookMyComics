@@ -15,6 +15,8 @@ from .func.utils import support
 def pytest_addoption(parser):
     parser.addoption("--browser", action="append", default=[],
                      help="List of webbrowsers to test (firefox, chrome)")
+    parser.addoption("--no-headless", action="store_true", default=False,
+                     help="Disable headless behavior of the browser during tests")
     parser.addoption("--reader", action="append", default=[],
                      help="List of readers to test, see module names in tests/func/utils/support/")
     parser.addoption("--dbg-website", action="store_true", default=False,
@@ -32,12 +34,14 @@ def pytest_generate_tests(metafunc):
         CLI options provided by the user.
     """
     print('')  # For logging clarity
+    headless = not metafunc.config.getoption('no_headless')
+
     if 'controller' in metafunc.fixturenames:
         browsers = metafunc.config.getoption('browser')
         if not browsers:
             browsers = ['firefox', 'chrome']
         browsers = sorted(set(browsers))
-        controllers = [BmcController(drivers.get_driver(browser))
+        controllers = [BmcController(drivers.get_driver(browser, headless=headless))
                        for browser in browsers]
         metafunc.parametrize('controller', controllers, ids=browsers)
 

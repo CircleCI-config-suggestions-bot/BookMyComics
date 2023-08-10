@@ -11,7 +11,7 @@ def release():
         wrapper.release()
 
 
-def get_driver(name):
+def get_driver(name, headless=True):
     wrappers = {
         'firefox': firefox.Wrapper,
         'chrome': chrome.Wrapper,
@@ -19,7 +19,7 @@ def get_driver(name):
     wrapper = WD_WRAPPERS.get(name, None)
 
     if not wrapper:
-        WD_WRAPPERS[name] = wrappers[name](Extension())
+        WD_WRAPPERS[name] = wrappers[name](Extension(), headless=headless)
         wrapper = WD_WRAPPERS[name]
 
     return wrapper

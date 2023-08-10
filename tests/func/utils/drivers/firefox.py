@@ -10,7 +10,8 @@ class Wrapper(BaseWebdriverWrapper):
         super(Wrapper, self).__init__(*args, **kwargs)
 
         options = webdriver.FirefoxOptions()
-        options.add_argument('-headless')
+        if self._headless:
+            options.add_argument('-headless')
 
         # Now prepare args to instanciate the Selenium WebDriver,
         # including snapd distribution support

@@ -12,7 +12,8 @@ class Wrapper(BaseWebdriverWrapper):
 
         options = webdriver.ChromeOptions()
         options.add_argument('--load-extension={}'.format(self._ext.unpacked_path))
-        options.add_argument('--headless=new')
+        if self._headless:
+            options.add_argument('--headless=new')
         # Attempt to fix driver.get() getting stuck during tests.
         options.add_argument('--disable-browser-side-navigation')
 
