@@ -1,4 +1,5 @@
 /* globals
+    BmcStorageFactory:readable
     BmcDataAPI:readable
     BmcEntrypointMessagingHandler:readable
     BmcSources:readable
@@ -18,10 +19,13 @@ const ENGINE_ID = 'BookMyComics::Engine';
  */
 function BmcEngine(hostOrigin) {
     this._hostOrigin = hostOrigin;
-    this._db = new BmcDataAPI();
+    const storage_engine = BmcStorageFactory.new(null /* Let factory choose*/);
+    if (storage_engine === null)
+        alert('BookMyComics could not find a working Storage Engine. Please check the settings.');
+    this._db = new BmcDataAPI(storage_engine);
     LOGS.log('S14', {'elem': 'BmcDataAPI'});
     this._messaging = new BmcEntrypointMessagingHandler(this._hostOrigin);
-    LOGS.log('S14', {'elem': 'BmcMEssagingHandler'});
+    LOGS.log('S14', {'elem': 'BmcMessagingHandler'});
     this._ui = new BmcUI(this._messaging, this._db);
     LOGS.log('S14', {'elem': 'BmcUI'});
 

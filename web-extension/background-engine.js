@@ -1,6 +1,7 @@
 /* globals
     BmcComic:readable
     BmcComicSource:readable
+    BmcStorageFactory:readable
     BmcDataAPI: readable
     BmcBackgroundMessagingHandler:readable
     BmcSources:readable
@@ -49,7 +50,10 @@ const BACKGROUND_ID = 'BookMyComics/BackgroundScript';
 const bmcSources = new BmcSources();
 LOGS.log('S66');
 
-const bmcData = new BmcDataAPI();
+const bmcStorageEngine = BmcStorageFactory.new(null /* Let factory choose*/);
+if (bmcStorageEngine === null)
+    alert('BookMyComics could not find a working Storage Engine. Please check the settings.');
+const bmcData = new BmcDataAPI(bmcStorageEngine);
 
 const bmcMessaging = new BmcBackgroundMessagingHandler();
 LOGS.log('S67');

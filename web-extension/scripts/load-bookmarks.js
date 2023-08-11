@@ -1,6 +1,7 @@
 /* globals
     BmcComic:readable
     BmcComicSource:readable
+    BmcStorageFactory:readable
     BmcDataAPI:readable
     BmcSidebarMessagingHandler:readable
     BmcUI:readable
@@ -14,7 +15,10 @@ LOGS.log('S44', {'origin': hostOrigin});
 
 LOGS.log('S45');
 const bmcMessaging = new BmcSidebarMessagingHandler(hostOrigin);
-const bmcDb = new BmcDataAPI();
+const bmcStorageEngine = BmcStorageFactory.new(null /* Let factory choose*/);
+if (bmcStorageEngine === null)
+    alert('BookMyComics could not find a working Storage Engine. Please check the settings.');
+const bmcDb = new BmcDataAPI(bmcStorageEngine);
 
 function BmcMangaList() {
     this._node = document.getElementById('manga-list');
