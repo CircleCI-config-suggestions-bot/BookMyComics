@@ -10,5 +10,5 @@ function LocalStorageEngine() {
 LocalStorageEngine.prototype = new BmcKeyValueStorage();
 LocalStorageEngine.prototype.constructor = LocalStorageEngine;
 
-LocalStorageEngine.name = 'LocalStorage';
+LocalStorageEngine.engine_name = 'LocalStorage';
 LocalStorageEngine.available = true; // Always available

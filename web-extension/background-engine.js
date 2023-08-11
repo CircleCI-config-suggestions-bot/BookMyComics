@@ -50,10 +50,10 @@ const BACKGROUND_ID = 'BookMyComics/BackgroundScript';
 const bmcSources = new BmcSources();
 LOGS.log('S66');
 
-const bmcStorageEngine = BmcStorageFactory.new(null /* Let factory choose*/);
+let bmcStorageEngine = BmcStorageFactory.new(null /* Let factory choose*/);
 if (bmcStorageEngine === null)
     alert('BookMyComics could not find a working Storage Engine. Please check the settings.');
-const bmcData = new BmcDataAPI(bmcStorageEngine);
+let bmcData = new BmcDataAPI(bmcStorageEngine);
 
 const bmcMessaging = new BmcBackgroundMessagingHandler();
 LOGS.log('S67');
@@ -100,6 +100,53 @@ function sendNotificationWithComicInfo(operation, comic, source, err) {
     };
     bmcMessaging.broadcast(evData);
 }
+
+function notifyImport(channel, err) {
+    let answerEv = {
+        type: 'action',
+        action: 'notification',
+        operation: 'import',
+        error: !!err,
+    };
+    if (channel)
+        bmcMessaging.send(channel, answerEv);
+    else
+        bmcMessaging.broadcast(answerEv);
+}
+
+// Handle "Export"
+bmcMessaging.addHandler(
+    BACKGROUND_ID,
+    ev => ev.data.type === 'action' && ev.data.action === 'export',
+    ev => {
+        return bmcData.export((err, data) => {
+            // TODO
+            LOGS.debug('', {'err': err});
+            let answerEv = {
+                type: 'action',
+                action: 'notification',
+                operation: 'export',
+                payload: data,
+                error: !!err,
+            };
+            return bmcMessaging.send(ev.channel.sender.tab.id, answerEv);
+        });
+    }
+);
+// Handle "Import"
+bmcMessaging.addHandler(
+    BACKGROUND_ID,
+    ev => ev.data.type === 'action' && ev.data.action === 'import',
+    ev => {
+        return bmcData.import(ev.data.payload, (err) => {
+            // TODO
+            LOGS.debug('', {'err': err});
+            // Notify everyone that an import happened.
+            // In case of success, it is expected that all sidebars should clear and reload their contents.
+            notifyImport(err);
+        });
+    }
+);
 
 // Handle "Register"
 bmcMessaging.addHandler(

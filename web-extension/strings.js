@@ -37,15 +37,15 @@ function Localization(lang = DEFAULT_LANG) {
         'S2': {
             'en': 'BmcEngine._memoizeComic: unknown comic name.',
         },
-        // 'S3': {
-        //     'en': 'BmcEngine: Check Update failed for  comic {label}: Could not match source {reader}',
-        // },
-        // 'S4': {
-        //     'en': 'BmcEngine: Resetting ID memoization',
-        // },
-        // 'S5': {
-        //     'en': 'Memoization reset complete',
-        // },
+        'S3': {
+            'en': 'BookMyComic: Updating storage options. Transferring tracking data from storage[{source}] to storage[{target}].',
+        },
+        'S4': {
+            'en': 'BookMyComic: Failed to export full tracking data: {err}',
+        },
+        'S5': {
+            'en': 'BookMyComic: Failed to import full tracking data: {err}',
+        },
         'S6': {
             'en': 'BmcEngine.track: Nothing to track',
         },
@@ -296,8 +296,8 @@ function Logs(level = INFO) {
         'E0001': 'S2',
         // 'E0002': 'S40',
         'E0003': 'S43',
-        // 'E0004': 'S29',
-        // 'E0005': 'S6',
+        'E0004': 'S4',
+        'E0005': 'S5',
         // 'E0006': 'S7',
         'E0007': 'S8',
         // 'E0008': 'S3',

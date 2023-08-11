@@ -3,6 +3,10 @@
     "version": "0.1",
     "description": "A slightly intrusive extension to keep track of your comics/manga reading progress",
     "manifest_version": 2,
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
+    },
     "permissions": [
         "activeTab",
         "storage"

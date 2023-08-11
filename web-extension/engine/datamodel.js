@@ -861,9 +861,17 @@ function buildComicList(self, data, comicId) {
 }
 
 /**
+ * @callback BmcDataAPI~listCb
+ * @param {Error} err - Error object returned by the failing layer
+ * @param {BmcComic[]} comics - List of BmcComic objects registered in the BmcDataAPI
+ */
+
+/**
  * This method returns the complete list of tracked comics
  *
  * @method
+ *
+ * @param {BmcDataAPI~listCb} cb - Callback called on completion of the operation
  *
  * @returns {BmcComic[]}
  */
@@ -915,5 +923,110 @@ BmcDataAPI.prototype.updateComicSource = function(comicId, source, cb) {
         return this._data.set(dataset, err => {
             return cb(err);
         });
+    });
+};
+
+
+/**
+ * @callback BmcDataAPI~exportCb
+ * @param {Error} err - Error object returned by the failing layer
+ * @param {String} data - JSON-stringified List of BmcComic objects registered in the BmcDataAPI
+ */
+
+/**
+ * This method exports all stored tracking data from the configured storage, in
+ * a standardized format (based on the BmcComic class)
+ *
+ * @method
+ *
+ * @param {BmcDataAPI~exportCb} cb - Callback called on completion of the operation
+ *
+ * @returns {undefined}
+ */
+BmcDataAPI.prototype.export = function(cb) {
+    return this.list((err, comics) => {
+        if (err) {
+            cb(err);
+            return ;
+        }
+        cb(null, JSON.stringify(comics));
+    });
+};
+
+
+BmcDataAPI.prototype._registerSources = function(comic, sources, cb) {
+    if (sources.length === 0) {
+        cb(null);
+        return ;
+    }
+
+    const source = sources.shift();
+    this.aliasComic(comic.id, source, (err) => {
+        if (err) {
+            cb(err);
+            return ;
+        }
+        this._registerSources(comic, sources, cb);
+    });
+};
+
+BmcDataAPI.prototype._registerComics = function(comics, cb) {
+    if (comics.length === 0) {
+        cb(null);
+        return ;
+    }
+
+    const comic = comics.shift();
+    const source = comic._sources.shift();
+    this.registerComic(comic.label, comic, source, (comicErr, comicId) => {
+        comic.id = comicId;
+        if (comicErr) {
+            cb(comicErr);
+            return ;
+        }
+        this._registerSources(comic, comic._sources, (sourceErr) => {
+            if (sourceErr) {
+                cb(sourceErr);
+                return ;
+            }
+            this._registerComics(comics, cb);
+        });
+    });
+};
+
+/**
+ * @callback BmcDataAPI~importCb
+ * @param {Error} err - Error object returned by the failing layer
+ */
+
+/**
+ * This method imports an array of BmcComic objects into the BmcDataAPI.
+ * This utility shall be used either to restore a backup of the stored data, or
+ * to transfer data from a different storage engine.
+ *
+ * @method
+ *
+ * @param {String} data - JSON-stringified List of BmcComic to register into the BmcDataAPI
+ * @param {BmcDataAPI~importCb} cb - Callback called on completion of the operation
+ *
+ * @returns {undefined}
+ */
+BmcDataAPI.prototype.import = function(data, cb) {
+    /*
+     * First, Clear current storage. We expect to be importing to a currently
+     * unused storage, and thus deem the "clear-first" strategy to fit our
+     * needs.
+     */
+    const parsed = JSON.parse(data);
+    const comics = parsed.map(elm => {
+        const sources = elm._sources.map(src => new BmcComicSource(src.name, src.reader, src.info));
+        return new BmcComic(elm.label, elm.id, elm.chapter, elm.page, sources);
+    });
+    this._data.clear((err) => {
+        if (err) {
+            cb(err);
+            return ;
+        }
+        this._registerComics(comics, cb);
     });
 };

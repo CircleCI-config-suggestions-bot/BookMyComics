@@ -682,6 +682,21 @@ function addEvents() {
                 updateMangaListItem(evComic, evSource, setSourceUpdate.bind(this, evSource.info.has_updates));
             }
         });
+    bmcMessaging.addExtensionHandler(
+        BmcUI.prototype.SIDEPANEL_ID,
+        ev => ev.data.type === 'action'
+            && ev.data.action === 'notification'
+            && ev.data.operation === 'import',
+        ev => {
+            if (ev.data.error) {
+                return ; // ignore event
+            }
+            // Re-generates the full MangaList contents from tracking data
+            mangaList.generate(() => {
+                // TODO
+                //LOGS.log('', {});
+            });
+        });
 
     // Now that we're ready, we can ask to the UI handler to check if we have to open the sidebar
     // or not.

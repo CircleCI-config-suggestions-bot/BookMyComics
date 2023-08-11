@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' filesystem: ; object-src 'self'; ">
+  </head>
+
+  <body>
+    <form id='storage-engine-form'>
+      <label for="storage-selector">Storage Engine</label>
+      <select id="storage-selector" name="storage engine" ></select>
+      <button type="submit">Migrate to new Storage</button>
+    </form>
+    <br/>
+    <button id='storage-exporter'>Export data</button>
+    <br/>
+    <form id='storage-import-form'>
+      <input type="file" id="import-file" accept="application/json"></input>
+      <button id='storage-importer'>Import data</button>
+    </form>
+  </body>
+  <script src="utils.js"></script>
+  <script src="strings.js"></script>
+  <script src="engine/messaging.js"></script>
+  <script src="engine/storage/compat.js"></script>
+  <script src="engine/storage/common.js"></script>
+  <script src="engine/storage/local_storage.js"></script>
+  <script src="engine/storage/sync_storage.js"></script>
+  <script src="engine/storage/factory.js"></script>
+  <script src="engine/datamodel.js"></script>
+  <script src="scripts/options.js"></script>
+</html>

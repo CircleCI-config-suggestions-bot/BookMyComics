@@ -11,5 +11,5 @@ function SyncStorageEngine() {
 SyncStorageEngine.prototype = new BmcKeyValueStorage();
 SyncStorageEngine.prototype.constructor = SyncStorageEngine;
 
-SyncStorageEngine.name = 'SyncStorage';
+SyncStorageEngine.engine_name = 'SyncStorage';
 SyncStorageEngine.available = (getBrowser().storage.sync != undefined);
