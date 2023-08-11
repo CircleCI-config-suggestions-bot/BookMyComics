@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Manga {{ name }} - chapter {{ chapter }} - page {{ page }}{% endblock %}
+{% block content %}
+<h2 id="manga-title">Manga {{ name }} - chapter {{ chapter }} - page {{ page }}</h2>
+<div id="content">
+{# nothing to see here! #}
+</div>
+<div id="buttons">
+	<a href="/{{ name }}">Back to manga page</a>
+{% if ajax %}
+	{% if prev_chap %}
+	<button id="prev" onclick="prev_chap()">Previous chapter</button>
+	{% endif %}
+	{% if next_chap %}
+	<button id="next" onclick="next_chap()">Next chapter</button>
+	{% endif %}
+	{% if prev_page %}
+	<button id="prev-page" onclick="prev_page()">Previous page</button>
+	{% endif %}
+	{% if next_page %}
+	<button id="next-page" onclick="next_page()">Next page</button>
+	{% endif %}
+<script>
+let current_chapter = {{chapter|safe}};
+let current_page = {{page|safe}};
+function build_new_url(chap) {
+	const parts = document.location.pathname.split("/");
+	if (document.location.pathname.endsWith("/")) {
+		parts.pop();
+	}
+	parts[parts.length - 1] = chap;
+	return parts.join("/") + document.location.search;
+}
+function update_titles(chap, page) {
+	let parts = document.title.split(" - ");
+	parts[parts.length - 2] = `chapter ${chap}`;
+	parts[parts.length - 1] = `page ${page}`;
+	let title = parts.join(" - ");
+	document.title = title;
+	parts = document.getElementById("manga-title").innerText.split(" - ");
+	parts[parts.length - 2] = `chapter ${chap}`;
+	parts[parts.length - 1] = `page ${page}`;
+	title = parts.join(" - ");
+	document.getElementById("manga-title").innerText = title;
+}
+function prev_chap() {
+	current_chapter -= 1;
+	window.history.pushState("", "", build_new_url(current_chapter, 1));
+	if (current_chapter <= 1) {
+		document.getElementById("prev").remove();
+	} else if (document.getElementById("next") === null) {
+		document.getElementById("buttons").innerHTML += `<button id="next" onclick="next_chap()">Next chapter</button>`;
+	}
+	update_titles(current_chapter, 1);
+}
+function next_chap() {
+	current_chapter += 1;
+	window.history.pushState("", "", build_new_url(current_chapter, 1));
+	if (current_chapter > 3) {
+		document.getElementById("next").remove();
+	} else if (document.getElementById("prev") === null) {
+		document.getElementById("buttons").innerHTML += `<button id="prev" onclick="prev_chap()">Previous chapter</button>`;
+	}
+	update_titles(current_chapter, 1);
+}
+function prev_page() {
+	current_page -= 1;
+	window.history.pushState("", "", build_new_url(current_chapter, current_page));
+	if (current_page <= 1) {
+		document.getElementById("prev-page").remove();
+	} else if (document.getElementById("next-page") === null) {
+		document.getElementById("buttons").innerHTML += `<button id="next-page" onclick="next_page()">Next page</button>`;
+	}
+	update_titles(current_chapter, current_page);
+}
+function next_page() {
+	current_page += 1;
+	window.history.pushState("", "", build_new_url(current_chapter, current_page));
+	if (current_page > 3) {
+		document.getElementById("next-page").remove();
+	} else if (document.getElementById("prev-page") === null) {
+		document.getElementById("buttons").innerHTML += `<button id="prev-page" onclick="prev_page()">Previous page</button>`;
+	}
+	update_titles(current_chapter, current_page);
+}
+</script>
+{% else %}
+	{# Pure HTML part #}
+	{% if prev_chap %}
+	<a id="prev" href="/{{name}}/{{prev_chap}}/4">Previous chapter</a>
+	{% endif %}
+	{% if next_chap %}
+	<a id="next" href="/{{name}}/{{next_chap}}/1">Next chapter</a>
+	{% endif %}
+	{% if prev_page %}
+	<a id="prev-page" href="/{{name}}/{{chapter}}/{{prev_page}}">Previous page</a>
+	{% endif %}
+	{% if next_page %}
+	<a id="next-page" href="/{{name}}/{{chapter}}/{{next_page}}">Next page</a>
+	{% endif %}
+{% endif %}
+</div>
+{% endblock %}

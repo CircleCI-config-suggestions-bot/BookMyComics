@@ -45,7 +45,7 @@ creates a few additional steps when testing new changes to the web-extension
 
 ```bash
 # Pre-pack the extension
-> ./node_modules/.bin/web-ext -s web-extension/ -a ./build build --override-dest
+> ./node_modules/.bin/web-ext -s web-extension/ -a ./build build --overwrite-dest
 ```
 
 ### Running the tests

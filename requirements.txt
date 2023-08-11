@@ -1,3 +1,5 @@
 selenium
 pytest
 pytest-order
+flask
+psutil

@@ -1,3 +1,5 @@
+from os import path
+
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 
@@ -10,14 +12,29 @@ class Wrapper(BaseWebdriverWrapper):
 
         options = webdriver.ChromeOptions()
         options.add_argument('--load-extension={}'.format(self._ext.unpacked_path))
-        options.headless = False
-        options.set_capability('loggingPrefs', {'browser': 'ALL'})
+        if self._headless:
+            options.add_argument('--headless=new')
         # Attempt to fix driver.get() getting stuck during tests.
         options.add_argument('--disable-browser-side-navigation')
 
+        # Now prepare args to instanciate the Selenium WebDriver,
+        # including snapd distribution support
+        driver_args = {'options': options}
+        if self.distributed_via_snap('chromium', 'chromedriver'):
+            options.binary_location = path.join(
+                self._snap_prefix,
+                'chromium/current/usr/lib/chromium-browser/chrome'
+            )
+            driver_args['service'] = webdriver.chrome.service.Service(
+                executable_path=path.join(
+                    self._snap_prefix,
+                    'chromium/current/usr/lib/chromium-browser/chromedriver',
+                ),
+            )
+
         print('[Chrome] Loading addon from "{}"'.format(self._ext.unpacked_path))
         print('[Chrome] Loading manifest from "{}"'.format(self._ext._manifest_path))
-        self._driver = webdriver.Chrome(options=options)
+        self._driver = webdriver.Chrome(**driver_args)
 
     def ensure_click(self, element):
         """

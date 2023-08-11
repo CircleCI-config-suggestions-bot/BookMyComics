@@ -10,7 +10,7 @@ TEST_URLS = EXT.supported_readers[:1] + [
 
 
 @pytest.mark.parametrize('reader_url', TEST_URLS)
-def test_webext_loads(controller, reader_url):
+def test_webext_loads(controller, test_website, reader_url):
     # Load the reader's URL
     controller.driver.get(reader_url)
     # Ensure that the frame with ID 'BmcSidePanel' is loaded.
