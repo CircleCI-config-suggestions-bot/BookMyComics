@@ -21,7 +21,7 @@ BmcUI.prototype.buildSidePanel = function(setupTracker, resourcePath) {
     iframe.id = this.SIDEPANEL_ID;
     iframe.src = resourcePath;
     LOGS.log('S31', {'src': iframe.src});
-    iframe.style.width = '22px';
+    iframe.style.width = '27px';
     iframe.style.height = '86px';
     iframe.style.position = 'fixed';
     iframe.style.top = '70px';
@@ -87,7 +87,7 @@ BmcUI.prototype.fullSize = function(showSidebar) {
         iframe.style.top = '0';
         iframe.style.overflow = 'scroll';
     } else {
-        iframe.style.width = '22px';
+        iframe.style.width = '27px';
         iframe.style.height = '86px';
         iframe.style.top = '70px';
         iframe.style.overflow = 'hidden';
