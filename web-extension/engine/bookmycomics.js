@@ -5,6 +5,7 @@
     BmcSources:readable
     BmcUI:readable
     LOGS:readable
+    BmcSettings:readable
 */
 
 const sources = new BmcSources();
@@ -19,15 +20,11 @@ const ENGINE_ID = 'BookMyComics::Engine';
  */
 function BmcEngine(hostOrigin) {
     this._hostOrigin = hostOrigin;
-    const storage_engine = BmcStorageFactory.new(null /* Let factory choose*/);
-    if (storage_engine === null)
-        alert('BookMyComics could not find a working Storage Engine. Please check the settings.');
-    this._db = new BmcDataAPI(storage_engine);
-    LOGS.log('S14', {'elem': 'BmcDataAPI'});
     this._messaging = new BmcEntrypointMessagingHandler(this._hostOrigin);
     LOGS.log('S14', {'elem': 'BmcMessagingHandler'});
-    this._ui = new BmcUI(this._messaging, this._db);
-    LOGS.log('S14', {'elem': 'BmcUI'});
+    this._db = null;
+    this._ui = null;
+    this._settings = new BmcSettings();
 
     // Re-use DOM-style events by using a null-text node underneath
     this._eventCore = document.createTextNode(null);
@@ -141,20 +138,36 @@ BmcEngine.prototype._memoizeComic = function () {
  *
  */
 BmcEngine.prototype.setup = function() {
-    // A bit of stateful data, so that we can avoid re-checking the storage
-    // everytime (and thus speed-up a bit the logic that spawn the UI bits)
-    this.refresh_comic();
+    this._settings.refresh((err) => {
+        LOGS.log('S14', {'elem': 'BmcSettings'});
+        if (err) {
+            // TODO
+            alert(LOGS.getString('', {err: err}));
+            return ;
+        }
+        const storage_engine = BmcStorageFactory.new(null /* Let factory choose*/, this._settings);
+        if (storage_engine === null)
+            alert('BookMyComics could not find a working Storage Engine. Please check the settings.');
+        this._db = new BmcDataAPI(storage_engine);
+        LOGS.log('S14', {'elem': 'BmcDataAPI'});
+        this._ui = new BmcUI(this._messaging, this._settings);
+        LOGS.log('S14', {'elem': 'BmcUI'});
 
-    // Detect AJAX-driven URL/hash changes in order to trigger tracking on AJAX
-    // browsing
-    window.addEventListener('hashchange', () => {
+        // A bit of stateful data, so that we can avoid re-checking the storage
+        // everytime (and thus speed-up a bit the logic that spawn the UI bits)
         this.refresh_comic();
-        this.track();
-    });
 
-    return this._ui.makeSidePanel(
-        () => this.track(),
-        this._hostOrigin);
+        // Detect AJAX-driven URL/hash changes in order to trigger tracking on AJAX
+        // browsing
+        window.addEventListener('hashchange', () => {
+            this.refresh_comic();
+            this.track();
+        });
+
+        return this._ui.makeSidePanel(
+            () => this.track(),
+            this._hostOrigin);
+    });
 };
 
 /*

@@ -1,7 +1,6 @@
 /* globals
     LOCALIZATION:readable
     LOGS:readable
-    BmcKeyValueStorage:readable
 */
 
 /**
@@ -1022,11 +1021,37 @@ BmcDataAPI.prototype.import = function(data, cb) {
         const sources = elm._sources.map(src => new BmcComicSource(src.name, src.reader, src.info));
         return new BmcComic(elm.label, elm.id, elm.chapter, elm.page, sources);
     });
-    this._data.clear((err) => {
+    this.clear((err) => {
         if (err) {
             cb(err);
             return ;
         }
         this._registerComics(comics, cb);
+    });
+};
+
+
+/**
+ * This method removes all keys handled by the KeyScheme from the underlying storage.
+ * Not all data is removed, as it allows preserving non-tracking data that
+ * might not be used through the BmcDataApi, such as the BmcSettings.
+ */
+BmcDataAPI.prototype.clear = function(cb) {
+    const keys = [
+        this._scheme.BMC_STATE_KEY,
+        this._scheme.BMC_MAP_KEY,
+        this._scheme.BMC_LMAP_KEY,
+    ];
+    const keyToGet = {};
+    keyToGet[this._scheme.BMC_STATE_KEY] = { lastId: -1 };
+    return this._data.get(keyToGet, (err, state) => {
+        if (err) {
+            return cb(err, null);
+        }
+        const max = state[this._scheme.BMC_STATE_KEY].lastId;
+        for (let i = 0; i <= max; i++) {
+            keys.push(this._scheme.keyFromId(i));
+        }
+        this._data.remove(keys, cb);
     });
 };

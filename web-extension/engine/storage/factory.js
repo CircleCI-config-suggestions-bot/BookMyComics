@@ -20,17 +20,22 @@ function BmcStorageFactory() {
  * Internal method which defines what Storage engine to use, when none is
  * provided otherwise.
  *
+ * @param {BmcSettings} settings - The settings object
+ *
  * @returns {String} the name of the Storage engine that should be used
  */
-BmcStorageFactory.default = function() {
+BmcStorageFactory.default = function(settings) {
     let dflt = null;
 
-    // TODO: Get saved settings
-    // dflt = BmcSettings.get('storage');
+    // Get saved settings first
+    dflt = settings.get('storage-engine');
 
-    dflt = LocalStorageEngine.engine_name;
-    if (SyncStorageEngine.available === true) {
-        dflt = SyncStorageEngine.engine_name;
+    // Only if no value found, fallback to default behavior
+    if (dflt === undefined) {
+        dflt = LocalStorageEngine.engine_name;
+        if (SyncStorageEngine.available === true) {
+            dflt = SyncStorageEngine.engine_name;
+        }
     }
 
     return dflt;
@@ -44,17 +49,18 @@ BmcStorageFactory.default = function() {
  *
  * @param {String} in_name - The name of the storage engine to use (and
  *                           generate an object of)
+ * @param {BmcSettings} settings - The settings object
  *
  * @return {null|BmcKeyValueStorage} The Storage engine object to be used for
  *                                   all storage-related operations
  */
-BmcStorageFactory.new = function(in_name) {
+BmcStorageFactory.new = function(in_name, settings) {
     let name = in_name;
     let engine = null;
 
     // Apply default
     if (name === undefined || name === null) {
-        name = BmcStorageFactory.default();
+        name = BmcStorageFactory.default(settings);
     }
 
     for (let i = 0; i < BmcStorageFactory.engines.length; ++i) {
