@@ -4,20 +4,27 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' filesystem: ; object-src 'self'; ">
+  <style>
+notif-transform {
+  transition-property: 'background-color';
+  transition-delay: 0s;
+  transition-duration: 2s;
+}
+  </style>
   </head>
 
   <body>
-    <form id='storage-engine-form'>
+    <form id='storage-engine-form' height=40>
       <label for="storage-selector">Storage Engine</label>
       <select id="storage-selector" name="storage engine" ></select>
-      <button type="submit">Migrate to new Storage</button>
+      <button id="storage-engine-submit" type="button">Migrate to new Storage</button>
     </form>
     <br/>
     <button id='storage-exporter'>Export data</button>
     <br/>
-    <form id='storage-import-form'>
+    <form id='storage-import-form' height=40>
       <input type="file" id="import-file" accept="application/json"></input>
-      <button id='storage-importer'>Import data</button>
+      <button type="button" id='storage-import-submit'>Import data</button>
     </form>
   </body>
   <script src="utils.js"></script>

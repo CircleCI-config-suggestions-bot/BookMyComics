@@ -217,6 +217,15 @@ bmcMessaging.addHandler(
                     }
                     // Broadcast info to all parties
                     notifyImport(null);
+                    // Notify migration success
+                    const answerEv = {
+                        type: 'action',
+                        action: 'notification',
+                        operation: 'configure',
+                        module: 'storage',
+                        error: false,
+                    };
+                    bmcMessaging.send(ev.channel.sender.tab.id, answerEv);
                     // Fire-and-forget -> Everything is good, we can delete old data.
                     oldApi.clear(() => {});
                 });

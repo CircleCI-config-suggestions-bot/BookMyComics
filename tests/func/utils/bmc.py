@@ -1,7 +1,7 @@
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.common.exceptions import NoSuchElementException
 
 
@@ -323,10 +323,36 @@ class SideBarController:
                 self._driver.execute_script('document.querySelector(".notif-transform").classList.remove("notif-transform")')
 
 
+class OptionsController:
+    def __init__(self, driver):
+        self._driver = driver
+
+    def open(self):
+        self._driver.open_options()
+        def populated(driver):
+            selector = Select(driver.find_element(by=By.ID, value='storage-selector'))
+            return len(selector.options) > 0
+        WebDriverWait(self._driver.driver, 10).until(populated)
+
+    def wait_notification(self, zone_id):
+        """
+            Waits until the hide button contains the 'notif-transform' class,
+            which shows that a change occurred to notify the user.
+            -> ie: Can be a Storage operation that completed (alias, delete,
+                   register, etc)
+        """
+        def zone_is_notifying(driver):
+            zone = driver.find_element(by=By.ID, value=zone_id)
+            return 'notif-transform' in zone.get_attribute('class')
+        # Unwrap the driver to use WebDriver utilities
+        WebDriverWait(self._driver.driver, 10).until(zone_is_notifying)
+
+
 class BmcController:
 
     def __init__(self, wrapped_webdriver):
         self._wrapped_driver = wrapped_webdriver
+        self._options = OptionsController(wrapped_webdriver)
         self._sidebar = None
 
     @property
@@ -360,6 +386,13 @@ class BmcController:
             self._sidebar = SideBarController(self.driver)
         return self._sidebar
 
+    @property
+    def options(self):
+        """
+            Get a handle to the utility class wrapping the Options page
+        """
+        return self._options
+
     def register(self, display_name, expect_failure=False):
         """
             Register the current manga/comic page as a new entry in the
@@ -382,6 +415,8 @@ class BmcController:
             as well as the stored data, to ensure no overlap/conflict between
             functional tests.
         """
+        if not self._sidebar:
+            return
         self.refresh()
         with self.sidebar.focus():
             self._wrapped_driver.clear_storage()

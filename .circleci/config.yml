@@ -155,7 +155,7 @@ jobs:
 
       - << parameters.browser >>-setup
       - run:
-          command: pytest -v -s --browser << parameters.browser >> tests/func/test_load.py tests/func/test_sidebar_display.py
+          command: pytest -v -s --browser << parameters.browser >> tests/func/test_load.py tests/func/test_sidebar_display.py tests/func/test_options.py
 
   test-common-advanced:
     parameters:
