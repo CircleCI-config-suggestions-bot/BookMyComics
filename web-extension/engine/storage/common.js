@@ -1,6 +1,5 @@
 /* globals
     compat:readable
-    getBrowser:readable
 */
 
 /**
@@ -9,17 +8,13 @@
  * It thus handles transparently both standard callback-based asynchronous
  * calls, as well as promises.
  *
- * @class BmcStorage
+ * @class BmcKeyValueStorage
  */
-function BmcStorage() {
-    var bro = getBrowser();
-    this._area = bro.storage.sync;
-    if (!this._area) {
-        this._area = bro.storage.local;
-    }
+function BmcKeyValueStorage() {
+    this._engine = null;
 }
 
-BmcStorage.prototype._handleCb = function(cb, err, data) {
+BmcKeyValueStorage.prototype._handleCb = function(cb, err, data) {
     if (err && (typeof err !== 'object' || Object.keys(err).length > 0)) {
         return cb(err);
     }
@@ -36,9 +31,9 @@ BmcStorage.prototype._handleCb = function(cb, err, data) {
  *
  * @return {undefined}
  */
-BmcStorage.prototype.get = function(keys, cb) {
+BmcKeyValueStorage.prototype.get = function(keys, cb) {
     return compat.storage.get(
-        this._area,
+        this._engine,
         keys,
         (err, data) => this._handleCb(cb, err, data)
     );
@@ -53,9 +48,9 @@ BmcStorage.prototype.get = function(keys, cb) {
  *
  * @return {undefined}
  */
-BmcStorage.prototype.set = function(dataset, cb) {
+BmcKeyValueStorage.prototype.set = function(dataset, cb) {
     return compat.storage.set(
-        this._area,
+        this._engine,
         dataset,
         err => this._handleCb(cb, err)
     );
@@ -71,9 +66,9 @@ BmcStorage.prototype.set = function(dataset, cb) {
  *
  * @return {undefined}
  */
-BmcStorage.prototype.remove = function(keys, cb) {
+BmcKeyValueStorage.prototype.remove = function(keys, cb) {
     return compat.storage.remove(
-        this._area,
+        this._engine,
         keys,
         err => this._handleCb(cb, err)
     );
@@ -87,9 +82,9 @@ BmcStorage.prototype.remove = function(keys, cb) {
  *
  * @return {undefined}
  */
-BmcStorage.prototype.clear = function(cb) {
+BmcKeyValueStorage.prototype.clear = function(cb) {
     return compat.storage.clear(
-        this._area,
+        this._engine,
         err => this._handleCb(cb, err)
     );
 };

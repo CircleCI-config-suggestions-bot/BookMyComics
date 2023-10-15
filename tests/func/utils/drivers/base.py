@@ -9,6 +9,15 @@ class BaseWebdriverWrapper:
         # Used to handle snap support
         self._snap_prefix = None
 
+    def ensure_click(self, element):
+        raise RuntimeError('ensure_click method was not implemented by actual WebDriverWrapper')
+
+    def clear_storage(self):
+        raise RuntimeError('clear_storage method was not implemented by actual WebDriverWrapper')
+
+    def open_options(self):
+        raise RuntimeError('open_options method was not implemented by actual WebDriverWrapper')
+
     @property
     def driver(self):
         """

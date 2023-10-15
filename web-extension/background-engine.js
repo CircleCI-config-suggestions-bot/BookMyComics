@@ -1,12 +1,14 @@
 /* globals
     BmcComic:readable
     BmcComicSource:readable
+    BmcStorageFactory:readable
     BmcDataAPI: readable
     BmcBackgroundMessagingHandler:readable
     BmcSources:readable
     LOGS:readable
     cloneArray:readable
     stringToHTML:readable
+    BmcSettings:readable
 */
 
 /*
@@ -49,7 +51,23 @@ const BACKGROUND_ID = 'BookMyComics/BackgroundScript';
 const bmcSources = new BmcSources();
 LOGS.log('S66');
 
-const bmcData = new BmcDataAPI();
+let bmcStorageEngine = null;
+let bmcData = null;
+
+// NOTE: Optimistically, we "hope" the settings and storage engine will be
+// ready by the time another page attempts to make use of them.
+const bmcSettings = new BmcSettings();
+bmcSettings.refresh((err) => {
+    if (err) {
+        // TODO
+        alert(LOGS.getString('', {err: err}));
+        return ;
+    }
+    bmcStorageEngine = BmcStorageFactory.new(null /* Let factory choose*/, bmcSettings);
+    if (bmcStorageEngine === null)
+        alert('BookMyComics could not find a working Storage Engine. Please check the settings.');
+    bmcData = new BmcDataAPI(bmcStorageEngine);
+});
 
 const bmcMessaging = new BmcBackgroundMessagingHandler();
 LOGS.log('S67');
@@ -96,6 +114,125 @@ function sendNotificationWithComicInfo(operation, comic, source, err) {
     };
     bmcMessaging.broadcast(evData);
 }
+
+function notifyImport(channel, err) {
+    let answerEv = {
+        type: 'action',
+        action: 'notification',
+        operation: 'import',
+        error: !!err,
+    };
+    if (channel)
+        bmcMessaging.send(channel, answerEv);
+    else
+        bmcMessaging.broadcast(answerEv);
+}
+
+// Handle "Export"
+bmcMessaging.addHandler(
+    BACKGROUND_ID,
+    ev => ev.data.type === 'action' && ev.data.action === 'export',
+    ev => {
+        return bmcData.export((err, data) => {
+            // TODO
+            LOGS.debug('', {'err': err});
+            let answerEv = {
+                type: 'action',
+                action: 'notification',
+                operation: 'export',
+                payload: data,
+                error: !!err,
+            };
+            return bmcMessaging.send(ev.channel.sender.tab.id, answerEv);
+        });
+    }
+);
+// Handle "Import"
+bmcMessaging.addHandler(
+    BACKGROUND_ID,
+    ev => ev.data.type === 'action' && ev.data.action === 'import',
+    ev => {
+        return bmcData.import(ev.data.payload, (err) => {
+            // TODO
+            LOGS.debug('', {'err': err});
+            // Notify everyone that an import happened.
+            // In case of success, it is expected that all sidebars should clear and reload their contents.
+            notifyImport(err);
+        });
+    }
+);
+// Handle Storage configuration & data migration
+bmcMessaging.addHandler(
+    BACKGROUND_ID,
+    ev => ev.data.type === 'action'
+        && ev.data.module === 'storage'
+        && ev.data.action === 'configure',
+    ev => {
+        const oldApi = bmcData;
+        if (ev.data.source !== BmcStorageFactory.default(bmcSettings)) {
+            // TODO Specify ERROR ? LOG ?
+            const answerEv = {
+                type: 'action',
+                action: 'notification',
+                operation: 'configure',
+                module: 'storage',
+                error: true,
+            };
+            bmcMessaging.send(ev.channel.sender.tab.id, answerEv);
+            return ;
+        }
+        bmcStorageEngine = BmcStorageFactory.new(ev.data.target, bmcSettings);
+        if (!bmcStorageEngine) {
+            // TODO Specify ERROR ? LOG ?
+            const answerEv = {
+                type: 'action',
+                action: 'notification',
+                operation: 'configure',
+                module: 'storage',
+                error: true,
+            };
+            bmcMessaging.send(ev.channel.sender.tab.id, answerEv);
+            return ;
+        }
+        bmcData = new BmcDataAPI(bmcStorageEngine);
+        oldApi.export((export_err, data) => {
+            if (export_err) {
+                LOGS.debug('E0004', {'err': export_err});
+                notifyImport(ev.channel.sender.tab.id, export_err);
+                return ;
+            }
+            bmcData.import(data, (import_err) => {
+                if (import_err) {
+                    LOGS.debug('E0005', {'err': import_err});
+                    notifyImport(import_err);
+                    return ;
+                }
+                // Only save the setting once we've transfered all the data successfully
+                bmcSettings.set('storage-engine', ev.data.target, (err) => {
+                    if (err) {
+                        // TODO
+                        // alert(LOGS.getString('', {err: err}));
+                        notifyImport(err);
+                        return ;
+                    }
+                    // Broadcast info to all parties
+                    notifyImport(null);
+                    // Notify migration success
+                    const answerEv = {
+                        type: 'action',
+                        action: 'notification',
+                        operation: 'configure',
+                        module: 'storage',
+                        error: false,
+                    };
+                    bmcMessaging.send(ev.channel.sender.tab.id, answerEv);
+                    // Fire-and-forget -> Everything is good, we can delete old data.
+                    oldApi.clear(() => {});
+                });
+            });
+        });
+    }
+);
 
 // Handle "Register"
 bmcMessaging.addHandler(

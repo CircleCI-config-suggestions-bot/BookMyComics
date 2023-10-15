@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 EXT = Extension()
 SIDEBAR_WIDTH = 206
 COLLAPSED_SIDEBAR_HEIGHT = 86
-COLLAPSED_SIDEBAR_WIDTH = 22
+COLLAPSED_SIDEBAR_WIDTH = 27
 
 
 @pytest.mark.order(after='test_webext_loads')
