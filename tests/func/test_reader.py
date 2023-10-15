@@ -14,8 +14,12 @@ class TestUtilities:
     @staticmethod
     def test_navigation(reader_driver):
         reader_driver.load_random()
-        reader_driver.prev_page()
-        reader_driver.next_page()
+        if not reader_driver.has_prev_page():
+            reader_driver.next_page()
+            reader_driver.prev_page()
+        else:
+            reader_driver.prev_page()
+            reader_driver.next_page()
 
     @staticmethod
     def test_webext_loads(controller, reader_driver):
@@ -159,9 +163,11 @@ class TestNavigate:
 
         # Now, browse to the next page
         controller.sidebar.reset_notification()
+        controller.sidebar.toggle()  # Hide it to ensure we can click on next_page
         reader_driver.next_page()
         controller.refresh()
         controller.sidebar.wait_notification()
+        controller.sidebar.toggle()  # Show it again to manipulate it
 
         # Check that the registered page was updated
         # -> We need to access the latest link from sidebar to check if the
@@ -193,6 +199,7 @@ class TestNavigate:
         expected_url = controller.driver.current_url
 
         # Now, browse to the prev page
+        controller.sidebar.toggle() # Hide it to ensure we can click on prev-page
         reader_driver.prev_page()
 
         # Check that the registered page was updated
@@ -200,5 +207,6 @@ class TestNavigate:
         # generated URL changed.
         reader_driver.home()
         controller.refresh()
+        controller.sidebar.toggle() # Show it again
         controller.sidebar.load('sample100')
         assert controller.driver.current_url == expected_url

@@ -75,6 +75,10 @@ class Extension:
                 ret = 'https' + ret[1:]
             if ret.endswith('*'):
                 ret = ret[:-1]
+            # Due to firefox behavior, the manifest does not include the port,
+            # But for testing we need to inject it, so that the URL is correct.
+            if 'localhost' in ret:
+                ret = ret.replace('localhost', 'localhost:5000')
             return ret
 
         return [sanitize_url(match)

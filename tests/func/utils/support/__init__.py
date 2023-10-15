@@ -32,12 +32,14 @@ class SupportBase:
     def get_chapter(self):
         pass
 
+from .localhost import LocalhostDriver
 from .mangafox import FanFoxDriver
 from .mangakakalot import MangaKakalotDriver
 from .manganato import MangaNatoDriver
 from .isekaiscan import IsekaiScanDriver
 
 drivers = {
+    LocalhostDriver.name: LocalhostDriver,
     FanFoxDriver.name: FanFoxDriver,
     MangaKakalotDriver.name: MangaKakalotDriver,
     MangaNatoDriver.name: MangaNatoDriver,

@@ -15,11 +15,17 @@ def load_another_random(controller, reader_driver, ignore_list):
         Ensures that the randomly selected/loaded comic page is different from
         any of the pages provided in the ignore_list
     """
+    hidden = controller.sidebar.hidden
+    if not hidden:
+        controller.sidebar.toggle()
     while True:
         reader_driver.load_random()
-        if not controller.driver.current_url in ignore_list:
+        name = reader_driver.get_comic_name()
+        if not any([item == name for item in ignore_list]):
             break
     controller.refresh()
+    if not hidden:
+        controller.sidebar.toggle()
 
 def check_active_subs(dom_node, nb):
     """
@@ -291,7 +297,7 @@ class TestMultipleComics:
         controller.register('sample100')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
-        load_another_random(controller, unique_reader, [controller.driver.current_url])
+        load_another_random(controller, unique_reader, [unique_reader.get_comic_name()])
 
         init_sidebar(unique_reader, controller, load_random=False)
         orig_n_items = len(controller.sidebar.get_registered())
@@ -317,7 +323,7 @@ class TestMultipleComics:
         controller.register('toto')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
-        load_another_random(controller, unique_reader, [controller.driver.current_url])
+        load_another_random(controller, unique_reader, [unique_reader.get_comic_name()])
         init_sidebar(unique_reader, controller, load_random=False)
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('zaza')
@@ -377,14 +383,14 @@ class TestMultipleComics:
         controller.register('totow')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
-        to_ignore.append(controller.driver.current_url)
+        to_ignore.append(unique_reader.get_comic_name())
         load_another_random(controller, unique_reader, to_ignore)
 
         orig_n_items = len(controller.sidebar.get_registered())
         controller.register('zaza')
         assert len(controller.sidebar.get_registered()) != orig_n_items
 
-        to_ignore.append(controller.driver.current_url)
+        to_ignore.append(unique_reader.get_comic_name())
         load_another_random(controller, unique_reader, to_ignore)
 
         orig_n_items = len(controller.sidebar.get_registered())
